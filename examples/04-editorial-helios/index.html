@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HELIOS — 让创造像呼吸一样自然</title>
+<meta name="description" content="HELIOS 是为创作者打造的新一代 AI 工作平台。从灵感到成品，前所未有的流畅。">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+
+<style>
+/* ============ CSS Variables ============ */
+:root {
+  --bg: #F5F3EF;
+  --text: #1A1A1A;
+  --accent: #E0512B;
+  --muted: #8A8A8A;
+  --line: rgba(26, 26, 26, 0.12);
+}
+
+/* ============ Reset ============ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: auto; /* Lenis manages this */ }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+@media (max-width: 768px) { body { cursor: auto; } }
+body:not(.touch-device) { cursor: none; }
+
+a { color: inherit; text-decoration: none; }
+button { border: none; background: none; font: inherit; cursor: pointer; color: inherit; }
+
+/* ============ Typography System ============ */
+.display-h1 {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(3rem, 10vw, 9rem);
+  line-height: 0.92;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+}
+.display-h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+.display-h2 {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  line-height: 1.0;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.display-h2 em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 400;
+}
+.label {
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+}
+.body-text { font-size: 1rem; line-height: 1.7; color: var(--text); }
+.meta {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ============ Layout ============ */
+.section {
+  padding: 18vh 6vw;
+  position: relative;
+}
+@media (max-width: 768px) {
+  .section { padding: 12vh 2rem; }
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ============ Nav ============ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 1.75rem 6vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+.nav > * { pointer-events: auto; }
+.nav-logo {
+  font-family: 'Newsreader', serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+.nav-right { display: flex; gap: 2.5rem; align-items: center; }
+.nav-right a {
+  font-size: 0.9rem;
+  position: relative;
+  transition: opacity 0.25s;
+}
+.nav-right a:hover { opacity: 0.45; }
+@media (max-width: 768px) {
+  .nav-right a:not(.nav-cta) { display: none; }
+  .nav { padding: 1.25rem 2rem; }
+}
+
+/* ============ Custom Cursor ============ */
+.cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--text);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+  transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.25s, border-color 0.25s;
+}
+.cursor.hover {
+  width: 80px; height: 80px;
+  background: var(--text);
+}
+.cursor.hover::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+@media (max-width: 768px) { .cursor, .cursor-dot { display: none; } }
+
+/* ============ HERO ============ */
+.hero {
+  min-height: 100vh;
+  padding: 8rem 6vw 4rem;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero { padding: 6rem 2rem 3rem; }
+}
+
+.hero-content { max-width: 640px; }
+.hero-label { margin-bottom: 2.5rem; }
+.hero-title { margin-bottom: 3rem; }
+.hero-line {
+  display: block;
+  overflow: hidden;
+  line-height: 0.95;
+}
+.hero-line span {
+  display: inline-block;
+  will-change: transform;
+}
+.hero-desc {
+  max-width: 440px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateY(20px);
+}
+.hero-meta {
+  margin-top: 4rem;
+  display: flex;
+  gap: 3.5rem;
+  opacity: 0;
+}
+.hero-meta strong {
+  font-family: 'Newsreader', serif;
+  font-weight: 400;
+  font-size: 2rem;
+  display: block;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.hero-orb {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-orb svg { width: 100%; height: 100%; max-width: 520px; }
+
+/* ============ MANIFESTO ============ */
+.manifesto { text-align: center; padding: 20vh 6vw; }
+.manifesto h2 {
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: 'Newsreader', serif;
+  font-weight: 300;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.manifesto-label { margin-bottom: 4rem; }
+.manifesto h2 em { font-style: italic; color: var(--accent); font-weight: 400; }
+
+/* ============ FEATURES ============ */
+.features-header {
+  max-width: 1400px;
+  margin: 0 auto 6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.features-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+@media (max-width: 900px) { .features-grid { grid-template-columns: 1fr; } }
+.feature {
+  padding: 4.5rem 3rem;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+@media (max-width: 900px) { .feature { padding: 3rem 2rem; } }
+.feature-num {
+  font-family: 'Newsreader', serif;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 5rem;
+  letter-spacing: 0.05em;
+}
+.feature h3 {
+  font-family: 'Newsreader', serif;
+  font-size: 2.4rem;
+  font-weight: 400;
+  line-height: 1.05;
+  margin-bottom: 1.75rem;
+  letter-spacing: -0.015em;
+}
+.feature p {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.feature-arrow {
+  position: absolute;
+  bottom: 2rem; right: 2rem;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--text);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  transition: background 0.4s ease, color 0.4s ease,
+              transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.4s ease;
+}
+@media (min-width: 769px) {
+  .feature:hover {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .feature:hover .feature-num,
+  .feature:hover p { color: rgba(245, 243, 239, 0.55); }
+  .feature:hover .feature-arrow {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    transform: rotate(-45deg) scale(1.08);
+  }
+}
+
+/* ============ SHOWCASE ============ */
+.showcase-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+@media (max-width: 900px) { .showcase-grid { grid-template-columns: 1fr; gap: 3rem; } }
+.showcase-label { margin-bottom: 2rem; }
+.showcase-title {
+  font-size: clamp(2rem, 4.5vw, 3.8rem);
+  font-family: 'Newsreader', serif;
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+}
+.showcase-title em { font-style: italic; color: var(--accent); font-weight: 400; }
+.showcase-desc {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--muted);
+  margin-bottom: 2.5rem;
+  max-width: 440px;
+}
+.showcase-visual {
+  aspect-ratio: 4/5;
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0d0d0d 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.showcase-visual svg { width: 80%; height: 80%; opacity: 0.95; }
+
+.showcase-stats {
+  display: flex;
+  gap: 3.5rem;
+  margin-top: 3.5rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--line);
+}
+.showcase-stats strong {
+  font-family: 'Newsreader', serif;
+  font-weight: 400;
+  font-size: 3rem;
+  display: block;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+.showcase-stats span {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ============ CTA ============ */
+.cta { padding: 16vh 6vw; text-align: center; }
+.cta-label { margin-bottom: 4rem; }
+.cta h2 {
+  font-family: 'Newsreader', serif;
+  font-weight: 300;
+  font-size: clamp(3rem, 8vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  margin-bottom: 4.5rem;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.cta h2 em { font-style: italic; color: var(--accent); font-weight: 400; }
+.magnetic-wrap {
+  display: inline-block;
+  position: relative;
+}
+.magnetic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.4rem 3rem;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: background 0.3s ease, color 0.3s ease;
+  will-change: transform;
+}
+@media (min-width: 769px) {
+  .magnetic-btn:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+}
+
+/* ============ FOOTER ============ */
+.footer { padding: 4rem 6vw 3rem; border-top: 1px solid var(--line); }
+.footer-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 3rem;
+}
+@media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; } }
+.footer-brand {
+  font-family: 'Newsreader', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+.footer-brand em { font-style: italic; color: var(--accent); }
+.footer-desc { color: var(--muted); line-height: 1.7; font-size: 0.95rem; max-width: 320px; }
+.footer h4 {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.footer a {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  transition: opacity 0.25s;
+}
+.footer a:hover { opacity: 0.45; }
+.footer-bottom {
+  max-width: 1400px;
+  margin: 3rem auto 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ============ Scroll-driven underline ============ */
+.section-heading {
+  display: inline-block;
+  position: relative;
+}
+.section-heading::after {
+  content: '';
+  position: absolute;
+  bottom: -12px; left: 0;
+  height: 1px;
+  width: 0%;
+  background: var(--accent);
+  transform-origin: left;
+  transition: width 0s; /* JS drives this via CSS var */
+}
+.section-heading[data-progress]::after {
+  width: calc(var(--line-progress, 0) * 100%);
+}
+</style>
+</head>
+<body>
+
+<!-- ============ Custom Cursor ============ -->
+<div class="cursor" id="cursor" data-text="查看"></div>
+
+<!-- ============ Paper Noise Overlay ============ -->
+<svg aria-hidden="true" style="position:fixed;inset:0;pointer-events:none;opacity:0.04;mix-blend-mode:multiply;z-index:50;width:100%;height:100%;">
+  <filter id="noiseFilter">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+</svg>
+
+<!-- ============ Nav ============ -->
+<nav class="nav">
+  <div class="nav-logo">HELIOS</div>
+  <div class="nav-right">
+    <a href="#features">产品</a>
+    <a href="#showcase">故事</a>
+    <a href="#pricing">定价</a>
+    <a href="#" class="nav-cta" style="padding:0.5rem 1.25rem;border:1px solid var(--text);border-radius:999px;">免费试用</a>
+  </div>
+</nav>
+
+<!-- ============ Section 1: HERO ============ -->
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-content">
+      <div class="hero-label label">HELIOS — 2026 春季发布</div>
+      <h1 class="hero-title display-h1" id="heroTitle">
+        <span class="hero-line"><span>让 <em>创造</em></span></span>
+        <span class="hero-line"><span>变得像</span></span>
+        <span class="hero-line"><span>呼吸一样。</span></span>
+      </h1>
+      <p class="hero-desc" id="heroDesc">HELIOS 是为创作者打造的下一代 AI 工作平台。从灵感到成品，前所未有的流畅，前所未有的强大。</p>
+      <div class="hero-meta" id="heroMeta">
+        <div><strong>0.3s</strong><span class="meta">平均响应</span></div>
+        <div><strong>50+</strong><span class="meta">应用集成</span></div>
+        <div><strong>50K</strong><span class="meta">创作者</span></div>
+      </div>
+    </div>
+    <div class="hero-orb">
+      <!-- SVG Decorative Orb -->
+      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="orbBody" cx="35%" cy="30%" r="75%">
+            <stop offset="0%" stop-color="#fff"/>
+            <stop offset="20%" stop-color="#faf6ef"/>
+            <stop offset="55%" stop-color="#e8d9c7"/>
+            <stop offset="100%" stop-color="#8a5a3c"/>
+          </radialGradient>
+          <radialGradient id="orbShine" cx="40%" cy="25%" r="25%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1A1A1A" stop-opacity="0.35"/>
+            <stop offset="50%" stop-color="#E0512B" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#1A1A1A" stop-opacity="0.2"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Slow-rotating rings (outer decoration) -->
+        <g style="transform-origin:200px 200px; animation: orbRotate 30s linear infinite;">
+          <ellipse cx="200" cy="200" rx="175" ry="55" fill="none" stroke="url(#ringGrad)" stroke-width="1"/>
+        </g>
+        <g style="transform-origin:200px 200px; animation: orbRotate 45s linear infinite reverse;">
+          <ellipse cx="200" cy="200" rx="180" ry="80" fill="none" stroke="#E0512B" stroke-width="0.5" opacity="0.3"/>
+        </g>
+
+        <!-- Main Orb body -->
+        <g style="transform-origin:200px 200px; animation: orbFloat 6s ease-in-out infinite;">
+          <circle cx="200" cy="200" r="135" fill="url(#orbBody)"/>
+          <!-- Surface detail lines (latitude-like) -->
+          <g opacity="0.2" stroke="#1A1A1A" stroke-width="0.5" fill="none">
+            <ellipse cx="200" cy="200" rx="130" ry="40"/>
+            <ellipse cx="200" cy="200" rx="110" ry="85" transform="rotate(25 200 200)"/>
+            <ellipse cx="200" cy="200" rx="90" ry="130" transform="rotate(-15 200 200)"/>
+          </g>
+          <!-- Inner shine -->
+          <ellipse cx="165" cy="145" rx="50" ry="28" fill="url(#orbShine)"/>
+          <circle cx="155" cy="135" r="8" fill="#fff" opacity="0.55"/>
+          <circle cx="170" cy="165" r="3" fill="#fff" opacity="0.3"/>
+        </g>
+
+        <!-- Accent dot -->
+        <circle cx="330" cy="220" r="4" fill="#E0512B" opacity="0.7"/>
+
+        <style>
+          @keyframes orbFloat { 0%,100% { transform: translate(0,0);} 50% { transform: translate(0,-12px);} }
+          @keyframes orbRotate { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+        </style>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Section 2: MANIFESTO ============ -->
+<section class="manifesto">
+  <div class="manifesto-label label reveal">— 我们相信 —</div>
+  <h2 class="reveal" style="opacity:0; transform: translateY(30px); transition: opacity 1s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);">
+    真正强大的工具，应当<em>消失</em>在你的工作之中。<br>
+    它不被看见，只被<em>感受</em>。
+  </h2>
+</section>
+
+<!-- ============ Section 3: FEATURES ============ -->
+<section class="section" id="features">
+  <div class="features-header">
+    <div class="label reveal">核心能力 / 001</div>
+    <h2 class="display-h2 reveal">为你所做的每一件事，<br>注入<em>一点魔法</em>。</h2>
+  </div>
+  <div class="features-grid reveal">
+    <div class="feature" data-cursor="发现">
+      <div class="feature-num">01</div>
+      <h3>闪电<br>响应</h3>
+      <p>从提示到结果不到 300 毫秒。我们重新设计了推理管线，让你的创意从不被打断。</p>
+      <div class="feature-arrow">→</div>
+    </div>
+    <div class="feature" data-cursor="发现">
+      <div class="feature-num">02</div>
+      <h3>无缝<br>集成</h3>
+      <p>与 Figma、Notion、Slack、Linear 等 50+ 应用深度集成。在任何地方调用 HELIOS。</p>
+      <div class="feature-arrow">→</div>
+    </div>
+    <div class="feature" data-cursor="发现">
+      <div class="feature-num">03</div>
+      <h3>企业级<br>安全</h3>
+      <p>SOC 2 Type II 认证，端到端加密，私有化部署可选。你的数据永远是你的数据。</p>
+      <div class="feature-arrow">→</div>
+    </div>
+    <div class="feature" data-cursor="发现">
+      <div class="feature-num">04</div>
+      <h3>工作流<br>自动化</h3>
+      <p>拖拽式构建你的专属工作流。从内容生产、设计、到发布，一键完成重复性工作。</p>
+      <div class="feature-arrow">→</div>
+    </div>
+    <div class="feature" data-cursor="发现">
+      <div class="feature-num">05</div>
+      <h3>多模态<br>理解</h3>
+      <p>文本、图像、音频、视频全部打通。不再需要在多个工具之间来回切换。</p>
+      <div class="feature-arrow">→</div>
+    </div>
+    <div class="feature" data-cursor="发现">
+      <div class="feature-num">06</div>
+      <h3>与你<br>一起成长</h3>
+      <p>从独立创作者到大型企业，HELIOS 可按需扩展。按你的节奏，从零到无限。</p>
+      <div class="feature-arrow">→</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Section 4: SHOWCASE ============ -->
+<section class="section" id="showcase">
+  <div class="showcase-grid">
+    <div class="reveal" style="opacity:0; transform: translateX(-40px); transition: opacity 1s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);">
+      <div class="showcase-label label">产品故事 / 002</div>
+      <h2 class="showcase-title">从零到成品，<br>只需<em>几分钟</em>。</h2>
+      <p class="showcase-desc">HELIOS 重新定义了工作流程。用自然语言描述你想要的，系统自动分解任务、调用工具、生成结果。你只需要判断，不需要操作。</p>
+      <div class="showcase-stats">
+        <div><strong>10×</strong><span>效率提升</span></div>
+        <div><strong>60%</strong><span>节省时间</span></div>
+        <div><strong>∞</strong><span>可能性</span></div>
+      </div>
+    </div>
+    <div class="showcase-visual reveal" style="opacity:0; transform: translateX(40px); transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);">
+      <svg viewBox="-150 -150 300 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="showGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#E0512B" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#E0512B" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="0" cy="0" r="130" fill="url(#showGlow)"/>
+        <g fill="none" stroke="#F5F3EF" stroke-width="1.5" opacity="0.85">
+          <circle cx="0" cy="0" r="100"/>
+          <ellipse cx="0" cy="0" rx="100" ry="35"/>
+          <ellipse cx="0" cy="0" rx="35" ry="100"/>
+          <ellipse cx="0" cy="0" rx="85" ry="85" transform="rotate(30)"/>
+          <ellipse cx="0" cy="0" rx="85" ry="85" transform="rotate(-30)"/>
+        </g>
+        <g fill="none" stroke="#E0512B" stroke-width="1" opacity="0.7">
+          <ellipse cx="0" cy="0" rx="55" ry="18"/>
+          <ellipse cx="0" cy="0" rx="18" ry="55"/>
+        </g>
+        <circle cx="0" cy="0" r="5" fill="#fff"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Section 5: CTA ============ -->
+<section class="cta">
+  <div class="cta-label label reveal">— 立即开始 —</div>
+  <h2 class="reveal" style="opacity:0; transform: translateY(30px); transition: opacity 1s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);">
+    准备好，重新定义<em>工作方式</em>？
+  </h2>
+  <div class="reveal magnetic-wrap" style="opacity:0; transition: opacity 1s 0.3s ease;">
+    <a href="#" class="magnetic-btn" id="magneticBtn" data-cursor="开始 →">免费试用 HELIOS →</a>
+  </div>
+</section>
+
+<!-- ============ Section 6: FOOTER ============ -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">HEL<em>IOS</em></div>
+      <p class="footer-desc">为每一位创作者提供 AI 原生的工作体验。让工具消失，让创造发生。</p>
+    </div>
+    <div><h4>产品</h4><a href="#">功能</a><a href="#">定价</a><a href="#">集成</a><a href="#">更新日志</a></div>
+    <div><h4>公司</h4><a href="#">关于</a><a href="#">博客</a><a href="#">加入我们</a><a href="#">联系</a></div>
+    <div><h4>资源</h4><a href="#">文档</a><a href="#">教程</a><a href="#">API</a><a href="#">状态</a></div>
+    <div><h4>社交</h4><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">GitHub</a><a href="#">Dribbble</a></div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 HELIOS Labs Inc. 保留所有权利</div>
+    <div>Made with intention · 旧金山 · 东京 · 柏林</div>
+  </div>
+</footer>
+
+<!-- ============ GSAP + Lenis (ESM) ============ -->
+<script type="module">
+import { gsap } from 'https://esm.sh/gsap@3.12.5';
+import { ScrollTrigger } from 'https://esm.sh/gsap@3.12.5/ScrollTrigger';
+import Lenis from 'https://esm.sh/@studio-freight/lenis@1.0.42';
+
+gsap.registerPlugin(ScrollTrigger);
+
+/* ---------- Reduced motion fallback ---------- */
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Lenis smooth scroll ---------- */
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smoothWheel: !reducedMotion
+});
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add((time) => lenis.raf(time * 1000));
+gsap.ticker.lagSmoothing(0);
+
+/* ---------- Custom cursor ---------- */
+const cursor = document.getElementById('cursor');
+let cx = 0, cy = 0, mx = window.innerWidth / 2, my = window.innerHeight / 2;
+
+window.addEventListener('mousemove', (e) => {
+  mx = e.clientX; my = e.clientY;
+});
+
+function cursorRAF() {
+  cx += (mx - cx) * 0.2;
+  cy += (my - cy) * 0.2;
+  cursor.style.left = cx + 'px';
+  cursor.style.top = cy + 'px';
+  requestAnimationFrame(cursorRAF);
+}
+if (!reducedMotion && window.innerWidth > 768) cursorRAF();
+else cursor.style.display = 'none';
+
+/* Hover state on interactive elements */
+document.querySelectorAll('a, button, .feature, .showcase-visual').forEach(el => {
+  if (window.innerWidth <= 768) return;
+  el.addEventListener('mouseenter', () => {
+    cursor.classList.add('hover');
+    if (el.dataset.cursor) cursor.setAttribute('data-text', el.dataset.cursor);
+    else cursor.setAttribute('data-text', '查看');
+  });
+  el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+});
+
+/* ---------- Magnetic button ---------- */
+const btn = document.getElementById('magneticBtn');
+const btnWrap = btn.parentElement;
+if (btn && window.innerWidth > 768) {
+  btnWrap.addEventListener('mousemove', (e) => {
+    const r = btnWrap.getBoundingClientRect();
+    const tx = (e.clientX - (r.left + r.width / 2)) * 0.3;
+    const ty = (e.clientY - (r.top + r.height / 2)) * 0.3;
+    btn.style.transform = `translate(${tx}px, ${ty}px)`;
+  });
+  btnWrap.addEventListener('mouseleave', () => {
+    btn.style.transform = '';
+  });
+}
+
+/* ---------- Hero mask reveal animation ---------- */
+function initHero() {
+  if (reducedMotion) {
+    document.querySelectorAll('.hero-line span').forEach(s => s.style.transform = 'translateY(0)');
+    document.getElementById('heroDesc').style.opacity = '1';
+    document.getElementById('heroMeta').style.opacity = '1';
+    return;
+  }
+
+  const tl = gsap.timeline({ delay: 0.25 });
+  tl.to('.hero-line span', {
+    yPercent: 0,
+    duration: 1.1,
+    ease: 'power3.out',
+    stagger: 0.12
+  }, 0);
+  tl.to('#heroDesc', {
+    opacity: 1,
+    y: 0,
+    duration: 0.9,
+    ease: 'power2.out'
+  }, '-=0.3');
+  tl.to('#heroMeta', {
+    opacity: 1,
+    duration: 0.9,
+    ease: 'power2.out'
+  }, '-=0.6');
+
+  // Initial state set (GSAP needs this for yPercent to work)
+  gsap.set('.hero-line span', { yPercent: 110 });
+}
+
+/* ---------- Scroll-driven section reveals ---------- */
+function initReveals() {
+  // Generic reveal elements
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    gsap.fromTo(el,
+      { opacity: 0, y: 40 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 1.1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          markers: false,
+          once: true
+        }
+      }
+    );
+  });
+}
+
+/* ---------- Scroll-driven accent underline grow ---------- */
+function initScrollUnderlines() {
+  if (reducedMotion) return;
+
+  // For each section heading, we animate a pseudo-element line growth tied to scroll
+  const headings = document.querySelectorAll('.display-h2, .showcase-title, .cta h2, .manifesto h2');
+  headings.forEach(h => {
+    // Wrap the text in a span so we can animate an underline on it
+    const rect = h.getBoundingClientRect();
+    const line = document.createElement('div');
+    line.style.cssText = `
+      height: 1px;
+      background: var(--accent);
+      width: 0%;
+      margin-top: 1.5rem;
+      transition: width 0.1s linear;
+    `;
+    if (h.classList.contains('display-h2') || h.classList.contains('showcase-title') || h.tagName === 'H2') {
+      // Insert the line AFTER heading
+      setTimeout(() => {
+        h.parentNode.insertBefore(line, h.nextSibling);
+      }, 0);
+    }
+
+    ScrollTrigger.create({
+      trigger: h,
+      start: 'top 75%',
+      end: 'top 35%',
+      scrub: true,
+      onUpdate: (self) => {
+        if (line && line.parentNode) line.style.width = (self.progress * 100) + '%';
+      }
+    });
+  });
+}
+
+/* ---------- Init everything after fonts load ---------- */
+function initAll() {
+  initHero();
+  initReveals();
+  initScrollUnderlines();
+  ScrollTrigger.refresh();
+}
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => {
+    // Small delay for smoother feel
+    setTimeout(initAll, 80);
+  });
+} else {
+  window.addEventListener('load', initAll);
+}
+
+/* ---------- Resize handling ---------- */
+window.addEventListener('resize', () => {
+  ScrollTrigger.refresh();
+});
+
+/* ---------- Smooth anchor scroll via Lenis ---------- */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      lenis.scrollTo(target, { offset: -60 });
+    }
+  });
+});
+</script>
+
+</body>
+</html>

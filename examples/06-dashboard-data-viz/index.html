@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>销售数据可视化大屏</title>
+<script src="https://cdn.jsdelivr.net/npm/vue@3.4.0/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/js/china.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+  body { background: #0a0e27; color: #fff; }
+
+  /* 主容器 - 自适应缩放 */
+  .dashboard {
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f4a 50%, #0a0e27 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 背景装饰 */
+  .dashboard::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* 顶部标题栏 */
+  .header {
+    height: 80px; min-height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.1) 50%, transparent 100%);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+  }
+  .header h1 {
+    font-size: 2.2rem; font-weight: 700;
+    background: linear-gradient(90deg, #00d4ff 0%, #ffffff 50%, #00d4ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 8px;
+    text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+  }
+  .header .datetime {
+    position: absolute; right: 30px;
+    font-size: 0.9rem; color: #8b9cbd;
+    font-family: 'Courier New', monospace;
+  }
+  .header .status {
+    position: absolute; left: 30px;
+    font-size: 0.9rem; color: #52c41a;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #52c41a; box-shadow: 0 0 10px #52c41a;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+
+  /* 主体布局 */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 15px;
+    padding: 15px;
+    min-height: 0;
+  }
+
+  /* KPI 卡片区域 */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    height: 120px;
+    min-height: 120px;
+  }
+  .kpi-card {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(0, 212, 255, 0.02) 100%);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    border-radius: 8px;
+    padding: 15px 20px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; overflow: hidden;
+    transition: all 0.3s;
+  }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+    animation: scan 3s infinite;
+  }
+  @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  .kpi-card:hover {
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+    transform: translateY(-2px);
+  }
+  .kpi-label { font-size: 0.85rem; color: #8b9cbd; margin-bottom: 8px; }
+  .kpi-value {
+    font-size: 2rem; font-weight: 700;
+    font-family: 'DIN Alternate', 'Arial', monospace;
+    color: #00d4ff;
+    text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+  }
+  .kpi-change {
+    font-size: 0.8rem; margin-top: 5px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .kpi-change.up { color: #52c41a; }
+  .kpi-change.down { color: #ff4d4f; }
+
+  /* 图表区域 */
+  .charts-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr 1fr;
+    gap: 15px;
+    min-height: 0;
+  }
+  .chart-box {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.06) 0%, rgba(0, 212, 255, 0.01) 100%);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  .chart-box.map-box { grid-column: span 1; grid-row: span 2; }
+  .chart-box.wide { grid-column: span 2; }
+
+  .chart-title {
+    font-size: 0.95rem; color: #fff; font-weight: 500;
+    padding-bottom: 10px; margin-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .chart-title::before {
+    content: ''; width: 3px; height: 16px;
+    background: linear-gradient(180deg, #00d4ff, #0077ff);
+    border-radius: 2px;
+  }
+  .chart-container { flex: 1; min-height: 0; }
+
+  /* 订单列表样式 */
+  .order-list { flex: 1; overflow-y: auto; padding: 5px 0; }
+  .order-item {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr 1fr;
+    padding: 10px 8px;
+    font-size: 0.8rem;
+    border-bottom: 1px dashed rgba(0, 212, 255, 0.1);
+    animation: fadeIn 0.5s;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+  .order-id { color: #8b9cbd; font-family: 'Courier New', monospace; }
+  .order-product { color: #fff; }
+  .order-amount { color: #00d4ff; font-weight: 600; text-align: right; font-family: 'Courier New', monospace; }
+  .order-status { text-align: right; }
+  .status-success { color: #52c41a; }
+  .status-pending { color: #faad14; }
+  .status-shipping { color: #1890ff; }
+
+  /* 滚动条样式 */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.3); border-radius: 2px; }
+
+  /* 响应式 - 小屏适配 */
+  @media (max-width: 1440px) {
+    .header h1 { font-size: 1.8rem; }
+    .kpi-value { font-size: 1.6rem; }
+  }
+  @media (max-width: 1280px) {
+    .charts-row { grid-template-columns: repeat(2, 1fr); }
+    .chart-box.map-box { grid-column: span 1; grid-row: span 1; }
+    .chart-box.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="dashboard">
+    <!-- 顶部标题栏 -->
+    <div class="header">
+      <div class="status">
+        <span class="status-dot"></span>
+        <span>系统运行中 · 数据实时同步</span>
+      </div>
+      <h1>销售数据可视化分析大屏</h1>
+      <div class="datetime">{{ currentTime }}</div>
+    </div>
+
+    <!-- 主体区域 -->
+    <div class="main">
+      <!-- KPI 卡片 -->
+      <div class="kpi-row">
+        <div class="kpi-card" v-for="(kpi, idx) in kpis" :key="idx">
+          <div class="kpi-label">{{ kpi.label }}</div>
+          <div class="kpi-value">{{ kpi.value }}</div>
+          <div class="kpi-change" :class="kpi.trend">
+            <span>{{ kpi.trend === 'up' ? '▲' : '▼' }} {{ kpi.change }}</span>
+            <span style="color:#8b9cbd;">较昨日</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 图表区域 -->
+      <div class="charts-row">
+        <!-- 销售趋势 -->
+        <div class="chart-box wide">
+          <div class="chart-title">销售趋势分析</div>
+          <div class="chart-container" ref="trendChart"></div>
+        </div>
+
+        <!-- 中国地图 -->
+        <div class="chart-box map-box">
+          <div class="chart-title">全国销售分布</div>
+          <div class="chart-container" ref="mapChart"></div>
+        </div>
+
+        <!-- 品类占比 -->
+        <div class="chart-box">
+          <div class="chart-title">品类销售占比</div>
+          <div class="chart-container" ref="pieChart"></div>
+        </div>
+
+        <!-- 渠道对比 -->
+        <div class="chart-box">
+          <div class="chart-title">销售渠道对比</div>
+          <div class="chart-container" ref="barChart"></div>
+        </div>
+
+        <!-- 实时订单 -->
+        <div class="chart-box">
+          <div class="chart-title">实时订单动态</div>
+          <div class="order-list">
+            <div class="order-item" v-for="(order, idx) in orders" :key="idx">
+              <span class="order-id">#{{ order.id }}</span>
+              <span class="order-product">{{ order.product }}</span>
+              <span class="order-amount">¥{{ order.amount }}</span>
+              <span class="order-status" :class="'status-' + order.status">{{ order.statusText }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, onMounted, onUnmounted, reactive } = Vue;
+
+createApp({
+  setup() {
+    // 当前时间
+    const currentTime = ref('');
+    const updateTime = () => {
+      const now = new Date();
+      const pad = n => n.toString().padStart(2, '0');
+      currentTime.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    };
+
+    // KPI 数据
+    const kpis = ref([
+      { label: '今日销售额', value: '¥ 2,458,312', change: '+12.5%', trend: 'up' },
+      { label: '订单数量', value: '8,426', change: '+8.3%', trend: 'up' },
+      { label: '客单价', value: '¥ 291.76', change: '+3.8%', trend: 'up' },
+      { label: '转化率', value: '4.82%', change: '-0.5%', trend: 'down' },
+      { label: '活跃用户', value: '156,284', change: '+15.2%', trend: 'up' }
+    ]);
+
+    // 订单数据
+    const orders = ref([]);
+    const productPool = [
+      '无线蓝牙耳机 Pro', '智能手表 S2', '4K 超清摄像头',
+      '机械键盘 RGB', '人体工学椅', '平板电脑 11寸',
+      '便携充电宝 20000mAh', '降噪头戴式耳机', '智能台灯',
+      '电动牙刷 Sonic', '咖啡机全自动', '扫地机器人'
+    ];
+    const statusPool = [
+      { key: 'success', text: '已支付' },
+      { key: 'pending', text: '待付款' },
+      { key: 'shipping', text: '配送中' }
+    ];
+
+    const genOrder = () => {
+      const status = statusPool[Math.floor(Math.random() * statusPool.length)];
+      const amount = (Math.random() * 3000 + 100).toFixed(2);
+      const id = Math.random().toString(36).substring(2, 8).toUpperCase();
+      return {
+        id: id,
+        product: productPool[Math.floor(Math.random() * productPool.length)],
+        amount: amount,
+        status: status.key,
+        statusText: status.text
+      };
+    };
+
+    for (let i = 0; i < 8; i++) orders.value.push(genOrder());
+
+    // 图表实例
+    const trendChart = ref(null);
+    const mapChart = ref(null);
+    const pieChart = ref(null);
+    const barChart = ref(null);
+    let trendInst, mapInst, pieInst, barInst;
+
+    // 销售趋势图
+    const renderTrend = () => {
+      trendInst = echarts.init(trendChart.value);
+      const days = ['06-01', '06-02', '06-03', '06-04', '06-05', '06-06', '06-07', '06-08', '06-09', '06-10', '06-11', '06-12'];
+      const salesData = days.map(() => (Math.random() * 1500000 + 800000).toFixed(0));
+      const orderData = days.map(() => (Math.random() * 3000 + 2000).toFixed(0));
+
+      trendInst.setOption({
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(10,14,39,0.95)', borderColor: '#00d4ff', textStyle: { color: '#fff' } },
+        legend: { data: ['销售额', '订单数'], top: 0, textStyle: { color: '#8b9cbd' } },
+        grid: { top: 40, left: 60, right: 60, bottom: 30 },
+        xAxis: { type: 'category', data: days, axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } }, axisLabel: { color: '#8b9cbd' } },
+        yAxis: [
+          { type: 'value', name: '销售额', axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } }, axisLabel: { color: '#8b9cbd', formatter: v => (v/10000) + '万' }, splitLine: { lineStyle: { color: 'rgba(0,212,255,0.05)' } } },
+          { type: 'value', name: '订单数', axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } }, axisLabel: { color: '#8b9cbd' }, splitLine: { show: false } }
+        ],
+        series: [
+          {
+            name: '销售额', type: 'line', smooth: true, data: salesData,
+            itemStyle: { color: '#00d4ff' },
+            lineStyle: { width: 3, shadowColor: '#00d4ff', shadowBlur: 10 },
+            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(0,212,255,0.4)' }, { offset: 1, color: 'rgba(0,212,255,0)' }]) }
+          },
+          {
+            name: '订单数', type: 'bar', yAxisIndex: 1, data: orderData,
+            itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#faad14' }, { offset: 1, color: 'rgba(250,173,20,0.2)' }]), borderRadius: [4, 4, 0, 0] },
+            barWidth: '40%'
+          }
+        ]
+      });
+    };
+
+    // 中国地图
+    const renderMap = () => {
+      mapInst = echarts.init(mapChart.value);
+      const provinceData = [
+        { name: '广东', value: 4285 }, { name: '浙江', value: 3521 }, { name: '江苏', value: 3215 },
+        { name: '山东', value: 2856 }, { name: '上海', value: 2654 }, { name: '北京', value: 2432 },
+        { name: '四川', value: 2187 }, { name: '湖北', value: 1954 }, { name: '福建', value: 1823 },
+        { name: '河南', value: 1756 }, { name: '湖南', value: 1654 }, { name: '安徽', value: 1524 },
+        { name: '河北', value: 1432 }, { name: '辽宁', value: 1325 }, { name: '陕西', value: 1287 },
+        { name: '江西', value: 1156 }, { name: '重庆', value: 1102 }, { name: '广西', value: 987 },
+        { name: '云南', value: 876 }, { name: '天津', value: 823 }, { name: '山西', value: 765 },
+        { name: '黑龙江', value: 698 }, { name: '吉林', value: 587 }, { name: '贵州', value: 542 },
+        { name: '新疆', value: 487 }, { name: '甘肃', value: 398 }, { name: '内蒙古', value: 387 },
+        { name: '海南', value: 356 }, { name: '宁夏', value: 234 }, { name: '青海', value: 198 },
+        { name: '西藏', value: 156 }
+      ];
+
+      mapInst.setOption({
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'item', backgroundColor: 'rgba(10,14,39,0.95)', borderColor: '#00d4ff', textStyle: { color: '#fff' }, formatter: p => p.value ? `${p.name}<br/>销售额: ¥${p.value}万` : p.name },
+        visualMap: {
+          min: 100, max: 4500,
+          left: 15, bottom: 20,
+          text: ['高', '低'],
+          textStyle: { color: '#8b9cbd' },
+          inRange: { color: ['#0a3162', '#006fb8', '#00a8cc', '#00d4ff', '#52e5ff'] },
+          calculable: true
+        },
+        series: [{
+          type: 'map', map: 'china', roam: false,
+          zoom: 1.1, label: { show: true, color: '#fff', fontSize: 9 },
+          itemStyle: { borderColor: 'rgba(0,212,255,0.4)', areaColor: '#0a3162' },
+          emphasis: { itemStyle: { areaColor: '#00d4ff', borderColor: '#fff' }, label: { color: '#fff', fontWeight: 'bold' } },
+          data: provinceData
+        }]
+      });
+    };
+
+    // 品类占比
+    const renderPie = () => {
+      pieInst = echarts.init(pieChart.value);
+      pieInst.setOption({
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'item', backgroundColor: 'rgba(10,14,39,0.95)', borderColor: '#00d4ff', textStyle: { color: '#fff' } },
+        legend: { bottom: 0, textStyle: { color: '#8b9cbd' }, itemWidth: 10, itemHeight: 10 },
+        series: [{
+          type: 'pie',
+          radius: ['40%', '65%'],
+          center: ['50%', '45%'],
+          avoidLabelOverlap: true,
+          itemStyle: { borderColor: '#0a0e27', borderWidth: 3 },
+          label: { color: '#fff', formatter: '{b}\n{d}%', fontSize: 11 },
+          data: [
+            { value: 35.8, name: '数码电子', itemStyle: { color: '#00d4ff' } },
+            { value: 24.3, name: '服装鞋包', itemStyle: { color: '#52c41a' } },
+            { value: 18.7, name: '家居生活', itemStyle: { color: '#faad14' } },
+            { value: 12.4, name: '美妆护肤', itemStyle: { color: '#eb2f96' } },
+            { value: 8.8, name: '其他', itemStyle: { color: '#722ed1' } }
+          ]
+        }]
+      });
+    };
+
+    // 渠道对比
+    const renderBar = () => {
+      barInst = echarts.init(barChart.value);
+      barInst.setOption({
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(10,14,39,0.95)', borderColor: '#00d4ff', textStyle: { color: '#fff' } },
+        legend: { top: 0, textStyle: { color: '#8b9cbd' } },
+        grid: { top: 35, left: 40, right: 15, bottom: 25 },
+        xAxis: {
+          type: 'value',
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+          axisLabel: { color: '#8b9cbd' },
+          splitLine: { lineStyle: { color: 'rgba(0,212,255,0.05)' } }
+        },
+        yAxis: {
+          type: 'category',
+          data: ['APP', '小程序', 'H5', 'PC端', '第三方'],
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+          axisLabel: { color: '#8b9cbd' }
+        },
+        series: [
+          {
+            name: '本月', type: 'bar', data: [3856, 2984, 1625, 1423, 856], barWidth: 12,
+            itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#00d4ff' }, { offset: 1, color: 'rgba(0,212,255,0.3)' }]), borderRadius: [0, 6, 6, 0] }
+          },
+          {
+            name: '上月', type: 'bar', data: [3342, 2512, 1487, 1298, 723], barWidth: 12,
+            itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#faad14' }, { offset: 1, color: 'rgba(250,173,20,0.3)' }]), borderRadius: [0, 6, 6, 0] }
+          }
+        ]
+      });
+    };
+
+    // 数据更新
+    let timers = [];
+    const updateData = () => {
+      // 更新 KPI
+      kpis.value[0].value = '¥ ' + (2000000 + Math.random() * 1000000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      kpis.value[1].value = (6000 + Math.floor(Math.random() * 4000)).toLocaleString();
+      kpis.value[3].value = (4 + Math.random() * 2).toFixed(2) + '%';
+
+      // 刷新图表
+      const days = ['06-01', '06-02', '06-03', '06-04', '06-05', '06-06', '06-07', '06-08', '06-09', '06-10', '06-11', '06-12'];
+      const salesData = days.map(() => (Math.random() * 1500000 + 800000).toFixed(0));
+      const orderData = days.map(() => (Math.random() * 3000 + 2000).toFixed(0));
+      trendInst.setOption({ series: [{ data: salesData }, { data: orderData }] });
+
+      barInst.setOption({
+        series: [
+          { data: [3856, 2984, 1625, 1423, 856].map(v => v + Math.floor(Math.random() * 300 - 150)) },
+          { data: [3342, 2512, 1487, 1298, 723].map(v => v + Math.floor(Math.random() * 300 - 150)) }
+        ]
+      });
+    };
+
+    // 新增订单
+    const addOrder = () => {
+      orders.value.unshift(genOrder());
+      if (orders.value.length > 12) orders.value.pop();
+    };
+
+    // 窗口 resize
+    const handleResize = () => {
+      trendInst && trendInst.resize();
+      mapInst && mapInst.resize();
+      pieInst && pieInst.resize();
+      barInst && barInst.resize();
+    };
+
+    onMounted(() => {
+      updateTime();
+      timers.push(setInterval(updateTime, 1000));
+
+      renderTrend();
+      renderMap();
+      renderPie();
+      renderBar();
+
+      timers.push(setInterval(updateData, 5000));
+      timers.push(setInterval(addOrder, 2500));
+
+      window.addEventListener('resize', handleResize);
+    });
+
+    onUnmounted(() => {
+      timers.forEach(t => clearInterval(t));
+      trendInst && trendInst.dispose();
+      mapInst && mapInst.dispose();
+      pieInst && pieInst.dispose();
+      barInst && barInst.dispose();
+      window.removeEventListener('resize', handleResize);
+    });
+
+    return { currentTime, kpis, orders, trendChart, mapChart, pieChart, barChart };
+  }
+}).mount('#app');
+</script>
+
+</body>
+</html>

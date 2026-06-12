@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智云科技 - 让 AI 赋能你的业务</title>
+<meta name="description" content="智云科技是一家专注于人工智能与云计算服务的科技公司，为企业提供智能化解决方案">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+      fontFamily: {
+        sans: ['"Noto Sans SC', 'Inter', 'system-ui', 'sans-serif'
+      },
+      colors: {
+        brand: {
+          50:  '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a'
+        }
+      },
+      animation: {
+        'float': 'float 6s ease-in-out infinite',
+        'gradient': 'gradient 8s ease infinite',
+        'fade-up': 'fadeUp 0.8s ease-out forwards'
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' }
+        },
+        gradient: {
+          '0%, 100%': { 'background-position': '0% 50%' },
+          '50%': { 'background-position': '100% 50%' }
+        },
+        fadeUp: {
+          '0%': { opacity: '0', transform: 'translateY(30px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Noto Sans SC', 'Inter', sans-serif; }
+  .gradient-bg {
+    background: linear-gradient(-45deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #667eea 75%, #4facfe 100%);
+    background-size: 400% 400%;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .hero-grid {
+    background-image:
+      linear-gradient(rgba(59,130,246,0.08) 1px, transparent 1px,
+      linear-gradient(90deg, rgba(59,130,246,0.08) 1px, transparent 1px;
+    background-size: 50px 50px;
+  }
+  .card-hover {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  }
+  .fade-in-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+  }
+  .fade-in-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .delay-1 { transition-delay: 0.1s; }
+  .delay-2 { transition-delay: 0.2s; }
+  .delay-3 { transition-delay: 0.3s; }
+  .delay-4 { transition-delay: 0.4s; }
+</style>
+</head>
+
+<body class="bg-white text-gray-900 antialiased">
+
+<div id="app">
+
+  <!-- ============ 导航栏 ============ -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 md:h-20">
+        <!-- Logo -->
+        <a href="#" class="flex items-center space-x-2 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <span class="text-xl font-bold text-gray-900">智云科技</span>
+        </a>
+
+        <!-- 桌面菜单 -->
+        <div class="hidden md:flex items-center space-x-1">
+          <a href="#features" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-brand-600 transition-colors duration-200 hover:bg-gray-100 rounded-lg">产品特性</a>
+          <a href="#products" class="px-4 px-4 py-2 text-sm font-medium text-gray-700 hover:text-brand-600 transition-colors duration-200">解决方案</a>
+          <a href="#testimonials" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-brand-600">客户案例</a>
+          <a href="#pricing" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-brand-600">定价</a>
+          <a href="#contact" class="px-4 py-2 text-sm font-medium text-gray-700">联系我们</a>
+        </div>
+
+        <!-- CTA 按钮 + 登录 / 开始免费体验 -->
+        <div class="hidden md:flex items-center space-x-3">
+          <button class="px-5 py-2 text-sm text-gray-700 hover:text-brand-600 transition-colors rounded-xl">登录</button>
+          <button class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5 bg-[1px hover:bg-gradient-to-r from-blue-600 to-purple-600">免费试用</button>
+        </div>
+
+        <!-- 移动端菜单按钮 -->
+        <button id="mobile-menu-btn" class="md:hidden w-10 h-10 flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ Hero 区域 ============ -->
+  <section class="relative pt-32 pb-24 lg:pt-40 pb-32 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-blue-50 via-white to-white -z-10"></div>
+    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-blue-200/50 via-purple-200/50 to-transparent rounded-full blur-3xl -z-10"></div>
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-purple-200/50 via-blue-200/50 to-transparent rounded-full blur-3xl -z-10"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <!-- 左：文字 -->
+        <div class="text-center lg:text-left">
+          <div class="inline-flex items-center space-x-2 bg-white rounded-full border border-blue-100 px-4 py-1.5 mb-6">
+            <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span class="text-sm font-medium text-gray-700">🚀 全新 AI 引擎 v3.0 发布</span>
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+            让 <span class="gradient-text">AI 智能</span>
+            <br>赋能你的业务
+          </h1>
+          <p class="text-gray-600 text-lg sm:text-xl leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">
+            基于大模型时代，为企业提供一站式 AI 解决方案。从数据洞察智能客服、数据分析、自动化工作流，让 AI 成为你的生产力倍增器。
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-4 mb-12 justify-center lg:justify-start">
+            <button class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-500 font-medium rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all duration-200 text-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium">免费开始</button>
+            <button class="px-8 py-4 bg-white border border-gray-200 text-gray-900 rounded-xl font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center gap-2 group">
+              <svg class="w-5 h-5 mr-2 text-gray-700" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V16.61a1.5 1.5 0 002.3 .708l-.708zM7.708 12.293 4.708 4.708 1.5 1.5 0 004.41 0 14.076v.036 0 002.294l10.293 2.294 13.708l2.294 0h10.293z"/></svg>
+              观看演示
+            </button>
+          </div>
+
+          <!-- 数据统计 -->
+          <div class="grid grid-cols-3 gap-6 mt-12 pt-8 border-t border-gray-200">
+            <div class="text-center">
+              <div class="text-3xl font-bold text-gray-900">10,000+</div>
+              <div class="text-sm text-gray-500">企业用户</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-gray-900">99.9%</div>
+              <div class="text-sm text-gray-500">服务可用性</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-gray-900">24/7</div>
+              <div class="text-sm text-gray-500">全天候支持</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：视觉展示 -->
+        <div class="relative">
+          <div class="relative mx-auto max-w-md">
+            <!-- 主卡片 -->
+            <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-blue-500/10 border border-gray-200 p-6 shadow-2xl shadow-blue-500/10 border border-gray-200 p-6">
+              <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                  </div>
+                  <div class="text-xs text-gray-400">智云 AI Console</div>
+                </div>
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zm2 3a1 1 0 011-1h10a1 1 0 110 2H7a1 1 0 01-1-1zm2 3a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1zm-2 3a1 1 0 011-1h10a1 1 0 110 2H7a1 1 0 01-1-1z"/></svg>
+                    <div class="flex-1">
+                      <div class="bg-gray-200 h-2 rounded-full w-32"></div>
+                    </div>
+                    <div class="text-green-600 text-xs">
+                      +12.5%
+                    </div>
+                    <div class="text-xs text-green-600">
+                    </div>
+                    <div class="text-green-600 text-green-600 text-xs">
+                    <div class="text-sm font-medium">用户增长
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 space-y-3">
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-700 font-medium">月活用户
+                    <span class="text-green-600 text-xs">
+                    <span class="text-green-600 text-xs">+28,459
+                  </div>
+                  <div class="bg-gray-200 h-2 w-full rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full" style="width: 78%; animation: gradient 8s ease infinite"></div>
+                  </div>
+                  <div class="bg-gray-200 h-2 w-full rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full" style="width: 65%;"></div>
+                  </div>
+                  <div class="bg-gray-200 h-2 w-full rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-green-500 to-blue-500 h-full rounded-full" style="width: 89%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 浮动小卡片 -->
+              <div class="absolute -top-6 -right-6 w-32 bg-white rounded-2xl shadow-xl p-4 animate-float" style="animation-delay: 1s">
+                <div class="text-xs text-gray-500 text-xs">今日咨询
+                <div class="text-2xl font-bold text-gray-900">2,847</div>
+                <div class="text-green-600 text-xs">
+                <span class="text-green-600 text-xs">↑ 23.1%
+              </div>
+            </div>
+          </div>
+
+              <div class="absolute -bottom-4 -left-4 w-32 bg-white rounded-2xl shadow-xl p-4 animate-float" style="animation-delay: 2s">
+                <div class="text-xs text-gray-500">准确率
+                <div class="text-2xl font-bold text-gray-900">98.5%</div>
+                <div class="text-green-600 text-xs">
+                <span class="text-green-600 text-xs">+2.3%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 合作伙伴 logos -->
+  <section class="py-16 border-y border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <p class="text-center text-sm text-gray-500 mb-8">已服务于全球 500+ 企业选择我们的信赖</p>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+        <div class="opacity-40 text-center text-gray-400 text-xl font-bold">Google</div>
+        <div class="opacity-40 text-center text-gray-400 text-xl font-bold">Microsoft</div>
+        <div class="opacity-40 text-center text-gray-400 text-xl font-bold">Amazon</div>
+        <div class="opacity-40 text-center text-gray-400 text-xl font-bold">Alibaba</div>
+        <div class="opacity-40 text-center text-gray-400 text-xl font-bold">Tencent</div>
+        <div class="opacity-40 text-center text-gray-400 text-xl font-bold">ByteDance</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 核心特性 ============ -->
+  <section id="features" class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <div class="text-sm font-semibold text-brand-600 mb-4">核心能力</div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">
+          <span class="gradient-text">强大的 AI 能力</span>
+        </h2>
+        <p class="text-gray-600 max-w-2xl mx-auto">从零到企业级解决方案，让每一个功能都经过精心设计</p>
+      </div>
+
+      <div class="grid md:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 特性卡片 1 -->
+        <div class="bg-white rounded-2xl p-8 card-hover border border-gray-100 hover:border-blue-200 p-8 shadow-sm hover:shadow-2xl hover:border-blue-200 transition-all duration-300 hover:border-blue-200 hover:border-blue-200 hover:shadow-blue-100">
+          <div class="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l.7.7M17 14l1 12a9 12l-3 3-3 3-3-3 3-3M3v-3zm3zm0 3v6l-6zm0 0l3 3v6zm-3 3h6 3h3z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">智能对话</h3>
+          <p class="text-gray-600 mb-4">基于大模型技术，支持多轮上下文理解，自然语言交互，24小时不间断服务</p>
+          <p class="text-sm text-gray-500">理解准确率 98%，支持 10+ 种语言</p>
+        </div>
+
+        <!-- 特性卡片 2 -->
+        <div class="bg-white rounded-2xl p-8 card-hover border border-gray-100 hover:border-purple-200 hover:shadow-purple-100 transition-all duration-300 hover:border-purple-200 hover:border-purple-200 hover:shadow-purple-100">
+          <div class="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">数据分析</h3>
+          <p class="text-gray-600 mb-4">海量数据实时分析，智能洞察业务趋势，自动生成可视化报告</p>
+          <p class="text-sm text-gray-500">支持 PB 级数据处理，秒级响应</p>
+        </div>
+
+        <!-- 特性卡片 3 -->
+        <div class="bg-white rounded-2xl p-8 card-hover border border-gray-100 hover:border-pink-200 hover:shadow-pink-100 transition-all duration-300 hover:border-pink-200 hover:shadow-pink-100">
+          <div class="w-14 h-14 rounded-2xl bg-pink-100 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 7.573-1.756 0-3.412 0 0-4.557 0 0 0 0-4.246 0-4.246 0 0-4.557 0 0 0 0-3.412 0 0-4.317-3.412 0-3.412 0 3.412 0 4.246 0 4.246 0 3.412-3.412 0 3.412 0 4.317 0-3.412 0 4.246 0 0 3.412 0 3.412 0 0-3.412z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">自动化工作流</h3>
+          <p class="text-gray-600 mb-4">可视化拖拽式流程编排，零代码搭建自动化业务流程，提效 10 倍</p>
+          <p class="text-sm text-gray-500">200+ 预置模板，开箱即用</p>
+        </div>
+
+        <!-- 特性卡片 4 -->
+        <div class="bg-white rounded-2xl p-8 card-hover border border-gray-100 hover:border-green-200 hover:shadow-green-100 transition-all duration-300">
+          <div class="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4 4l-4 4zm0 0v6a9 0 0 9-9 9-9-9z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">企业级安全</h3>
+          <p class="text-gray-600 mb-4">SOC2 Type II 认证，数据端到端加密，私有化部署可选</p>
+          <p class="text-sm text-gray-500">GDPR 合规，数据隐私保障</p>
+        </div>
+
+        <!-- 特性卡片 5 -->
+        <div class="bg-white rounded-2xl p-8 card-hover border border-gray-100 hover:border-orange-200 hover:shadow-orange-100 transition-all duration-300 hover:border-orange-200 hover:shadow-orange-100">
+          <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">API 优先</h3>
+          <p class="text-gray-600 mb-4">完善的 RESTful API，支持 Webhook / GraphQL，轻松集成现有系统</p>
+          <p class="text-sm text-gray-500">毫秒级响应，99.9% SLA 保障</p>
+        </div>
+
+        <!-- 特性卡片 6 -->
+        <div class="bg-white rounded-2xl p-8 card-hover border border-gray-100 hover:border-cyan-200 hover:shadow-cyan-100 transition-all duration-300 hover:border-cyan-200 hover:shadow-cyan-100">
+          <div class="w-14 h-14 rounded-2xl bg-cyan-100 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 2v1a2 2 0 100-4 2zM4 2v-2v-2 0-2h2a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 14v-2m0 2a2 2 0 100 2m0-6 3h6a2 2 0 00-2 2v-2m-6 0a2 2 0 100 2v-2z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">持续创新</h3>
+          <p class="text-gray-600 mb-4">每月迭代更新，持续优化模型效果，紧跟前沿技术探索</p>
+          <p class="text-sm text-gray-500">每周新功能上线</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 产品展示 ============ -->
+  <section id="products" class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <div class="text-sm font-semibold text-brand-600 mb-4">产品矩阵</div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">
+          <span class="gradient-text">一站式解决</span>
+        </h2>
+        <p class="text-gray-600">从数据到智能，覆盖企业全场景</p>
+      </div>
+
+      <div class="grid lg:grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- 产品 1 -->
+        <div class="bg-white rounded-3xl overflow-hidden shadow-lg card-hover border border-gray-100">
+          <div class="p-8">
+            <div class="flex items-start justify-between mb-6">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM6 8a2 2 0 11-4 0 2 2 0 014 0zM12 14a4 4 0 014 4H8a4 4 0 014-4z"/>
+                </svg>
+              </div>
+              <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full">热门</span>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">智云 AI 助手</h3>
+            <p class="text-gray-600 mb-6">企业级智能对话平台，支持多模型切换，企业知识库，智能客服，问答系统</p>
+            <ul class="space-y-3 text-sm text-gray-600 mb-6">
+              <li class="flex items-center">✓ 支持 GPT-4 / Claude / 通义千问</li>
+              <li class="flex items-center">✓ 企业知识库 RAG 检索增强</li>
+              <li class="flex items-center">✓ 多渠道接入（Web / App / 微信 / 钉钉</li>
+              <li class="flex items-center">✓ 可视化对话审计与权限管理</li>
+            </ul>
+            <button class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-xl font-medium hover:from-blue-600 hover:to-purple-600 transition-all duration-200">了解更多 →</button>
+          </div>
+        </div>
+
+        <!-- 产品 2 -->
+        <div class="bg-white rounded-3xl overflow-hidden shadow-lg card-hover border border-gray-100">
+          <div class="p-8">
+            <div class="flex items-start justify-between mb-6">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 11a8 8V5H4a2 2 0 00-2 2v4zm0 0v4a2 2 0 002 2h4zm12 0V6h-8V4a2 2 0 012-2h4zM14 2a2 2 0 012 2v4a2 2 0 01-2 2h-4v4 2a2 2 0 01-2 2H6"/>
+                </svg>
+              </div>
+              <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">新发布</span>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">智云数据分析</h3>
+            <p class="text-gray-600 mb-6">自动化数据采集、处理、分析一体化平台</p>
+            <ul class="space-y-3 text-sm text-gray-600 mb-6">
+              <li class="flex items-center">✓ 100+ 数据源一键接入</li>
+              <li class="flex items-center">✓ 自然语言查询（NL2SQL）</li>
+              <li class="flex items-center">✓ 智能图表自动生成</li>
+              <li class="flex items-center">✓ 实时数据异常告警</li>
+            </ul>
+            <button class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200">了解更多 →</button>
+          </div>
+        </div>
+
+        <!-- 产品 3 -->
+        <div class="bg-white rounded-3xl overflow-hidden shadow-lg card-hover border border-gray-100">
+          <div class="p-8">
+            <div class="flex items-start justify-between mb-6">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V3zM5 16v1a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z"/>
+                </svg>
+              </div>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">智云自动化</h3>
+            <p class="text-gray-600 mb-6">自动化工作流引擎，让业务流程自动化</p>
+            <ul class="space-y-3 text-sm text-gray-600 mb-6">
+              <li class="flex items-center">✓ 可视化流程设计器</li>
+              <li class="flex items-center">✓ 200+ 应用集成</li>
+              <li class="flex items-center">✓ 定时触发 / 事件触发</li>
+              <li class="flex items-center">✓ 自定义脚本扩展</li>
+            </ul>
+            <button class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-xl font-medium hover:from-green-600 hover:to-teal-600 transition-all duration-200">了解更多 →</button>
+          </div>
+        </div>
+
+        <!-- 产品 4 -->
+        <div class="bg-white rounded-3xl overflow-hidden shadow-lg card-hover border border-gray-100">
+          <div class="p-8">
+            <div class="flex items-start justify-between mb-6">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707 2.707A1 1 0 004 16h12a1 1 0 0016 16v-3.586L16 12V8a6 6 0 0010 2z"/>
+                </svg>
+              </div>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">智云企业版</h3>
+            <p class="text-gray-600 mb-6">私有化部署方案，企业级安全与合规</p>
+            <ul class="space-y-3 text-sm text-gray-600">
+              <li class="flex items-center">✓ 私有云部署</li>
+              <li class="flex items-center">✓ 专属模型训练</li>
+              <li class="flex items-center">✓ 企业级 SLA</li>
+              <li class="flex items-center">✓ 7x24 专属客服</li>
+            </ul>
+            <button class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-xl font-medium hover:from-orange-600 hover:to-red-600 transition-all duration-200">联系销售 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 客户评价 ============ -->
+  <section id="testimonials" class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <div class="text-sm font-semibold text-brand-600 mb-4">客户评价</div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">
+          <span class="gradient-text">客户的声音</span>
+        </h2>
+        <p class="text-gray-600">他们都在用智云科技</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-2xl p-8 border border-gray-100 card-hover">
+          <div class="flex items-center mb-4">
+        <div class="text-yellow-400 text-xl">★★★★★</div>
+          </div>
+          <p class="text-gray-700 mb-6">"智云 AI 助手上线后，我们的客服响应时间从 2 小时缩短到 2 分钟，客户满意度提升了 40%，这是一个巨大的飞跃。"</p>
+          <div class="flex items-center">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">李</div>
+            <div class="ml-4">
+              <div class="font-bold">李总监</div>
+              <div class="text-sm text-gray-500">某电商平台</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-8 border border-gray-100 card-hover">
+          <div class="flex items-center mb-4">
+            <div class="text-yellow-400 text-xl">★★★★★</div>
+          </div>
+          <p class="text-gray-700 mb-6">"数据分析功能太强大了，以前要一周的数据洞察报告。我们的业务团队现在可以自己分析，无需依赖数据驱动的业务团队现在可以自己做数据分析，不再需要排队等数据团队。"</p>
+          <div class="flex items-center">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold">张</div>
+            <div class="ml-4">
+              <div class="font-bold">张经理</div>
+              <div class="text-sm text-gray-500">某金融公司</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-8 border border-gray-100 card-hover">
+          <div class="flex items-center mb-4">
+            <div class="text-yellow-400 text-xl">★★★★★</div>
+          </div>
+          <p class="text-gray-700 mb-6">"自动化工作流帮我们节省了 2000 小时的人工重复工作，ROI 超过 6 个月内就回来了。"</p>
+          <div class="flex items-center">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white font-bold">王</div>
+            <div class="ml-4">
+              <div class="font-bold">王 CTO</div>
+              <div class="text-sm text-gray-500">某科技公司</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 定价 ============ -->
+  <section id="pricing" class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <div class="text-sm font-semibold text-brand-600 mb-4">定价方案</div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">
+          <span class="gradient-text">简单透明的定价</span>
+        </h2>
+        <p class="text-gray-600">无需信用卡，14 天免费试用</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8 items-center">
+        <!-- 基础版 -->
+        <div class="bg-white rounded-3xl p-8 border border-gray-200">
+          <div class="text-center">
+            <h3 class="text-xl font-bold mb-2">基础版</h3>
+            <div class="text-4xl font-bold mb-2">¥199<span class="text-lg font-normal text-gray-500">/月</span></div>
+            <p class="text-gray-500 text-sm">适合小型团队</p>
+            <ul class="text-left space-y-3 my-8 text-gray-700">
+              <li class="flex items-center">✓ 最多 10 个用户</li>
+              <li class="flex items-center">✓ AI 助手基础功能</li>
+              <li class="flex items-center">✓ 10GB 存储</li>
+              <li class="flex items-center">✓ 标准支持</li>
+            </ul>
+            <button class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-200">开始免费试用</button>
+          </div>
+        </div>
+
+        <!-- 专业版（推荐）-->
+        <div class="bg-white rounded-3xl p-8 border-2 border-blue-500 relative shadow-xl shadow-blue-500/20">
+          <div class="absolute -top-4 left-1/2 -translate-x-1/2">
+            <span class="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm px-4 py-1 rounded-full">推荐</span>
+          </div>
+          <div class="text-center">
+            <h3 class="text-xl font-bold mb-2">专业版</h3>
+            <div class="text-4xl font-bold mb-2">¥599<span class="text-lg font-normal text-gray-500">/月</span></div>
+            <p class="text-gray-500 text-sm">适合成长型企业</p>
+            <ul class="text-left space-y-3 my-8 text-gray-700">
+              <li class="flex items-center">✓ 最多 50 个用户</li>
+              <li class="flex items-center">✓ 全部 AI 功能</li>
+              <li class="flex items-center">✓ 100GB 存储</li>
+              <li class="flex items-center">✓ 优先支持</li>
+              <li class="flex items-center">✓ API 访问</li>
+            </ul>
+            <button class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-xl font-medium hover:from-blue-600 hover:to-purple-600 transition-all duration-200">开始免费试用</button>
+          </div>
+        </div>
+
+        <!-- 企业版 -->
+        <div class="bg-white rounded-3xl p-8 border border-gray-200">
+          <div class="text-center">
+            <h3 class="text-xl font-bold mb-2">企业版</h3>
+            <div class="text-4xl font-bold mb-2">定制</div>
+            <p class="text-gray-500 text-sm">大型企业与机构</p>
+            <ul class="text-left space-y-3 my-8 text-gray-700">
+              <li class="flex items-center">✓ 无限用户</li>
+              <li class="flex items-center">✓ 私有化部署</li>
+              <li class="flex items-center">✓ 专属模型训练</li>
+              <li class="flex items-center">✓ 7x24 专属客服</li>
+              <li class="flex items-center">✓ SLA 保障</li>
+            </ul>
+            <button class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-200">联系销售</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section id="contact" class="py-24">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 rounded-3xl p-12 lg:p-16 text-center relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+        <div class="relative">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-6">准备好开始了吗？</h2>
+          <p class="text-blue-100 mb-8 text-lg max-w-xl mx-auto">加入 10,000+ 企业的选择，让 AI 为你的业务提速</p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button class="px-8 py-4 bg-white text-blue-600 rounded-xl font-bold hover:bg-gray-100 transition-all duration-200 text-lg">免费开始</button>
+            <button class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white/10 transition-all duration-200 text-lg">预约演示</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 页脚 ============ -->
+  <footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+        <div class="lg:col-span-2">
+          <div class="flex items-center space-x-2 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <span class="text-xl font-bold text-white">智云科技</span>
+          </div>
+          <p class="text-gray-400 mb-6 max-w-md">让 AI 智能赋能企业，让每家公司都能享受到 AI 带来的效率革命</p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">微</a>
+            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">博</a>
+            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">知</a>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-white font-semibold mb-4">产品</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="hover:text-white transition-colors">AI 助手</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">数据分析</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">自动化</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">企业版</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-white font-semibold mb-4">公司</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="hover:text-white transition-colors">关于我们</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">加入我们</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">新闻动态</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">合作伙伴</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-white font-semibold mb-4">支持</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="hover:text-white transition-colors">帮助中心</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">开发文档</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">API 参考</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">联系我们</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
+        <p>&copy; 2026 智云科技 版权所有</p>
+        <div class="flex space-x-6 mt-4 md:mt-0">
+          <a href="#" class="hover:text-white transition-colors">隐私政策</a>
+          <a href="#" class="hover:text-white transition-colors">服务条款</a>
+          <a href="#" class="hover:text-white transition-colors">Cookie 设置</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  // 滚动时导航栏样式变化
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      navbar.classList.add('shadow-lg');
+      navbar.classList.add('bg-white/80');
+      navbar.classList.add('backdrop-blur-xl');
+      navbar.classList.remove('bg-transparent');
+    } else {
+      navbar.classList.remove('shadow-lg');
+      navbar.classList.remove('bg-white/80');
+      navbar.classList.remove('backdrop-blur-xl');
+    }
+  });
+
+  // 滚动淡入动画
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('section').forEach(el => {
+    observer.observe(el);
+  });
+
+  // 平滑滚动
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

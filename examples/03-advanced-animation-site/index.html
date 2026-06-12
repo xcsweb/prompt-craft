@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVA — AI for Creatives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --fg: #f1f5f9;
+    --muted: #64748b;
+    --brand-a: #6366f1;
+    --brand-b: #ec4899;
+    --brand-c: #06b6d4;
+    --line: rgba(255,255,255,0.08);
+    --card: rgba(255,255,255,0.02);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+  body { cursor: none; }
+  @media (max-width: 768px) { body { cursor: auto; } }
+
+  h1, h2, h3 { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.02em; }
+
+  /* ===== Scroll Progress Bar ===== */
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+    background: linear-gradient(90deg, #6366f1, #ec4899, #06b6d4);
+    z-index: 1000; transition: width 0.1s ease-out;
+  }
+
+  /* ===== Custom Cursor ===== */
+  .cursor-dot {
+    position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+    background: var(--fg); border-radius: 50%; pointer-events: none;
+    z-index: 9999; transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed; top: 0; left: 0; width: 36px; height: 36px;
+    border: 1px solid rgba(255,255,255,0.4); border-radius: 50%;
+    pointer-events: none; z-index: 9998; transform: translate(-50%, -50%);
+    transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring.hover {
+    width: 70px; height: 70px; border-color: #ec4899;
+  }
+
+  /* ===== Navbar ===== */
+  .navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.3s, backdrop-filter 0.3s, border-color 0.3s;
+    border-bottom: 1px solid transparent;
+  }
+  .navbar.scrolled {
+    background: rgba(10,10,15,0.6);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-bottom-color: var(--line);
+  }
+  .logo { font-size: 1.2rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.1em; }
+  .logo-dot { display: inline-block; width: 8px; height: 8px; background: linear-gradient(135deg, var(--brand-a), var(--brand-b)); border-radius: 50%; margin-right: 8px; }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; cursor: none; }
+  .nav-links a:hover { color: var(--fg); }
+
+  /* ===== Hero ===== */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; text-align: center; padding: 0 2rem;
+  }
+  .hero-canvas { position: absolute; inset: 0; z-index: 1; }
+  .hero-content { position: relative; z-index: 10; max-width: 1000px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border: 1px solid var(--line);
+    border-radius: 999px; font-size: 0.8rem; color: var(--muted);
+    margin-bottom: 2rem; background: rgba(255,255,255,0.02);
+  }
+  .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #06b6d4; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .hero-title {
+    font-size: clamp(3rem, 9vw, 7.5rem); font-weight: 700; line-height: 0.95;
+    margin-bottom: 1.5rem;
+  }
+  .hero-title .gradient-text {
+    background: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #06b6d4 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    background-size: 200% 200%; animation: gradientShift 8s ease infinite;
+  }
+  @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+  .hero-sub { font-size: clamp(1.1rem, 2vw, 1.35rem); color: var(--muted); max-width: 640px; margin: 0 auto 2.5rem; line-height: 1.6; }
+
+  .hero-cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn-primary, .btn-secondary {
+    padding: 1rem 2rem; border-radius: 999px; font-weight: 500; font-size: 1rem;
+    cursor: none; border: none; text-decoration: none; display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
+  }
+  .btn-primary { background: #fff; color: #000; }
+  .btn-secondary { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+
+  .scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    color: var(--muted); font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+    z-index: 10; animation: fadeUpDown 2s ease-in-out infinite;
+  }
+  @keyframes fadeUpDown {
+    0%, 100% { transform: translate(-50%, 0); opacity: 0.4; }
+    50% { transform: translate(-50%, 8px); opacity: 1; }
+  }
+
+  /* ===== Sections ===== */
+  .section { padding: 10rem 2rem; position: relative; }
+  .section-container { max-width: 1200px; margin: 0 auto; }
+  .section-label { font-size: 0.85rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+  .section-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; margin-bottom: 4rem; line-height: 1.1; }
+
+  /* ===== Features Grid ===== */
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media (max-width: 900px) { .features-grid { grid-template-columns: 1fr; } }
+
+  .feature-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 2.5rem 2rem;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s;
+    position: relative; overflow: hidden; transform-style: preserve-3d;
+    cursor: none;
+  }
+  .feature-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(99,102,241,0.15), transparent 40%);
+    opacity: 0; transition: opacity 0.4s; pointer-events: none;
+  }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-card:hover { border-color: rgba(99,102,241,0.3); }
+
+  .feature-icon {
+    width: 48px; height: 48px; border-radius: 12px; margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(236,72,153,0.15));
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(99,102,241,0.2);
+  }
+  .feature-card h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; }
+  .feature-card p { color: var(--muted); line-height: 1.6; font-size: 0.95rem; }
+
+  /* ===== Marquee ===== */
+  .marquee-section { padding: 6rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; }
+  .marquee-row { display: flex; gap: 4rem; white-space: nowrap; animation: marquee 30s linear infinite; }
+  .marquee-row.second { animation-direction: reverse; margin-top: 2rem; }
+  @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .marquee-item {
+    display: inline-flex; align-items: center; gap: 1rem; font-size: 2rem; font-weight: 600;
+    color: var(--muted); opacity: 0.5;
+  }
+  .marquee-item svg { width: 24px; height: 24px; }
+
+  /* ===== Showcase ===== */
+  .showcase { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  @media (max-width: 900px) { .showcase { grid-template-columns: 1fr; } }
+  .showcase-content h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; line-height: 1.15; margin-bottom: 1.5rem; }
+  .showcase-content p { color: var(--muted); font-size: 1.1rem; line-height: 1.7; margin-bottom: 2rem; }
+  .showcase-visual {
+    aspect-ratio: 4/3; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(236,72,153,0.1));
+    border: 1px solid var(--line); border-radius: 24px; position: relative; overflow: hidden;
+  }
+  .showcase-visual canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* ===== CTA ===== */
+  .cta-section {
+    text-align: center; padding: 10rem 2rem;
+    background: linear-gradient(180deg, transparent, rgba(99,102,241,0.03));
+  }
+  .cta-title { font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 700; line-height: 1; margin-bottom: 1.5rem; }
+  .cta-subtitle { font-size: 1.2rem; color: var(--muted); margin-bottom: 3rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+  /* ===== Footer ===== */
+  .footer { padding: 4rem 2rem 2rem; border-top: 1px solid var(--line); }
+  .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; }
+  @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; gap: 2rem; } }
+  .footer h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; color: var(--fg); letter-spacing: 0.05em; }
+  .footer a { display: block; color: var(--muted); text-decoration: none; margin-bottom: 0.5rem; font-size: 0.9rem; transition: color 0.2s; cursor: none; }
+  .footer a:hover { color: var(--fg); }
+  .footer-bottom { max-width: 1200px; margin: 3rem auto 0; padding-top: 2rem; border-top: 1px solid var(--line); display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem; }
+
+  /* ===== Noise overlay ===== */
+  .noise-overlay {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9997;
+    opacity: 0.03; mix-blend-mode: overlay;
+  }
+  .noise-overlay svg { width: 100%; height: 100%; }
+
+  /* ===== Reveal animation ===== */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ===== Reveal Text (mask reveal) ===== */
+  .reveal-text-wrap { overflow: hidden; display: block; }
+  .reveal-text-inner { display: block; transform: translateY(100%); transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal.visible .reveal-text-inner { transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<div id="progress-bar"></div>
+
+<!-- Noise overlay -->
+<div class="noise-overlay">
+  <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter>
+    <rect width="100%" height="100%" filter="url(#n)"/>
+  </svg>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="logo"><span class="logo-dot"></span>NOVA</div>
+  <div class="nav-links">
+    <a href="#features">产品</a>
+    <a href="#showcase">展示</a>
+    <a href="#pricing">定价</a>
+    <a href="#docs">文档</a>
+  </div>
+  <a href="#" class="btn-primary" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">开始使用</a>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-content reveal">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>v2.1 全新发布 · 更快更强</div>
+    <h1 class="hero-title">
+      <span class="reveal-text-wrap"><span class="reveal-text-inner">让创意</span></span>
+      <span class="reveal-text-wrap"><span class="reveal-text-inner gradient-text">流动于</span></span>
+      <span class="reveal-text-wrap"><span class="reveal-text-inner">指尖</span></span>
+    </h1>
+    <p class="hero-sub reveal">NOVA 是为创作者打造的新一代 AI 工作平台。从灵感到成品，全程流畅如呼吸。</p>
+    <div class="hero-cta reveal">
+      <a href="#" class="btn-primary">免费试用</a>
+      <a href="#" class="btn-secondary">观看演示 →</a>
+    </div>
+  </div>
+  <div class="scroll-hint">向下滚动 ↓</div>
+</section>
+
+<!-- Features -->
+<section class="section" id="features">
+  <div class="section-container">
+    <div class="reveal"><div class="section-label">核心能力</div></div>
+    <h2 class="section-title reveal">为你所做的每一件事，注入一点魔法。</h2>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" style="color:#6366f1"/></svg></div>
+        <h3>闪电响应</h3>
+        <p>从提示到结果不到 300 毫秒。我们重新设计了推理管线，让你的创意从不被打断。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1" stroke-linecap="round" stroke-linejoin="round" style="color:#ec4899"/></svg></div>
+        <h3>无缝集成</h3>
+        <p>与 Figma、Notion、Slack、Linear 等 50+ 应用深度集成，在任何地方调用 NOVA。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round" stroke-linejoin="round" style="color:#06b6d4"/></svg></div>
+        <h3>企业级安全</h3>
+        <p>SOC 2 Type II 认证，端到端加密，私有化部署可选。你的数据永远是你的数据。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7" stroke-linecap="round" stroke-linejoin="round" style="color:#a855f7"/></svg></div>
+        <h3>工作流自动化</h3>
+        <p>拖拽式构建你的专属工作流。从内容生产、设计、到发布，一键完成重复性工作。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l10 6v8l-10 6L2 16V8z" stroke-linecap="round" stroke-linejoin="round" style="color:#f59e0b"/></svg></div>
+        <h3>多模态理解</h3>
+        <p>文本、图像、音频、视频全部打通。不再需要在多个工具之间来回切换。</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke-linecap="round" stroke-linejoin="round" style="color:#22c55e"/></svg></div>
+        <h3>与你一起成长</h3>
+        <p>从独立创作者到大型企业，NOVA 可按需扩展。按你的节奏，从零到无限。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<section class="marquee-section reveal">
+  <div class="marquee-row">
+    <div class="marquee-item">✦ Google</div>
+    <div class="marquee-item">✦ Adobe</div>
+    <div class="marquee-item">✦ Figma</div>
+    <div class="marquee-item">✦ Notion</div>
+    <div class="marquee-item">✦ Linear</div>
+    <div class="marquee-item">✦ Stripe</div>
+    <div class="marquee-item">✦ Shopify</div>
+    <div class="marquee-item">✦ GitHub</div>
+    <div class="marquee-item">✦ Google</div>
+    <div class="marquee-item">✦ Adobe</div>
+    <div class="marquee-item">✦ Figma</div>
+    <div class="marquee-item">✦ Notion</div>
+  </div>
+  <div class="marquee-row second">
+    <div class="marquee-item">Creative Studio</div>
+    <div class="marquee-item">Agency</div>
+    <div class="marquee-item">Freelancer</div>
+    <div class="marquee-item">Enterprise</div>
+    <div class="marquee-item">Startup</div>
+    <div class="marquee-item">Design Team</div>
+    <div class="marquee-item">Creative Studio</div>
+    <div class="marquee-item">Agency</div>
+    <div class="marquee-item">Freelancer</div>
+    <div class="marquee-item">Enterprise</div>
+  </div>
+</section>
+
+<!-- Showcase -->
+<section class="section" id="showcase">
+  <div class="section-container showcase">
+    <div class="showcase-content reveal">
+      <div class="section-label">产品展示</div>
+      <h2>从零到成品，只需几分钟。</h2>
+      <p>NOVA 重新定义了工作流程。用自然语言描述你想要的，系统自动分解任务、调用工具、生成结果。你只需要判断，不需要操作。</p>
+      <a href="#" class="btn-primary">了解更多 →</a>
+    </div>
+    <div class="showcase-visual reveal">
+      <canvas id="showcaseCanvas"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="reveal">
+    <h2 class="cta-title"><span class="reveal-text-wrap"><span class="reveal-text-inner">准备好，</span></span><br><span class="reveal-text-wrap"><span class="reveal-text-inner gradient-text">重新定义工作方式</span></span></h2>
+    <p class="cta-subtitle">加入 50,000+ 创作者的行列。免费开始，无需信用卡。</p>
+    <div class="hero-cta">
+      <a href="#" class="btn-primary">免费开始</a>
+      <a href="#" class="btn-secondary">联系销售</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="logo"><span class="logo-dot"></span>NOVA</div>
+      <p style="color: var(--muted); margin-top: 1rem; line-height: 1.6; font-size: 0.9rem;">为每一位创作者提供 AI 原生的工作体验。</p>
+    </div>
+    <div>
+      <h4>产品</h4>
+      <a href="#">功能</a><a href="#">定价</a><a href="#">集成</a><a href="#">更新日志</a>
+    </div>
+    <div>
+      <h4>公司</h4>
+      <a href="#">关于我们</a><a href="#">博客</a><a href="#">加入我们</a><a href="#">联系</a>
+    </div>
+    <div>
+      <h4>资源</h4>
+      <a href="#">文档</a><a href="#">教程</a><a href="#">API</a><a href="#">Status</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 NOVA Labs Inc. 保留所有权利</div>
+    <div>以 <span style="color:#ec4899;">♥</span> 打造于 San Francisco</div>
+  </div>
+</footer>
+
+<script>
+/* ===== Custom Cursor ===== */
+const cursorDot = document.getElementById('cursorDot');
+const cursorRing = document.getElementById('cursorRing');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+window.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  cursorDot.style.left = mouseX + 'px';
+  cursorDot.style.top = mouseY + 'px';
+});
+function animateCursor() {
+  ringX += (mouseX - ringX) * 0.15;
+  ringY += (mouseY - ringY) * 0.15;
+  cursorRing.style.left = ringX + 'px';
+  cursorRing.style.top = ringY + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+// Hover effect on interactive elements
+document.querySelectorAll('a, button, .feature-card').forEach(el => {
+  el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
+  el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
+});
+
+/* ===== Navbar scroll ===== */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 40) navbar.classList.add('scrolled');
+  else navbar.classList.remove('scrolled');
+  document.getElementById('progress-bar').style.width = (window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100) + '%';
+});
+
+/* ===== Reveal on scroll ===== */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+/* ===== Hero Canvas - FBM noise gradient + floating shapes ===== */
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() {
+  canvas.width = window.innerWidth * window.devicePixelRatio;
+  canvas.height = window.innerHeight * window.devicePixelRatio;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+let time = 0;
+let hMouseX = 0.5, hMouseY = 0.5;
+window.addEventListener('mousemove', (e) => {
+  hMouseX = e.clientX / window.innerWidth;
+  hMouseY = e.clientY / window.innerHeight;
+});
+
+// Simple FBM noise
+function noise(x, y) {
+  const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+  return n - Math.floor(n);
+}
+function smoothNoise(x, y) {
+  const ix = Math.floor(x), iy = Math.floor(y);
+  const fx = x - ix, fy = y - iy;
+  const a = noise(ix, iy), b = noise(ix + 1, iy), c = noise(ix, iy + 1), d = noise(ix + 1, iy + 1);
+  const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
+  return a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;
+}
+function fbm(x, y, t) {
+  let sum = 0, amp = 0.5, freq = 1;
+  for (let i = 0; i < 4; i++) {
+    sum += amp * smoothNoise(x * freq + t, y * freq + t);
+    freq *= 2; amp *= 0.5;
+  }
+  return sum;
+}
+
+function drawHero() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // FBM gradient background
+  const imageData = ctx.createImageData(w / 8, h / 8); // low-res then upscale
+  const data = imageData.data;
+  for (let y = 0; y < h / 8; y++) {
+    for (let x = 0; x < w / 8; x++) {
+      const u = x / (w / 8), v = y / (h / 8);
+      const n = fbm(u * 3, v * 3, time * 0.05);
+      const pushDist = Math.sqrt((u - hMouseX) ** 2 + (v - hMouseY) ** 2);
+      const push = 1 - Math.min(1, pushDist * 1.5);
+      // Colors
+      const colA = [0.39, 0.40, 0.95]; // indigo
+      const colB = [0.93, 0.28, 0.60]; // pink
+      const colC = [0.02, 0.71, 0.83]; // cyan
+      let col = [0, 0, 0];
+      for (let i = 0; i < 3; i++) {
+        col[i] = colA[i] * (1 - n) + colB[i] * n;
+        col[i] = col[i] * (1 - n * 0.3) + colC[i] * n * 0.3;
+        col[i] += push * 0.1; // mouse push brightness
+        col[i] = Math.max(0, Math.min(1, col[i]));
+      }
+      const idx = (y * (w / 8) + x) * 4;
+      data[idx] = col[0] * 255 * 0.15;
+      data[idx + 1] = col[1] * 255 * 0.15;
+      data[idx + 2] = col[2] * 255 * 0.25;
+      data[idx + 3] = 255;
+    }
+  }
+  // draw low-res
+  const off = document.createElement('canvas');
+  off.width = w / 8; off.height = h / 8;
+  off.getContext('2d').putImageData(imageData, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(off, 0, 0, w, h);
+
+  // Floating geometric shapes
+  const cx = w / 2, cy = h / 2;
+  const shapes = 5;
+  for (let i = 0; i < shapes; i++) {
+    const rad = Math.min(w, h) * (0.15 + i * 0.05);
+    const rot = time * 0.0003 + i;
+    const offset = Math.sin(time * 0.0005 + i) * 50;
+    ctx.save();
+    ctx.translate(cx + Math.sin(rot) * offset, cy + Math.cos(rot * 1.3) * offset);
+    ctx.rotate(rot);
+    ctx.strokeStyle = `rgba(${i === 0 ? 99 : i === 1 ? 236 : 6}, ${i === 0 ? 102 : i === 1 ? 72 : 182}, ${i === 0 ? 241 : i === 1 ? 153 : 212}, 0.4)`;
+    ctx.lineWidth = 1.5 * window.devicePixelRatio;
+    if (i % 2 === 0) {
+      // Circle
+      ctx.beginPath(); ctx.arc(0, 0, rad, 0, Math.PI * 2); ctx.stroke();
+    } else {
+      // Polygon
+      ctx.beginPath();
+      for (let j = 0; j < 6; j++) {
+        const a = (j / 6) * Math.PI * 2;
+        const x = Math.cos(a) * rad, y = Math.sin(a) * rad;
+        if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  time++;
+  requestAnimationFrame(drawHero);
+}
+drawHero();
+
+/* ===== Showcase Canvas - animated dots grid ===== */
+const sc = document.getElementById('showcaseCanvas');
+if (sc) {
+  const sctx = sc.getContext('2d');
+  function resizeShow() { sc.width = sc.offsetWidth; sc.height = sc.offsetHeight; }
+  resizeShow(); window.addEventListener('resize', resizeShow);
+  let st = 0;
+  function drawShow() {
+    const w = sc.width, h = sc.height;
+    sctx.fillStyle = 'rgba(10,10,15,1)'; sctx.fillRect(0, 0, w, h);
+    const cols = 20, rows = 12;
+    const gw = w / cols, gh = h / rows;
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const d = Math.sqrt((x - cols / 2) ** 2 + (y - rows / 2) ** 2);
+        const pulse = Math.sin(st * 0.02 + d * 0.3);
+        const size = 2 + pulse * 2;
+        const alpha = 0.1 + (pulse + 1) * 0.15;
+        const hue = (d * 10 + st * 0.5) % 360;
+        sctx.fillStyle = `hsla(${hue}, 80%, 60%, ${alpha})`;
+        sctx.beginPath(); sctx.arc(x * gw + gw / 2, y * gh + gh / 2, size, 0, Math.PI * 2); sctx.fill();
+      }
+    }
+    st++; requestAnimationFrame(drawShow);
+  }
+  drawShow();
+}
+
+/* ===== Feature card mouse-tracking glow ===== */
+document.querySelectorAll('.feature-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
+    card.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `perspective(1000px) rotateY(${x * 5}deg) rotateX(${-y * 5}deg) translateY(-4px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
+});
+</script>
+
+</body>
+</html>
