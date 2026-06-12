@@ -85,6 +85,38 @@
 
 ---
 
+### 方向 D：3D Product Showcase / 3D 产品展示风
+
+> **代表项目**：小米 SU7 3D 车模展示 (gamemcu.com/su7) · Apple Vision Pro 产品页 · 蔚来 ET5 官网
+
+**核心感觉**：真实、沉浸、可触摸——用户像在展厅里一样 360° 查看产品，而不是"阅读"页面
+
+**设计语言**
+| 维度 | 具体做法 |
+|------|---------|
+| **颜色** | 深黑/纯白背景（让产品成为视觉中心）+ 产品本身的材质色 + 1 个 UI 强调色（电光蓝 / 霓虹橙） |
+| **字体** | 极细 Sans（Inter 300 / Roboto 300）用于大标题，等宽字体用于技术参数，全部小写或 sentence case |
+| **排版节奏** | 产品占 60-80% 屏幕空间，文字信息以 HUD 浮层形式出现在边缘；参数用等宽数字 + 单位 |
+| **材质** | PBR 物理渲染材质（金属/车漆/玻璃/织物），环境贴图反射（RoomEnvironment），实时阴影 |
+| **布局** | 画布优先——WebGL Canvas 占满全屏，HTML UI 作为 HUD 叠加在边缘；控制面板在底部或侧边 |
+
+**内容结构**
+```
+1. Hero：全屏 3D 产品模型（自动缓慢旋转）+ 产品名大字 + 1 行 slogan
+2. 360° 查看：鼠标拖拽旋转产品，滚轮缩放，双击重置视角
+3. 颜色/材质切换：底部色块按钮，点击切换产品材质（车漆颜色 / 织物纹理）
+4. 特性拆解：点击产品某部位（如车灯/轮毂），弹出该部位的技术参数浮层
+5. 场景切换：白天/夜晚/展厅 三种环境光照切换
+6. CTA：预约试驾 / 立即购买 / 了解更多 —— 大按钮，磁吸效果
+7. Footer：极简，品牌 logo + 社交链接
+```
+
+**适用行业**：汽车、消费电子、家具、珠宝、工业设备、任何需要"看到实物感"的产品
+
+**技术栈要求**：见 `project-rules/3d-product-showcase.md`
+
+---
+
 ## 交互签名库（Interaction Signatures）
 
 从获奖项目中提炼的**可复用交互单元**。每个单元包含：做什么、技术栈、典型参数。
@@ -236,6 +268,53 @@
 技术：ScrollTrigger.onUpdate() → write to CSS var or shader uniform
 参数：scrub: 0.5, map scrollY: 0→maxScrollY to param: start→end
 参考：Active Theory v5 全局 logo 变形
+```
+
+### 3D 产品展示类 3D PRODUCT SHOWCASE
+
+#### IS-16：Orbit 360° Viewer（轨道 360° 查看器）
+```
+效果：产品模型在屏幕中央，用户可拖拽旋转、滚轮缩放、双击重置视角
+适用：汽车、手机、家具、珠宝等任何需要"看到实物感"的产品
+技术：Three.js OrbitControls + 限制垂直角度(minPolarAngle/maxPolarAngle) + 阻尼效果(enableDamping)
+参数：minPolarAngle 0.5, maxPolarAngle 1.35, enableDamping true, zoomSpeed 1, enablePan false
+参考：小米 SU7 官网 (gamemcu.com/su7) / Apple Vision Pro 产品页
+```
+
+#### IS-17：Material Color Switcher（材质颜色切换）
+```
+效果：底部一排色块按钮，点击后产品材质平滑过渡到新颜色（车漆/织物/金属）
+适用：汽车配色、手机配色、家具面料选择
+技术：Three.js MeshStandardMaterial.color.lerp() + GSAP 动画过渡 + 环境贴图同步切换
+参数：过渡 duration 0.6s, power2.inOut, 同时切换 3 个材质属性(color/roughness/metalness)
+参考：小米 SU7 官网配色切换 / 蔚来 ET5 官网
+```
+
+#### IS-18：Hotspot Annotation（热点标注）
+```
+效果：产品上有几个闪烁的小圆点，hover/点击后弹出该部位的技术参数浮层
+适用：产品特性拆解、技术参数展示
+技术：Three.js Raycaster 检测鼠标与模型交点 → 在交点位置放置 HTML 浮层(absolute定位) → GSAP 淡入
+参数：浮层延迟 0.2s 出现，pointer-events: none 默认，hover 时变为 auto
+参考：Apple 产品页特性标注 / 汽车官网配置器
+```
+
+#### IS-19：Environment Map Switch（环境光照切换）
+```
+效果：白天/夜晚/展厅 三种环境光照一键切换，产品反射实时变化
+适用：展示产品在不同场景下的外观
+技术：Three.js PMREMGenerator + CubeTexture 环境贴图 + FBO 离屏渲染混合两个 cubemap + GSAP 过渡 uWeight
+参数：3 套 HDR/EXR 环境贴图，过渡 duration 1.5s, power2.inOut
+参考：小米 SU7 官网场景切换 / 3D 产品配置器
+```
+
+#### IS-20：Reflective Ground（反射地面）
+```
+效果：产品下方有一块"镜面"地面，反射出产品的倒影，带轻微模糊和 Fresnel 衰减
+适用：高端产品展示、汽车、珠宝
+技术：自定义 ShaderMaterial — 反射向量计算 + 法线贴图粗糙度 + Fresnel 混合 + 离屏渲染反射贴图
+参数：roughness 0.15, fresnel power 2.0, reflectivity 0.8
+参考：小米 SU7 官网地面 / 几乎所有汽车 3D 展示
 ```
 
 ---
