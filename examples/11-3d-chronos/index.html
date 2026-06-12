@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRONOS X — The Future on Your Wrist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS RESET & BASE ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0A0A0F;
+  color: #E8E8EC;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ===== LOADING SCREEN ===== */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: #0A0A0F;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1.2s cubic-bezier(0.4,0,0.2,1), visibility 1.2s;
+}
+#loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-brand {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  letter-spacing: 0.35em;
+  color: #E8E8EC;
+  margin-bottom: 2rem;
+}
+.loader-gear {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, #00D4FF 60deg, transparent 120deg, #00D4FF 180deg, transparent 240deg, #00D4FF 300deg, transparent 360deg);
+  animation: gearSpin 2s linear infinite;
+  position: relative;
+  margin-bottom: 2rem;
+}
+.loader-gear::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  background: #0A0A0F;
+}
+.loader-gear::after {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,212,255,0.3);
+}
+@keyframes gearSpin {
+  to { transform: rotate(360deg); }
+}
+.loader-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(232,232,236,0.5);
+  min-height: 1.2em;
+}
+.loader-ring {
+  width: 120px;
+  height: 120px;
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(232,232,236,0.08);
+}
+.loader-ring-progress {
+  width: 120px;
+  height: 120px;
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--accent, #00D4FF);
+  transition: transform 0.3s ease-out;
+}
+.loader-ring-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== CUSTOM CURSOR ===== */
+.cursor-crosshair {
+  position: fixed;
+  top: 0; left: 0;
+  width: 40px; height: 40px;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s, border-radius 0.3s;
+}
+.cursor-crosshair::before, .cursor-crosshair::after {
+  content: '';
+  position: absolute;
+  background: var(--accent, #00D4FF);
+}
+.cursor-crosshair::before {
+  width: 1px; height: 16px;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+.cursor-crosshair::after {
+  width: 16px; height: 1px;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+.cursor-crosshair.hover {
+  width: 48px; height: 48px;
+  border: 1px solid var(--accent, #00D4FF);
+  border-radius: 50%;
+}
+.cursor-crosshair.hover::before, .cursor-crosshair.hover::after {
+  opacity: 0;
+}
+
+/* ===== CSS VARIABLES ===== */
+:root {
+  --accent: #00D4FF;
+  --accent-rgb: 0, 212, 255;
+  --bg: #0A0A0F;
+  --text: #E8E8EC;
+}
+
+/* ===== SECTIONS ===== */
+.section {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ===== HERO ===== */
+.hero-canvas-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+}
+.hero-logo {
+  position: absolute;
+  top: 2rem; left: 2rem;
+  z-index: 3;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.875rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #E8E8EC;
+  pointer-events: auto;
+}
+.hero-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+.hero-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(232,232,236,0.6);
+}
+.hero-materials {
+  position: absolute;
+  bottom: 2rem; right: 2rem;
+  z-index: 3;
+  display: flex;
+  gap: 1rem;
+  pointer-events: auto;
+}
+.material-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(232,232,236,0.2);
+  cursor: none;
+  position: relative;
+  transition: border-color 0.3s;
+  background: none;
+}
+.material-btn.active { border-color: var(--accent, #00D4FF); box-shadow: 0 0 12px rgba(var(--accent-rgb),0.4); }
+.material-btn[data-material="titanium"] { background: #C0C0C0; }
+.material-btn[data-material="ceramic"] { background: #F5F5F5; }
+.material-btn[data-material="carbon"] { background: #1A1A1A; border-color: rgba(232,232,236,0.4); }
+.hero-scroll {
+  position: absolute;
+  bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(232,232,236,0.4);
+  animation: bounce 2s infinite;
+  pointer-events: none;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+/* ===== 360 VIEWER ===== */
+.viewer-canvas-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.viewer-hint {
+  position: absolute;
+  bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(232,232,236,0.4);
+  pointer-events: none;
+}
+.hotspot {
+  position: absolute;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent, #00D4FF);
+  z-index: 4;
+  cursor: none;
+  animation: hotspotPulse 2s infinite;
+}
+@keyframes hotspotPulse {
+  0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.6); }
+  70% { box-shadow: 0 0 0 12px rgba(var(--accent-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+}
+.hotspot-tooltip {
+  position: absolute;
+  bottom: 28px; left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: rgba(10,10,15,0.95);
+  border: 1px solid rgba(var(--accent-rgb),0.3);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.hotspot:hover .hotspot-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* ===== SPECIFICATIONS ===== */
+.specs-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 2rem;
+  gap: 4rem;
+}
+.specs-canvas-wrap {
+  width: 40%;
+  aspect-ratio: 1;
+  position: relative;
+}
+.specs-list {
+  flex: 1;
+  list-style: none;
+}
+.specs-list li {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(0.75rem, 1.2vw, 0.9375rem);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(232,232,236,0.08);
+  display: flex;
+  justify-content: space-between;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.specs-label { color: rgba(232,232,236,0.5); text-transform: uppercase; letter-spacing: 0.1em; }
+.specs-value { color: var(--accent, #00D4FF); font-weight: 500; }
+
+/* ===== MATERIALS ===== */
+.materials-grid {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 2rem;
+  justify-content: center;
+}
+.material-card {
+  flex: 1;
+  max-width: 320px;
+  background: rgba(232,232,236,0.03);
+  border: 1px solid rgba(232,232,236,0.08);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.material-card.active {
+  border-color: var(--accent, #00D4FF);
+  box-shadow: 0 0 30px rgba(var(--accent-rgb),0.1);
+}
+.material-card h3 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+.material-card p {
+  font-size: 0.8125rem;
+  color: rgba(232,232,236,0.5);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+.material-card .price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.5rem;
+  color: var(--accent, #00D4FF);
+  font-weight: 500;
+}
+.material-swatch {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+  border: 2px solid rgba(232,232,236,0.15);
+}
+
+/* ===== FEATURES ===== */
+.features-grid {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0 2rem;
+  justify-content: center;
+}
+.feature-card {
+  flex: 1;
+  background: rgba(232,232,236,0.02);
+  border: 1px solid rgba(232,232,236,0.06);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  cursor: none;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.3s;
+}
+.feature-icon {
+  width: 56px; height: 56px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+}
+.feature-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--accent, #00D4FF);
+  border-radius: 12px;
+  animation: iconPulse 3s infinite;
+}
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.6; }
+}
+.feature-card h3 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+}
+.feature-card p {
+  font-size: 0.8125rem;
+  color: rgba(232,232,236,0.5);
+  line-height: 1.6;
+}
+
+/* ===== CTA ===== */
+.cta-wrap {
+  text-align: center;
+}
+.cta-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+.cta-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  color: var(--accent, #00D4FF);
+  font-weight: 500;
+  margin-bottom: 2rem;
+  display: inline-block;
+  min-width: 200px;
+}
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 3rem;
+  background: transparent;
+  border: 1px solid var(--accent, #00D4FF);
+  color: var(--accent, #00D4FF);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.875rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: none;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s;
+}
+.cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent, #00D4FF);
+  transform: translateX(-101%);
+  transition: transform 0.3s;
+  z-index: -1;
+}
+.cta-btn:hover { color: #0A0A0F; }
+.cta-btn:hover::before { transform: translateX(0); }
+
+/* ===== FOOTER ===== */
+.footer {
+  padding: 3rem 2rem;
+  text-align: center;
+  border-top: 1px solid rgba(232,232,236,0.06);
+}
+.footer-logo {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.875rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.footer-copy {
+  font-size: 0.6875rem;
+  color: rgba(232,232,236,0.3);
+  letter-spacing: 0.1em;
+}
+
+/* ===== AUDIO CONTROL ===== */
+.audio-control {
+  position: fixed;
+  bottom: 2rem; right: 2rem;
+  z-index: 100;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(232,232,236,0.15);
+  background: rgba(10,10,15,0.8);
+  backdrop-filter: blur(10px);
+  cursor: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s;
+}
+.audio-control:hover { border-color: var(--accent, #00D4FF); }
+.audio-knob {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(232,232,236,0.3);
+  position: relative;
+  transform: rotate(-135deg);
+  transition: transform 0.3s;
+}
+.audio-knob::after {
+  content: '';
+  position: absolute;
+  width: 2px; height: 8px;
+  background: var(--accent, #00D4FF);
+  top: 2px; left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ===== WEBGL FALLBACK ===== */
+#webgl-fallback {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #0A0A0F;
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 2rem;
+}
+#webgl-fallback.visible { display: flex; }
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+  body { cursor: auto; }
+  .cursor-crosshair { display: none; }
+  .specs-wrap { flex-direction: column; gap: 2rem; }
+  .specs-canvas-wrap { width: 80%; }
+  .materials-grid, .features-grid { flex-direction: column; align-items: center; }
+  .material-card, .feature-card { max-width: 100%; width: 100%; }
+  .hero-materials { bottom: 4rem; }
+  .hotspot { display: none; }
+  .viewer-hint { display: none; }
+  .hero-canvas-wrap, .viewer-canvas-wrap, .specs-canvas-wrap {
+    display: none;
+  }
+  .mobile-placeholder {
+    width: 80%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid rgba(232,232,236,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.625rem;
+    color: rgba(232,232,236,0.3);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+}
+@media (min-width: 769px) {
+  .mobile-placeholder { display: none; }
+}
+
+/* ===== UTILITY ===== */
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent, #00D4FF);
+  margin-bottom: 1.5rem;
+  display: block;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOADER ===== -->
+<div id="loader">
+  <div class="loader-brand">CHRONOS</div>
+  <div class="loader-ring-wrap">
+    <div class="loader-ring"></div>
+    <div class="loader-ring-progress" id="loaderRing"></div>
+    <div class="loader-gear" id="loaderGear"></div>
+  </div>
+  <div class="loader-text" id="loaderText"></div>
+</div>
+
+<!-- ===== CUSTOM CURSOR ===== -->
+<div class="cursor-crosshair" id="cursor"></div>
+
+<!-- ===== WEBGL FALLBACK ===== -->
+<div id="webgl-fallback">
+  <div class="loader-brand">CHRONOS</div>
+  <p style="color:rgba(232,232,236,0.5);font-size:0.875rem;margin-top:1rem;max-width:320px;line-height:1.6;">
+    您的浏览器不支持 WebGL，无法展示 3D 模型。<br>请使用现代浏览器访问此页面。
+  </p>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="section" id="hero">
+  <div class="hero-canvas-wrap" id="heroCanvasWrap"></div>
+  <div class="mobile-placeholder">3D Model Unavailable</div>
+  <div class="hero-logo">CHRONOS X</div>
+  <div class="hero-content">
+    <h1 class="hero-title">CHRONOS X</h1>
+    <p class="hero-subtitle">The Future on Your Wrist</p>
+  </div>
+  <div class="hero-materials">
+    <button class="material-btn active" data-material="titanium" aria-label="Titanium"></button>
+    <button class="material-btn" data-material="ceramic" aria-label="Ceramic"></button>
+    <button class="material-btn" data-material="carbon" aria-label="Carbon"></button>
+  </div>
+  <div class="hero-scroll">&darr; Explore</div>
+</section>
+
+<!-- ===== 360 VIEWER ===== -->
+<section class="section" id="viewer">
+  <div class="viewer-canvas-wrap" id="viewerCanvasWrap"></div>
+  <div class="mobile-placeholder">3D Viewer Unavailable</div>
+  <div class="viewer-hint">Drag to rotate &middot; Scroll to zoom</div>
+  <div class="hotspot" id="hotspot1" style="top:35%;left:30%;">
+    <div class="hotspot-tooltip">Sapphire Crystal<br><span style="color:rgba(232,232,236,0.4)">9H Hardness</span></div>
+  </div>
+  <div class="hotspot" id="hotspot2" style="top:45%;left:65%;">
+    <div class="hotspot-tooltip">Titanium Case<br><span style="color:rgba(232,232,236,0.4)">Grade 5 Ti</span></div>
+  </div>
+  <div class="hotspot" id="hotspot3" style="top:60%;left:40%;">
+    <div class="hotspot-tooltip">Heart Rate Sensor<br><span style="color:rgba(232,232,236,0.4)">PPG + ECG</span></div>
+  </div>
+  <div class="hotspot" id="hotspot4" style="top:70%;left:55%;">
+    <div class="hotspot-tooltip">Wireless Charging<br><span style="color:rgba(232,232,236,0.4)">Qi Compatible</span></div>
+  </div>
+</section>
+
+<!-- ===== SPECIFICATIONS ===== -->
+<section class="section" id="specs">
+  <div class="specs-wrap">
+    <div class="specs-canvas-wrap" id="specsCanvasWrap"></div>
+    <div class="mobile-placeholder">3D Model Unavailable</div>
+    <div>
+      <span class="section-label">Specifications</span>
+      <ul class="specs-list" id="specsList">
+        <li><span class="specs-label">Display</span><span class="specs-value">1.9" AMOLED 454&times;454</span></li>
+        <li><span class="specs-label">Processor</span><span class="specs-value">CHRONOS-N1 Dual-Core</span></li>
+        <li><span class="specs-label">Battery</span><span class="specs-value">72 HOURS</span></li>
+        <li><span class="specs-label">Water Res</span><span class="specs-value">10 ATM</span></li>
+        <li><span class="specs-label">Weight</span><span class="specs-value">45g</span></li>
+        <li><span class="specs-label">Connectivity</span><span class="specs-value">BT 5.3 / NFC / GPS</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MATERIALS ===== -->
+<section class="section" id="materials">
+  <div>
+    <span class="section-label" style="text-align:center;display:block;margin-bottom:2rem;">Materials</span>
+    <div class="materials-grid">
+      <div class="material-card active" data-material="titanium">
+        <div class="material-swatch" style="background:#C0C0C0;"></div>
+        <h3>Titanium</h3>
+        <p>Aerospace-grade titanium with DLC coating. Ultra-light, ultra-strong.</p>
+        <div class="price">$799</div>
+      </div>
+      <div class="material-card" data-material="ceramic">
+        <div class="material-swatch" style="background:#F5F5F5;"></div>
+        <h3>Ceramic White</h3>
+        <p>High-tech ceramic, scratch-proof and hypoallergenic.</p>
+        <div class="price">$849</div>
+      </div>
+      <div class="material-card" data-material="carbon">
+        <div class="material-swatch" style="background:#1A1A1A;border-color:rgba(232,232,236,0.3);"></div>
+        <h3>Carbon Fiber</h3>
+        <p>Forged carbon composite. Motorsport-inspired aesthetics.</p>
+        <div class="price">$899</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="section" id="features">
+  <div>
+    <span class="section-label" style="text-align:center;display:block;margin-bottom:2rem;">Features</span>
+    <div class="features-grid">
+      <div class="feature-card" data-tilt>
+        <div class="feature-icon"></div>
+        <h3>Always-On Display</h3>
+        <p>1.9" AMOLED with 2000 nits peak brightness. Readable in direct sunlight.</p>
+      </div>
+      <div class="feature-card" data-tilt>
+        <div class="feature-icon"></div>
+        <h3>Health Monitoring</h3>
+        <p>24/7 heart rate, blood oxygen, ECG, and sleep tracking with clinical precision.</p>
+      </div>
+      <div class="feature-card" data-tilt>
+        <div class="feature-icon"></div>
+        <h3>72-Hour Battery</h3>
+        <p>Dual-core N1 processor optimized for power efficiency. Charge once, run for days.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA + FOOTER ===== -->
+<section class="section" id="cta" style="min-height:70vh;">
+  <div class="cta-wrap">
+    <h2 class="cta-title">Time to Upgrade</h2>
+    <div class="cta-price" id="ctaPrice">$799</div>
+    <button class="cta-btn" id="preorderBtn">Pre-order Now</button>
+  </div>
+</section>
+<footer class="footer">
+  <div class="footer-logo">CHRONOS</div>
+  <div class="footer-copy">&copy; 2026 CHRONOS Industries. All rights reserved.</div>
+</footer>
+
+<!-- ===== AUDIO CONTROL ===== -->
+<div class="audio-control" id="audioControl" title="Volume">
+  <div class="audio-knob" id="audioKnob"></div>
+</div>
+
+<!-- ===== SCRIPTS ===== -->
+<script type="module">
+import * as THREE from 'https://esm.sh/three@0.160.0';
+import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from 'https://esm.sh/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
+import gsap from 'https://esm.sh/gsap@3.12.5';
+import { ScrollTrigger } from 'https://esm.sh/gsap@3.12.5/ScrollTrigger.js';
+
+gsap.registerPlugin(ScrollTrigger);
+
+/* ================================
+   CONFIG & STATE
+   ================================ */
+const MATERIALS = {
+  titanium: {
+    bandColor: 0xC0C0C0,
+    accent: '#00D4FF',
+    accentRgb: '0, 212, 255',
+    bgTint: '#0A0A0F',
+    price: '$799'
+  },
+  ceramic: {
+    bandColor: 0xF5F5F5,
+    accent: '#FF6B35',
+    accentRgb: '255, 107, 53',
+    bgTint: '#0F0A0A',
+    price: '$849'
+  },
+  carbon: {
+    bandColor: 0x1A1A1A,
+    accent: '#00FF88',
+    accentRgb: '0, 255, 136',
+    bgTint: '#050505',
+    price: '$899'
+  }
+};
+
+let currentMaterial = 'titanium';
+let audioCtx = null;
+let masterGain = null;
+let tickOsc = null;
+let tickGain = null;
+let gearOsc = null;
+let gearGain = null;
+let audioStarted = false;
+let volumeLevel = 0.5;
+
+/* ================================
+   WEBGL DETECT
+   ================================ */
+function webglAvailable() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+  } catch (e) { return false; }
+}
+const isMobile = window.innerWidth <= 768;
+const hasWebGL = webglAvailable() && !isMobile;
+if (!hasWebGL) {
+  document.getElementById('webgl-fallback').classList.add('visible');
+}
+
+/* ================================
+   AUDIO ENGINE
+   ================================ */
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = volumeLevel;
+  masterGain.connect(audioCtx.destination);
+
+  // Tick-tock: low freq short pulse every 1s
+  tickGain = audioCtx.createGain();
+  tickGain.gain.value = 0;
+  tickGain.connect(masterGain);
+
+  function scheduleTick() {
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = 800;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.08, now + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    osc.connect(g);
+    g.connect(tickGain);
+    osc.start(now);
+    osc.stop(now + 0.1);
+    setTimeout(scheduleTick, 1000);
+  }
+  scheduleTick();
+
+  // Gear noise: sawtooth + lowpass, random bursts
+  gearGain = audioCtx.createGain();
+  gearGain.gain.value = 0;
+  gearGain.connect(masterGain);
+  gearOsc = audioCtx.createOscillator();
+  gearOsc.type = 'sawtooth';
+  gearOsc.frequency.value = 60;
+  const gearFilter = audioCtx.createBiquadFilter();
+  gearFilter.type = 'lowpass';
+  gearFilter.frequency.value = 400;
+  gearOsc.connect(gearFilter);
+  gearFilter.connect(gearGain);
+  gearOsc.start();
+
+  function randomGear() {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const dur = 0.1 + Math.random() * 0.3;
+    gearGain.gain.cancelScheduledValues(now);
+    gearGain.gain.setValueAtTime(0, now);
+    gearGain.gain.linearRampToValueAtTime(0.03 + Math.random() * 0.04, now + 0.02);
+    gearGain.gain.linearRampToValueAtTime(0, now + dur);
+    gearOsc.frequency.setValueAtTime(40 + Math.random() * 80, now);
+    setTimeout(randomGear, 500 + Math.random() * 2000);
+  }
+  randomGear();
+
+  // Fade in
+  masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(volumeLevel, audioCtx.currentTime + 2);
+}
+
+function playClickSound() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(1200, now);
+  osc.frequency.exponentialRampToValueAtTime(600, now + 0.05);
+  g.gain.setValueAtTime(0.1, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+  osc.connect(g);
+  g.connect(masterGain);
+  osc.start(now);
+  osc.stop(now + 0.06);
+}
+
+function playSwitchSound() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(200, now);
+  osc.frequency.linearRampToValueAtTime(800, now + 0.15);
+  filter.type = 'highpass';
+  filter.frequency.value = 300;
+  g.gain.setValueAtTime(0.06, now);
+  g.gain.linearRampToValueAtTime(0, now + 0.15);
+  osc.connect(filter);
+  filter.connect(g);
+  g.connect(masterGain);
+  osc.start(now);
+  osc.stop(now + 0.16);
+}
+
+/* ================================
+   LOADER
+   ================================ */
+const loaderEl = document.getElementById('loader');
+const loaderText = document.getElementById('loaderText');
+const loaderRing = document.getElementById('loaderRing');
+const loaderGear = document.getElementById('loaderGear');
+const loadMsg = 'CALIBRATING SYSTEMS...';
+let loadIdx = 0;
+
+function typeLoader() {
+  if (loadIdx <= loadMsg.length) {
+    loaderText.textContent = loadMsg.slice(0, loadIdx);
+    loadIdx++;
+    setTimeout(typeLoader, 60);
+  }
+}
+typeLoader();
+
+let loadProgress = 0;
+function updateLoaderProgress(p) {
+  loadProgress = p;
+  const rot = -90 + (p * 360);
+  loaderRing.style.transform = `rotate(${rot}deg)`;
+}
+
+/* ================================
+   THREE.JS WATCH MODEL
+   ================================ */
+let heroScene, heroCamera, heroRenderer, heroWatch;
+let viewerScene, viewerCamera, viewerRenderer, viewerWatch, viewerControls;
+let specsScene, specsCamera, specsRenderer, specsWatch;
+let clock = new THREE.Clock();
+
+function createWatchModel(materialKey = 'titanium') {
+  const group = new THREE.Group();
+  const mat = MATERIALS[materialKey];
+
+  // Case (thin cylinder)
+  const caseGeo = new THREE.CylinderGeometry(1.6, 1.6, 0.35, 64);
+  const caseMat = new THREE.MeshStandardMaterial({
+    color: 0x888888,
+    metalness: 0.9,
+    roughness: 0.1,
+  });
+  const caseMesh = new THREE.Mesh(caseGeo, caseMat);
+  caseMesh.rotation.x = Math.PI / 2;
+  group.add(caseMesh);
+
+  // Case rim
+  const rimGeo = new THREE.TorusGeometry(1.6, 0.08, 16, 64);
+  const rimMat = new THREE.MeshStandardMaterial({
+    color: 0xAAAAAA,
+    metalness: 0.95,
+    roughness: 0.05,
+  });
+  const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+  group.add(rimMesh);
+
+  // Dial (circle)
+  const dialGeo = new THREE.CircleGeometry(1.45, 64);
+  const dialMat = new THREE.MeshStandardMaterial({
+    color: 0x0A0A0F,
+    metalness: 0.2,
+    roughness: 0.8,
+  });
+  const dialMesh = new THREE.Mesh(dialGeo, dialMat);
+  dialMesh.position.z = 0.18;
+  group.add(dialMesh);
+
+  // Hour markers (thin rectangles)
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2;
+    const markerGeo = new THREE.BoxGeometry(0.06, 0.18, 0.02);
+    const markerMat = new THREE.MeshStandardMaterial({
+      color: 0xCCCCCC,
+      metalness: 0.8,
+      roughness: 0.2,
+    });
+    const marker = new THREE.Mesh(markerGeo, markerMat);
+    const r = 1.2;
+    marker.position.set(Math.cos(angle) * r, Math.sin(angle) * r, 0.2);
+    marker.rotation.z = angle - Math.PI / 2;
+    group.add(marker);
+  }
+
+  // Hands
+  const handMat = new THREE.MeshStandardMaterial({ color: 0xE8E8EC, metalness: 0.5, roughness: 0.3 });
+  const accentHandMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(mat.accent), metalness: 0.5, roughness: 0.3 });
+
+  // Hour hand
+  const hourHandGeo = new THREE.BoxGeometry(0.08, 0.9, 0.03);
+  hourHandGeo.translate(0, 0.35, 0);
+  const hourHand = new THREE.Mesh(hourHandGeo, handMat);
+  hourHand.position.z = 0.22;
+  hourHand.name = 'hourHand';
+  group.add(hourHand);
+
+  // Minute hand
+  const minuteHandGeo = new THREE.BoxGeometry(0.06, 1.2, 0.03);
+  minuteHandGeo.translate(0, 0.5, 0);
+  const minuteHand = new THREE.Mesh(minuteHandGeo, handMat);
+  minuteHand.position.z = 0.24;
+  minuteHand.name = 'minuteHand';
+  group.add(minuteHand);
+
+  // Second hand
+  const secondHandGeo = new THREE.BoxGeometry(0.03, 1.3, 0.02);
+  secondHandGeo.translate(0, 0.3, 0);
+  const secondHand = new THREE.Mesh(secondHandGeo, accentHandMat);
+  secondHand.position.z = 0.26;
+  secondHand.name = 'secondHand';
+  group.add(secondHand);
+
+  // Center cap
+  const capGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.05, 16);
+  const capMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.9, roughness: 0.1 });
+  const capMesh = new THREE.Mesh(capGeo, capMat);
+  capMesh.rotation.x = Math.PI / 2;
+  capMesh.position.z = 0.28;
+  group.add(capMesh);
+
+  // Crown (small cylinder on side)
+  const crownGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.15, 16);
+  const crownMat = new THREE.MeshStandardMaterial({ color: 0xAAAAAA, metalness: 0.9, roughness: 0.15 });
+  const crownMesh = new THREE.Mesh(crownGeo, crownMat);
+  crownMesh.rotation.z = Math.PI / 2;
+  crownMesh.position.set(1.72, 0, 0);
+  group.add(crownMesh);
+
+  // Band (torus segments)
+  const bandColor = mat.bandColor;
+  const bandMat = new THREE.MeshStandardMaterial({
+    color: bandColor,
+    metalness: materialKey === 'titanium' ? 0.8 : 0.3,
+    roughness: materialKey === 'titanium' ? 0.2 : 0.6,
+  });
+
+  // Upper band
+  const bandGeo1 = new THREE.TorusGeometry(2.2, 0.35, 12, 32, Math.PI * 0.6);
+  const band1 = new THREE.Mesh(bandGeo1, bandMat);
+  band1.rotation.z = Math.PI * 0.7;
+  band1.position.y = 1.4;
+  band1.name = 'band';
+  group.add(band1);
+
+  // Lower band
+  const bandGeo2 = new THREE.TorusGeometry(2.2, 0.35, 12, 32, Math.PI * 0.6);
+  const band2 = new THREE.Mesh(bandGeo2, bandMat);
+  band2.rotation.z = -Math.PI * 0.7 - Math.PI;
+  band2.position.y = -1.4;
+  band2.name = 'band';
+  group.add(band2);
+
+  // Band links detail (small boxes)
+  for (let i = 0; i < 8; i++) {
+    const linkGeo = new THREE.BoxGeometry(0.5, 0.08, 0.6);
+    const linkMat = new THREE.MeshStandardMaterial({
+      color: bandColor,
+      metalness: materialKey === 'titanium' ? 0.8 : 0.3,
+      roughness: materialKey === 'titanium' ? 0.2 : 0.6,
+    });
+    const link1 = new THREE.Mesh(linkGeo, linkMat);
+    const a1 = (i / 8) * Math.PI * 0.5 + Math.PI * 0.55;
+    link1.position.set(Math.cos(a1) * 2.2, Math.sin(a1) * 2.2 + 1.4, 0);
+    link1.rotation.z = a1;
+    link1.name = 'band';
+    group.add(link1);
+
+    const link2 = new THREE.Mesh(linkGeo, linkMat);
+    const a2 = -(i / 8) * Math.PI * 0.5 - Math.PI * 0.55;
+    link2.position.set(Math.cos(a2) * 2.2, Math.sin(a2) * 2.2 - 1.4, 0);
+    link2.rotation.z = a2;
+    link2.name = 'band';
+    group.add(link2);
+  }
+
+  return group;
+}
+
+function updateWatchHands(watchGroup) {
+  const now = new Date();
+  const h = now.getHours() % 12;
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+  const ms = now.getMilliseconds();
+
+  const hourHand = watchGroup.getObjectByName('hourHand');
+  const minuteHand = watchGroup.getObjectByName('minuteHand');
+  const secondHand = watchGroup.getObjectByName('secondHand');
+
+  if (hourHand) hourHand.rotation.z = -((h + m / 60) / 12) * Math.PI * 2;
+  if (minuteHand) minuteHand.rotation.z = -((m + s / 60) / 60) * Math.PI * 2;
+  if (secondHand) secondHand.rotation.z = -((s + ms / 1000) / 60) * Math.PI * 2;
+}
+
+function createReflectiveGround() {
+  const geo = new THREE.PlaneGeometry(20, 20);
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0x0A0A0F,
+    metalness: 0.6,
+    roughness: 0.2,
+    transparent: true,
+    opacity: 0.4,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = -3.5;
+  return mesh;
+}
+
+function initHeroScene() {
+  const wrap = document.getElementById('heroCanvasWrap');
+  if (!wrap || !hasWebGL) return;
+
+  heroScene = new THREE.Scene();
+  heroCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+  heroCamera.position.set(0, 0, 7);
+
+  heroRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  heroRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+  heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  heroRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  heroRenderer.toneMappingExposure = 1.0;
+  wrap.appendChild(heroRenderer.domElement);
+
+  const pmremGenerator = new THREE.PMREMGenerator(heroRenderer);
+  heroScene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+  heroScene.add(ambient);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  dirLight.position.set(5, 5, 5);
+  heroScene.add(dirLight);
+  const pointLight = new THREE.PointLight(0x00D4FF, 2, 10);
+  pointLight.position.set(-3, 2, 3);
+  heroScene.add(pointLight);
+
+  heroWatch = createWatchModel('titanium');
+  heroScene.add(heroWatch);
+  heroScene.add(createReflectiveGround());
+}
+
+function initViewerScene() {
+  const wrap = document.getElementById('viewerCanvasWrap');
+  if (!wrap || !hasWebGL) return;
+
+  viewerScene = new THREE.Scene();
+  viewerCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+  viewerCamera.position.set(0, 0, 6);
+
+  viewerRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  viewerRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+  viewerRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  viewerRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  viewerRenderer.toneMappingExposure = 1.0;
+  wrap.appendChild(viewerRenderer.domElement);
+
+  const pmremGenerator = new THREE.PMREMGenerator(viewerRenderer);
+  viewerScene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+  viewerScene.add(ambient);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  dirLight.position.set(5, 5, 5);
+  viewerScene.add(dirLight);
+  const pointLight = new THREE.PointLight(0x00D4FF, 2, 10);
+  pointLight.position.set(-3, 2, 3);
+  viewerScene.add(pointLight);
+
+  viewerWatch = createWatchModel('titanium');
+  viewerScene.add(viewerWatch);
+  viewerScene.add(createReflectiveGround());
+
+  viewerControls = new OrbitControls(viewerCamera, viewerRenderer.domElement);
+  viewerControls.enableDamping = true;
+  viewerControls.dampingFactor = 0.05;
+  viewerControls.minDistance = 3;
+  viewerControls.maxDistance = 10;
+}
+
+function initSpecsScene() {
+  const wrap = document.getElementById('specsCanvasWrap');
+  if (!wrap || !hasWebGL) return;
+
+  specsScene = new THREE.Scene();
+  specsCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+  specsCamera.position.set(0, 0, 6);
+
+  specsRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  specsRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+  specsRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  specsRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  specsRenderer.toneMappingExposure = 1.0;
+  wrap.appendChild(specsRenderer.domElement);
+
+  const pmremGenerator = new THREE.PMREMGenerator(specsRenderer);
+  specsScene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+  specsScene.add(ambient);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  dirLight.position.set(5, 5, 5);
+  specsScene.add(dirLight);
+
+  specsWatch = createWatchModel('titanium');
+  specsWatch.scale.set(0.8, 0.8, 0.8);
+  specsScene.add(specsWatch);
+}
+
+/* ================================
+   ANIMATION LOOP
+   ================================ */
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+
+  if (heroWatch) {
+    heroWatch.rotation.y += delta * 0.3;
+    updateWatchHands(heroWatch);
+  }
+  if (viewerWatch) {
+    updateWatchHands(viewerWatch);
+    if (viewerControls) viewerControls.update();
+  }
+  if (specsWatch) {
+    specsWatch.rotation.y += delta * 0.2;
+    updateWatchHands(specsWatch);
+  }
+
+  if (heroRenderer && heroScene && heroCamera) heroRenderer.render(heroScene, heroCamera);
+  if (viewerRenderer && viewerScene && viewerCamera) viewerRenderer.render(viewerScene, viewerCamera);
+  if (specsRenderer && specsScene && specsCamera) specsRenderer.render(specsScene, specsCamera);
+}
+
+/* ================================
+   MATERIAL SWITCHING
+   ================================ */
+function switchMaterial(key) {
+  if (key === currentMaterial) return;
+  currentMaterial = key;
+  const mat = MATERIALS[key];
+
+  // UI accent color transition via GSAP
+  const root = document.documentElement;
+  gsap.to(root, {
+    '--accent': mat.accent,
+    '--accent-rgb': mat.accentRgb,
+    duration: 0.8,
+    ease: 'power2.out',
+    onUpdate: function() {
+      // Force repaint of CSS vars
+      root.style.setProperty('--accent', gsap.getProperty(root, '--accent'));
+    }
+  });
+
+  // Background subtle tint
+  gsap.to('body', {
+    backgroundColor: mat.bgTint,
+    duration: 0.8,
+    ease: 'power2.out'
+  });
+
+  // Update buttons
+  document.querySelectorAll('.material-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.material === key);
+  });
+  document.querySelectorAll('.material-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.material === key);
+  });
+
+  // Price roll animation
+  const priceEl = document.getElementById('ctaPrice');
+  gsap.to(priceEl, {
+    y: -20,
+    opacity: 0,
+    duration: 0.2,
+    onComplete: () => {
+      priceEl.textContent = mat.price;
+      gsap.fromTo(priceEl, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3 });
+    }
+  });
+
+  // Update 3D watch band materials
+  [heroWatch, viewerWatch, specsWatch].forEach(watch => {
+    if (!watch) return;
+    watch.traverse(child => {
+      if (child.name === 'band') {
+        gsap.to(child.material.color, {
+          r: new THREE.Color(mat.bandColor).r,
+          g: new THREE.Color(mat.bandColor).g,
+          b: new THREE.Color(mat.bandColor).b,
+          duration: 0.8,
+          ease: 'power2.out'
+        });
+        child.material.metalness = key === 'titanium' ? 0.8 : 0.3;
+        child.material.roughness = key === 'titanium' ? 0.2 : 0.6;
+      }
+    });
+    // Update second hand accent
+    const secondHand = watch.getObjectByName('secondHand');
+    if (secondHand) {
+      gsap.to(secondHand.material.color, {
+        r: new THREE.Color(mat.accent).r,
+        g: new THREE.Color(mat.accent).g,
+        b: new THREE.Color(mat.accent).b,
+        duration: 0.8,
+        ease: 'power2.out'
+      });
+    }
+  });
+
+  playSwitchSound();
+}
+
+/* ================================
+   EVENT LISTENERS
+   ================================ */
+document.querySelectorAll('.material-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!audioStarted) { initAudio(); audioStarted = true; }
+    playClickSound();
+    switchMaterial(btn.dataset.material);
+  });
+  btn.addEventListener('mouseenter', () => {
+    if (audioStarted) playClickSound();
+  });
+});
+
+document.querySelectorAll('.material-card').forEach(card => {
+  card.addEventListener('click', () => {
+    if (!audioStarted) { initAudio(); audioStarted = true; }
+    playClickSound();
+    switchMaterial(card.dataset.material);
+  });
+});
+
+document.getElementById('preorderBtn').addEventListener('click', () => {
+  if (!audioStarted) { initAudio(); audioStarted = true; }
+  playClickSound();
+  alert('Thank you for your interest! Pre-order coming soon.');
+});
+
+document.getElementById('preorderBtn').addEventListener('mouseenter', () => {
+  if (audioStarted) playClickSound();
+});
+
+// Audio control
+document.getElementById('audioControl').addEventListener('click', () => {
+  if (!audioCtx) { initAudio(); audioStarted = true; }
+  volumeLevel = volumeLevel === 0 ? 0.5 : 0;
+  if (masterGain) masterGain.gain.linearRampToValueAtTime(volumeLevel, audioCtx.currentTime + 0.2);
+  const knob = document.getElementById('audioKnob');
+  gsap.to(knob, { rotation: volumeLevel === 0 ? -135 : 0, duration: 0.3 });
+});
+
+// Custom cursor
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.08, ease: 'power2.out' });
+});
+document.querySelectorAll('button, .material-btn, .material-card, .feature-card, .cta-btn, .hotspot, .audio-control').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+});
+
+// 3D tilt on feature cards
+document.querySelectorAll('[data-tilt]').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    gsap.to(card, { rotationY: x * 10, rotationX: -y * 10, duration: 0.3 });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.5 });
+  });
+});
+
+// Resize
+window.addEventListener('resize', () => {
+  if (heroCamera && heroRenderer) {
+    const wrap = document.getElementById('heroCanvasWrap');
+    heroCamera.aspect = wrap.clientWidth / wrap.clientHeight;
+    heroCamera.updateProjectionMatrix();
+    heroRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+  }
+  if (viewerCamera && viewerRenderer) {
+    const wrap = document.getElementById('viewerCanvasWrap');
+    viewerCamera.aspect = wrap.clientWidth / wrap.clientHeight;
+    viewerCamera.updateProjectionMatrix();
+    viewerRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+  }
+  if (specsCamera && specsRenderer) {
+    const wrap = document.getElementById('specsCanvasWrap');
+    specsCamera.aspect = wrap.clientWidth / wrap.clientHeight;
+    specsCamera.updateProjectionMatrix();
+    specsRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+  }
+});
+
+/* ================================
+   SCROLL ANIMATIONS
+   ================================ */
+function initScrollAnimations() {
+  // Specs list stagger
+  gsap.to('#specsList li', {
+    scrollTrigger: {
+      trigger: '#specs',
+      start: 'top 60%',
+    },
+    opacity: 1,
+    y: 0,
+    stagger: 0.1,
+    duration: 0.6,
+    ease: 'power2.out'
+  });
+
+  // Feature cards
+  gsap.from('.feature-card', {
+    scrollTrigger: {
+      trigger: '#features',
+      start: 'top 60%',
+    },
+    y: 40,
+    opacity: 0,
+    stagger: 0.15,
+    duration: 0.8,
+    ease: 'power2.out'
+  });
+
+  // Material cards
+  gsap.from('.material-card', {
+    scrollTrigger: {
+      trigger: '#materials',
+      start: 'top 60%',
+    },
+    y: 40,
+    opacity: 0,
+    stagger: 0.15,
+    duration: 0.8,
+    ease: 'power2.out'
+  });
+
+  // CTA
+  gsap.from('.cta-title', {
+    scrollTrigger: {
+      trigger: '#cta',
+      start: 'top 60%',
+    },
+    y: 30,
+    opacity: 0,
+    duration: 0.8,
+    ease: 'power2.out'
+  });
+  gsap.from('.cta-price', {
+    scrollTrigger: {
+      trigger: '#cta',
+      start: 'top 55%',
+    },
+    y: 20,
+    opacity: 0,
+    duration: 0.6,
+    delay: 0.2,
+    ease: 'power2.out'
+  });
+  gsap.from('.cta-btn', {
+    scrollTrigger: {
+      trigger: '#cta',
+      start: 'top 50%',
+    },
+    y: 20,
+    opacity: 0,
+    duration: 0.6,
+    delay: 0.4,
+    ease: 'power2.out'
+  });
+}
+
+/* ================================
+   INIT
+   ================================ */
+async function init() {
+  updateLoaderProgress(0.1);
+
+  if (hasWebGL) {
+    initHeroScene();
+    updateLoaderProgress(0.4);
+    initViewerScene();
+    updateLoaderProgress(0.6);
+    initSpecsScene();
+    updateLoaderProgress(0.8);
+    animate();
+  }
+
+  updateLoaderProgress(1.0);
+
+  // Hide loader
+  setTimeout(() => {
+    gsap.to('#loaderGear', { scale: 8, opacity: 0, duration: 0.8, ease: 'power2.in' });
+    gsap.to('#loader', { opacity: 0, duration: 1, delay: 0.3, onComplete: () => {
+      document.getElementById('loader').classList.add('hidden');
+    }});
+
+    // Reveal sections
+    gsap.from('#hero .hero-content', { opacity: 0, y: 30, duration: 1, delay: 0.5 });
+    gsap.from('.hero-logo', { opacity: 0, x: -20, duration: 0.8, delay: 0.6 });
+    gsap.from('.hero-materials', { opacity: 0, x: 20, duration: 0.8, delay: 0.7 });
+    gsap.from('.hero-scroll', { opacity: 0, y: 10, duration: 0.6, delay: 1 });
+
+    initScrollAnimations();
+  }, 500);
+}
+
+// Start on user interaction for audio context policy
+document.addEventListener('click', () => {
+  if (!audioStarted) {
+    initAudio();
+    audioStarted = true;
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}, { once: true });
+
+init();
+</script>
+</body>
+</html>
