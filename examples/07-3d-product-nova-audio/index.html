@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVA Audio — NOVA Pro Wireless</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   CSS RESET & VARIABLES
+   ============================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0A0A0F;
+  --bg-secondary: #141419;
+  --text: #E8E8EC;
+  --text-muted: #6B6B75;
+  --accent: #00D4FF;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ============================================
+   WEBGL CANVAS
+   ============================================ */
+#webgl-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+/* ============================================
+   LOADING SCREEN
+   ============================================ */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#loading-screen .logo {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  letter-spacing: 0.3em;
+  color: var(--text);
+  margin-bottom: 2rem;
+}
+
+#loading-screen .bar-track {
+  width: 200px;
+  height: 2px;
+  background: var(--bg-secondary);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+#loading-screen .bar-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+/* ============================================
+   WEBGL FALLBACK
+   ============================================ */
+#webgl-fallback {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: var(--bg);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+#webgl-fallback h1 {
+  font-weight: 300;
+  font-size: clamp(2rem, 5vw, 4rem);
+  margin-bottom: 1rem;
+}
+
+#webgl-fallback p {
+  color: var(--text-muted);
+  max-width: 400px;
+  font-size: 0.95rem;
+}
+
+/* ============================================
+   HUD OVERLAY (shared)
+   ============================================ */
+.hud-overlay {
+  position: relative;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hud-overlay > * {
+  pointer-events: auto;
+}
+
+/* ============================================
+   SECTION 1: HERO
+   ============================================ */
+#section-hero {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hero-logo {
+  position: absolute;
+  top: clamp(1.5rem, 4vh, 3rem);
+  left: clamp(1.5rem, 4vw, 3rem);
+  font-weight: 300;
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text);
+  pointer-events: auto;
+}
+
+.hero-product-info {
+  position: absolute;
+  bottom: clamp(5rem, 12vh, 8rem);
+  right: clamp(1.5rem, 4vw, 3rem);
+  text-align: right;
+  pointer-events: auto;
+}
+
+.hero-product-info h2 {
+  font-weight: 300;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.hero-product-info .scroll-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  animation: pulse-fade 2s ease-in-out infinite;
+}
+
+@keyframes pulse-fade {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Color switcher in hero */
+.hero-color-switcher {
+  position: absolute;
+  bottom: clamp(1.5rem, 4vh, 3rem);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+  pointer-events: auto;
+}
+
+.color-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.15);
+  cursor: pointer;
+  transition: border-color 0.3s ease, transform 0.3s ease;
+  position: relative;
+}
+
+.color-btn:hover,
+.color-btn.active {
+  border-color: var(--accent);
+  transform: scale(1.15);
+}
+
+.color-btn.active::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  opacity: 0.5;
+}
+
+.color-btn[data-color="silver"] { background: #C0C0C0; }
+.color-btn[data-color="gray"]   { background: #2C2C2E; }
+.color-btn[data-color="blue"]   { background: #1B3A5C; }
+
+/* ============================================
+   SECTION 2: 360 VIEWER
+   ============================================ */
+#section-360 {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.viewer-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.viewer-hint.visible {
+  opacity: 1;
+}
+
+/* Hotspot annotations */
+.hotspots-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.hotspot {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.hotspot-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  position: relative;
+}
+
+.hotspot-dot::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  animation: hotspot-ping 2s ease-out infinite;
+}
+
+@keyframes hotspot-ping {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.hotspot-label {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.hotspot:hover .hotspot-label {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hotspot-label .label-title {
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.hotspot-label .label-desc {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+
+/* ============================================
+   SECTION 3: SPECIFICATIONS
+   ============================================ */
+#section-specs {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  padding: clamp(2rem, 5vh, 4rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+.specs-content {
+  margin-left: auto;
+  width: clamp(280px, 40vw, 480px);
+  pointer-events: auto;
+}
+
+.specs-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.specs-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.specs-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding-bottom: 0.75rem;
+}
+
+.specs-list .spec-key {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.specs-list .spec-value {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.specs-list .spec-value .num {
+  color: var(--accent);
+}
+
+/* ============================================
+   SECTION 4: COLORS
+   ============================================ */
+#section-colors {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 5vh, 4rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+.colors-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 3rem;
+  pointer-events: auto;
+}
+
+.color-cards {
+  display: flex;
+  gap: clamp(1rem, 3vw, 2rem);
+  pointer-events: auto;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.color-card {
+  width: clamp(160px, 22vw, 220px);
+  padding: 2rem 1.5rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: border-color 0.4s ease, background 0.4s ease, transform 0.3s ease;
+  text-align: center;
+}
+
+.color-card:hover,
+.color-card.active {
+  border-color: rgba(0, 212, 255, 0.3);
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-4px);
+}
+
+.color-card .swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  border: 2px solid rgba(255,255,255,0.1);
+}
+
+.color-card .color-name {
+  font-weight: 400;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.color-card .color-desc {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* ============================================
+   SECTION 5: CTA + FOOTER
+   ============================================ */
+#section-cta {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 5vh, 4rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+.cta-title {
+  font-weight: 300;
+  font-size: clamp(2rem, 5vw, 4rem);
+  text-align: center;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 3rem;
+  pointer-events: auto;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 60px;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.4s ease, color 0.4s ease, transform 0.3s ease, box-shadow 0.4s ease;
+  pointer-events: auto;
+  text-decoration: none;
+}
+
+.cta-button:hover {
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Footer */
+.site-footer {
+  position: relative;
+  z-index: 10;
+  padding: 2rem clamp(1.5rem, 4vw, 3rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  pointer-events: auto;
+}
+
+.site-footer .footer-logo {
+  font-weight: 300;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.site-footer .footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.site-footer .footer-links a {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.site-footer .footer-links a:hover {
+  color: var(--accent);
+}
+
+/* ============================================
+   RESPONSIVE: < 768px
+   ============================================ */
+@media (max-width: 768px) {
+  .hotspots-container {
+    display: none;
+  }
+
+  .hero-product-info {
+    text-align: center;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .specs-content {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .color-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .color-card {
+    width: 80%;
+    max-width: 280px;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+}
+
+/* ============================================
+   PREFERS-REDUCED-MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .hero-product-info .scroll-hint {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     LOADING SCREEN
+     ============================================ -->
+<div id="loading-screen">
+  <div class="logo">NOVA Audio</div>
+  <div class="bar-track">
+    <div class="bar-fill" id="loading-bar"></div>
+  </div>
+</div>
+
+<!-- ============================================
+     WEBGL FALLBACK
+     ============================================ -->
+<div id="webgl-fallback">
+  <h1>NOVA Pro</h1>
+  <p>Your browser does not support WebGL. Please try Chrome, Firefox, or Edge for the full 3D experience.</p>
+</div>
+
+<!-- ============================================
+     THREE.JS CANVAS (fixed background)
+     ============================================ -->
+<canvas id="webgl-canvas"></canvas>
+
+<!-- ============================================
+     SECTION 1: HERO
+     ============================================ -->
+<section id="section-hero">
+  <div class="hero-logo">NOVA Audio</div>
+
+  <div class="hero-product-info">
+    <h2>NOVA Pro &middot; Wireless</h2>
+    <div class="scroll-hint">Scroll to explore &darr;</div>
+  </div>
+
+  <div class="hero-color-switcher">
+    <button class="color-btn active" data-color="silver" aria-label="Lunar Silver"></button>
+    <button class="color-btn" data-color="gray" aria-label="Space Gray"></button>
+    <button class="color-btn" data-color="blue" aria-label="Midnight Blue"></button>
+  </div>
+</section>
+
+<!-- ============================================
+     SECTION 2: 360 VIEWER
+     ============================================ -->
+<section id="section-360">
+  <div class="viewer-hint" id="viewer-hint">Drag to rotate &middot; Scroll to zoom</div>
+
+  <div class="hotspots-container" id="hotspots-container">
+    <div class="hotspot" id="hotspot-driver">
+      <div class="hotspot-dot"></div>
+      <div class="hotspot-label">
+        <div class="label-title">40mm Custom Driver</div>
+        <div class="label-desc">Beryllium-coated diaphragm</div>
+      </div>
+    </div>
+    <div class="hotspot" id="hotspot-anc">
+      <div class="hotspot-dot"></div>
+      <div class="hotspot-label">
+        <div class="label-title">Active Noise Cancellation</div>
+        <div class="label-desc">Hybrid ANC with 6 microphones</div>
+      </div>
+    </div>
+    <div class="hotspot" id="hotspot-battery">
+      <div class="hotspot-dot"></div>
+      <div class="hotspot-label">
+        <div class="label-title">30h Battery Life</div>
+        <div class="label-desc">USB-C fast charging</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     SECTION 3: SPECIFICATIONS
+     ============================================ -->
+<section id="section-specs">
+  <div class="specs-content">
+    <div class="specs-label">Technical Specifications</div>
+    <ul class="specs-list">
+      <li>
+        <span class="spec-key">Driver</span>
+        <span class="spec-value"><span class="num">40</span>mm Beryllium</span>
+      </li>
+      <li>
+        <span class="spec-key">Frequency</span>
+        <span class="spec-value"><span class="num">4</span>Hz &ndash; <span class="num">40</span>kHz</span>
+      </li>
+      <li>
+        <span class="spec-key">Battery</span>
+        <span class="spec-value"><span class="num">30</span> hours</span>
+      </li>
+      <li>
+        <span class="spec-key">Weight</span>
+        <span class="spec-value"><span class="num">254</span>g</span>
+      </li>
+      <li>
+        <span class="spec-key">Bluetooth</span>
+        <span class="spec-value"><span class="num">5.3</span></span>
+      </li>
+      <li>
+        <span class="spec-key">ANC</span>
+        <span class="spec-value">Hybrid Active</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================
+     SECTION 4: COLORS
+     ============================================ -->
+<section id="section-colors">
+  <div class="colors-label">Available Finishes</div>
+  <div class="color-cards">
+    <div class="color-card active" data-color="silver">
+      <div class="swatch" style="background:#C0C0C0;"></div>
+      <div class="color-name">Lunar Silver</div>
+      <div class="color-desc">Brushed aluminum</div>
+    </div>
+    <div class="color-card" data-color="gray">
+      <div class="swatch" style="background:#2C2C2E;"></div>
+      <div class="color-name">Space Gray</div>
+      <div class="color-desc">Matte ceramic coat</div>
+    </div>
+    <div class="color-card" data-color="blue">
+      <div class="swatch" style="background:#1B3A5C;"></div>
+      <div class="color-name">Midnight Blue</div>
+      <div class="color-desc">Deep ocean metallic</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     SECTION 5: CTA + FOOTER
+     ============================================ -->
+<section id="section-cta">
+  <h2 class="cta-title">Experience Sound, Redefined</h2>
+  <a href="#" class="cta-button">Pre-order Now &mdash; $349</a>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-logo">NOVA Audio &copy; 2026</div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Support</a>
+  </div>
+</footer>
+
+<!-- ============================================
+     THREE.JS MODULE
+     ============================================ -->
+<script type="module">
+import * as THREE from 'https://esm.sh/three@0.163.0';
+import { OrbitControls } from 'https://esm.sh/three@0.163.0/examples/jsm/controls/OrbitControls.js';
+import gsap from 'https://esm.sh/gsap@3.12.5';
+
+// =============================================
+// GLOBALS
+// =============================================
+const EPS = 0.0001;
+let scene, camera, renderer, controls;
+let headphoneGroup;
+let earCupLeftMat, earCupRightMat, earPadMat, headbandMat, armMat;
+let groundMesh;
+let autoRotate = true;
+let currentSection = 0;
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile = window.innerWidth < 768;
+
+// Color presets
+const COLOR_PRESETS = {
+  silver: new THREE.Color(0xC0C0C0),
+  gray:   new THREE.Color(0x2C2C2E),
+  blue:   new THREE.Color(0x1B3A5C)
+};
+let currentColor = 'silver';
+
+// Section scroll thresholds (approximate vh)
+const SECTION_HEIGHT = window.innerHeight;
+
+// =============================================
+// WEBGL CHECK
+// =============================================
+function checkWebGL() {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    return !!gl;
+  } catch (e) {
+    return false;
+  }
+}
+
+if (!checkWebGL()) {
+  document.getElementById('webgl-fallback').style.display = 'flex';
+  document.getElementById('loading-screen').classList.add('hidden');
+  throw new Error('WebGL not supported');
+}
+
+// =============================================
+// LOADING SIMULATION
+// =============================================
+const loadingBar = document.getElementById('loading-bar');
+const loadingScreen = document.getElementById('loading-screen');
+
+function setLoadProgress(pct) {
+  loadingBar.style.width = pct + '%';
+}
+
+// =============================================
+// INIT SCENE
+// =============================================
+function initScene() {
+  setLoadProgress(10);
+
+  // Scene
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0A0A0F);
+  scene.fog = new THREE.FogExp2(0x0A0A0F, 0.08);
+
+  setLoadProgress(20);
+
+  // Renderer
+  const canvas = document.getElementById('webgl-canvas');
+  renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: false
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  setLoadProgress(30);
+
+  // Camera
+  camera = new THREE.PerspectiveCamera(
+    40,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+  );
+  camera.position.set(0, 1.2, 4.5);
+
+  setLoadProgress(40);
+
+  // Environment map (PMREMGenerator with simple procedural env)
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  pmremGenerator.compileEquirectangularShader();
+
+  // Create a simple room-like environment for reflections
+  const envScene = new THREE.Scene();
+  envScene.background = new THREE.Color(0x111118);
+
+  // Add some lights to the env scene for reflections
+  const envLight1 = new THREE.PointLight(0x00D4FF, 80, 20);
+  envLight1.position.set(5, 5, 5);
+  envScene.add(envLight1);
+
+  const envLight2 = new THREE.PointLight(0xFFFFFF, 40, 20);
+  envLight2.position.set(-5, 3, -3);
+  envScene.add(envLight2);
+
+  const envLight3 = new THREE.PointLight(0x4488FF, 30, 15);
+  envLight3.position.set(0, -3, 5);
+  envScene.add(envLight3);
+
+  // Add a ground plane for reflections
+  const envGround = new THREE.Mesh(
+    new THREE.PlaneGeometry(20, 20),
+    new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.5, metalness: 0.0 })
+  );
+  envGround.rotation.x = -Math.PI / 2;
+  envGround.position.y = -2;
+  envScene.add(envGround);
+
+  // Add some box geometry for varied reflections
+  const envBox = new THREE.Mesh(
+    new THREE.BoxGeometry(10, 8, 10),
+    new THREE.MeshStandardMaterial({ color: 0x0A0A10, roughness: 0.9, metalness: 0.0, side: THREE.BackSide })
+  );
+  envScene.add(envBox);
+
+  const envTexture = pmremGenerator.fromScene(envScene, 0.04).texture;
+  scene.environment = envTexture;
+  pmremGenerator.dispose();
+
+  setLoadProgress(50);
+
+  // Lights
+  const keyLight = new THREE.DirectionalLight(0xFFFFFF, 2.5);
+  keyLight.position.set(3, 5, 4);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(1024, 1024);
+  keyLight.shadow.camera.near = 0.1;
+  keyLight.shadow.camera.far = 20;
+  keyLight.shadow.camera.left = -3;
+  keyLight.shadow.camera.right = 3;
+  keyLight.shadow.camera.top = 3;
+  keyLight.shadow.camera.bottom = -3;
+  scene.add(keyLight);
+
+  const fillLight = new THREE.DirectionalLight(0x00D4FF, 0.8);
+  fillLight.position.set(-3, 2, -2);
+  scene.add(fillLight);
+
+  const rimLight = new THREE.PointLight(0x00D4FF, 1.5, 10);
+  rimLight.position.set(-2, 3, -3);
+  scene.add(rimLight);
+
+  const bottomFill = new THREE.PointLight(0x222244, 0.5, 8);
+  bottomFill.position.set(0, -2, 2);
+  scene.add(bottomFill);
+
+  setLoadProgress(60);
+
+  // OrbitControls (IS-16)
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.minPolarAngle = 0.5;
+  controls.maxPolarAngle = 1.35;
+  controls.enablePan = false;
+  controls.minDistance = 2;
+  controls.maxDistance = 8;
+  controls.enableZoom = true;
+  controls.zoomSpeed = 1.0;
+  controls.rotateSpeed = 0.8;
+  controls.enabled = false; // disabled in hero, enabled in 360 section
+
+  setLoadProgress(70);
+
+  // Build headphone
+  buildHeadphone();
+
+  setLoadProgress(85);
+
+  // Build reflective ground (IS-20)
+  buildReflectiveGround();
+
+  setLoadProgress(95);
+
+  // Resize handler
+  window.addEventListener('resize', onResize);
+}
+
+// =============================================
+// BUILD HEADPHONE MODEL (geometric / low-poly)
+// =============================================
+function buildHeadphone() {
+  headphoneGroup = new THREE.Group();
+
+  // Materials
+  const baseColor = COLOR_PRESETS.silver.clone();
+
+  earCupLeftMat = new THREE.MeshStandardMaterial({
+    color: baseColor.clone(),
+    metalness: 0.8,
+    roughness: 0.2,
+    envMapIntensity: 1.2
+  });
+
+  earCupRightMat = new THREE.MeshStandardMaterial({
+    color: baseColor.clone(),
+    metalness: 0.8,
+    roughness: 0.2,
+    envMapIntensity: 1.2
+  });
+
+  earPadMat = new THREE.MeshStandardMaterial({
+    color: 0x1A1A1E,
+    metalness: 0.1,
+    roughness: 0.8
+  });
+
+  headbandMat = new THREE.MeshStandardMaterial({
+    color: baseColor.clone(),
+    metalness: 0.7,
+    roughness: 0.25,
+    envMapIntensity: 1.0
+  });
+
+  armMat = new THREE.MeshStandardMaterial({
+    color: baseColor.clone(),
+    metalness: 0.6,
+    roughness: 0.3,
+    envMapIntensity: 1.0
+  });
+
+  const accentMat = new THREE.MeshStandardMaterial({
+    color: 0x00D4FF,
+    metalness: 0.5,
+    roughness: 0.3,
+    emissive: 0x00D4FF,
+    emissiveIntensity: 0.15
+  });
+
+  // ---- HEADBAND (TorusGeometry arc) ----
+  const headbandCurve = new THREE.TorusGeometry(
+    Math.max(EPS, 0.85),  // radius
+    Math.max(EPS, 0.045),  // tube
+    16,                     // radialSegments
+    64,                     // tubularSegments
+    Math.PI                 // arc (half circle)
+  );
+  const headband = new THREE.Mesh(headbandCurve, headbandMat);
+  headband.rotation.x = Math.PI; // flip so opening faces down
+  headband.position.y = 0.85;
+  headband.castShadow = true;
+  headphoneGroup.add(headband);
+
+  // Headband inner padding (thinner torus)
+  const headbandPadding = new THREE.Mesh(
+    new THREE.TorusGeometry(
+      Math.max(EPS, 0.82),
+      Math.max(EPS, 0.025),
+      12,
+      48,
+      Math.PI
+    ),
+    earPadMat
+  );
+  headbandPadding.rotation.x = Math.PI;
+  headbandPadding.position.y = 0.85;
+  headphoneGroup.add(headbandPadding);
+
+  // ---- LEFT EAR CUP ----
+  const earCupGroup_L = new THREE.Group();
+  earCupGroup_L.position.set(-0.95, 0.0, 0);
+
+  // Outer shell (flattened sphere)
+  const earCupOuter_L = new THREE.Mesh(
+    new THREE.SphereGeometry(Math.max(EPS, 0.52), 32, 32),
+    earCupLeftMat
+  );
+  earCupOuter_L.scale.set(1, 1, 0.55);
+  earCupOuter_L.castShadow = true;
+  earCupGroup_L.add(earCupOuter_L);
+
+  // Inner ear pad (torus)
+  const earPad_L = new THREE.Mesh(
+    new THREE.TorusGeometry(Math.max(EPS, 0.38), Math.max(EPS, 0.12), 16, 32),
+    earPadMat
+  );
+  earPad_L.position.z = 0.22;
+  earPad_L.rotation.y = Math.PI / 2;
+  earCupGroup_L.add(earPad_L);
+
+  // Accent ring on outer shell
+  const accentRing_L = new THREE.Mesh(
+    new THREE.TorusGeometry(Math.max(EPS, 0.42), Math.max(EPS, 0.012), 12, 48),
+    accentMat
+  );
+  accentRing_L.position.z = -0.2;
+  accentRing_L.rotation.y = Math.PI / 2;
+  earCupGroup_L.add(accentRing_L);
+
+  // Logo disc on outer
+  const logoDisc_L = new THREE.Mesh(
+    new THREE.CylinderGeometry(Math.max(EPS, 0.12), Math.max(EPS, 0.12), Math.max(EPS, 0.01), 24),
+    accentMat
+  );
+  logoDisc_L.rotation.x = Math.PI / 2;
+  logoDisc_L.position.z = -0.3;
+  earCupGroup_L.add(logoDisc_L);
+
+  headphoneGroup.add(earCupGroup_L);
+
+  // ---- RIGHT EAR CUP ----
+  const earCupGroup_R = new THREE.Group();
+  earCupGroup_R.position.set(0.95, 0.0, 0);
+
+  const earCupOuter_R = new THREE.Mesh(
+    new THREE.SphereGeometry(Math.max(EPS, 0.52), 32, 32),
+    earCupRightMat
+  );
+  earCupOuter_R.scale.set(1, 1, 0.55);
+  earCupOuter_R.castShadow = true;
+  earCupGroup_R.add(earCupOuter_R);
+
+  const earPad_R = new THREE.Mesh(
+    new THREE.TorusGeometry(Math.max(EPS, 0.38), Math.max(EPS, 0.12), 16, 32),
+    earPadMat
+  );
+  earPad_R.position.z = 0.22;
+  earPad_R.rotation.y = Math.PI / 2;
+  earCupGroup_R.add(earPad_R);
+
+  const accentRing_R = new THREE.Mesh(
+    new THREE.TorusGeometry(Math.max(EPS, 0.42), Math.max(EPS, 0.012), 12, 48),
+    accentMat
+  );
+  accentRing_R.position.z = -0.2;
+  accentRing_R.rotation.y = Math.PI / 2;
+  earCupGroup_R.add(accentRing_R);
+
+  const logoDisc_R = new THREE.Mesh(
+    new THREE.CylinderGeometry(Math.max(EPS, 0.12), Math.max(EPS, 0.12), Math.max(EPS, 0.01), 24),
+    accentMat
+  );
+  logoDisc_R.rotation.x = Math.PI / 2;
+  logoDisc_R.position.z = -0.3;
+  earCupGroup_R.add(logoDisc_R);
+
+  headphoneGroup.add(earCupGroup_R);
+
+  // ---- CONNECTING ARMS (left) ----
+  const arm_L = new THREE.Mesh(
+    new THREE.CylinderGeometry(Math.max(EPS, 0.025), Math.max(EPS, 0.025), Math.max(EPS, 0.45), 12),
+    armMat
+  );
+  arm_L.position.set(-0.85, 0.62, 0);
+  arm_L.rotation.z = 0.15;
+  arm_L.castShadow = true;
+  headphoneGroup.add(arm_L);
+
+  // ---- CONNECTING ARMS (right) ----
+  const arm_R = new THREE.Mesh(
+    new THREE.CylinderGeometry(Math.max(EPS, 0.025), Math.max(EPS, 0.025), Math.max(EPS, 0.45), 12),
+    armMat
+  );
+  arm_R.position.set(0.85, 0.62, 0);
+  arm_R.rotation.z = -0.15;
+  arm_R.castShadow = true;
+  headphoneGroup.add(arm_R);
+
+  // ---- HINGE JOINTS (small spheres at arm-cup connection) ----
+  const hinge_L = new THREE.Mesh(
+    new THREE.SphereGeometry(Math.max(EPS, 0.04), 12, 12),
+    armMat
+  );
+  hinge_L.position.set(-0.87, 0.4, 0);
+  headphoneGroup.add(hinge_L);
+
+  const hinge_R = new THREE.Mesh(
+    new THREE.SphereGeometry(Math.max(EPS, 0.04), 12, 12),
+    armMat
+  );
+  hinge_R.position.set(0.87, 0.4, 0);
+  headphoneGroup.add(hinge_R);
+
+  // Position the whole headphone
+  headphoneGroup.position.y = -0.2;
+  headphoneGroup.rotation.y = -0.3;
+  scene.add(headphoneGroup);
+}
+
+// =============================================
+// REFLECTIVE GROUND (IS-20 simplified)
+// =============================================
+function buildReflectiveGround() {
+  // Simplified reflective ground: semi-transparent mirror plane
+  const groundGeo = new THREE.PlaneGeometry(12, 12);
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x0A0A0F,
+    metalness: 0.95,
+    roughness: 0.05,
+    transparent: true,
+    opacity: 0.6,
+    envMapIntensity: 2.0
+  });
+  groundMesh = new THREE.Mesh(groundGeo, groundMat);
+  groundMesh.rotation.x = -Math.PI / 2;
+  groundMesh.position.y = -0.85;
+  groundMesh.receiveShadow = true;
+  scene.add(groundMesh);
+
+  // Subtle grid lines on ground
+  const gridHelper = new THREE.GridHelper(12, 24, 0x111118, 0x111118);
+  gridHelper.position.y = -0.84;
+  gridHelper.material.transparent = true;
+  gridHelper.material.opacity = 0.15;
+  scene.add(gridHelper);
+}
+
+// =============================================
+// COLOR SWITCHING (IS-17)
+// =============================================
+function switchColor(colorName) {
+  if (colorName === currentColor) return;
+  currentColor = colorName;
+  const targetColor = COLOR_PRESETS[colorName];
+
+  // GSAP lerp on material colors
+  gsap.to(earCupLeftMat.color, {
+    r: targetColor.r,
+    g: targetColor.g,
+    b: targetColor.b,
+    duration: 0.6,
+    ease: 'power2.inOut'
+  });
+
+  gsap.to(earCupRightMat.color, {
+    r: targetColor.r,
+    g: targetColor.g,
+    b: targetColor.b,
+    duration: 0.6,
+    ease: 'power2.inOut'
+  });
+
+  gsap.to(headbandMat.color, {
+    r: targetColor.r,
+    g: targetColor.g,
+    b: targetColor.b,
+    duration: 0.6,
+    ease: 'power2.inOut'
+  });
+
+  gsap.to(armMat.color, {
+    r: targetColor.r,
+    g: targetColor.g,
+    b: targetColor.b,
+    duration: 0.6,
+    ease: 'power2.inOut'
+  });
+
+  // Update UI active states
+  document.querySelectorAll('.color-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.color === colorName);
+  });
+  document.querySelectorAll('.color-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.color === colorName);
+  });
+}
+
+// =============================================
+// HOTSPOT POSITIONING (IS-18)
+// =============================================
+const hotspotData = [
+  { id: 'hotspot-driver',  localPos: new THREE.Vector3(-0.95, 0.0, 0.3) },
+  { id: 'hotspot-anc',     localPos: new THREE.Vector3(0.0, 0.85, 0.0) },
+  { id: 'hotspot-battery', localPos: new THREE.Vector3(0.95, 0.0, -0.3) }
+];
+
+function updateHotspotPositions() {
+  if (!headphoneGroup || isMobile) return;
+
+  const tempV = new THREE.Vector3();
+
+  hotspotData.forEach(hs => {
+    const el = document.getElementById(hs.id);
+    if (!el) return;
+
+    // Get world position of the hotspot point
+    tempV.copy(hs.localPos);
+    headphoneGroup.localToWorld(tempV);
+
+    // Project to screen
+    tempV.project(camera);
+
+    const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-tempV.y * 0.5 + 0.5) * window.innerHeight;
+
+    // Check if behind camera
+    if (tempV.z > 1) {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'block';
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+    }
+  });
+}
+
+// =============================================
+// SCROLL HANDLING
+// =============================================
+function onScroll() {
+  const scrollY = window.scrollY;
+  const vh = window.innerHeight;
+
+  // Determine current section
+  const newSection = Math.floor(scrollY / vh);
+  if (newSection !== currentSection) {
+    currentSection = newSection;
+    onSectionChange(currentSection);
+  }
+
+  // Viewer hint visibility
+  const hint = document.getElementById('viewer-hint');
+  if (hint) {
+    const inView = scrollY >= vh * 0.5 && scrollY < vh * 1.5;
+    hint.classList.toggle('visible', inView);
+  }
+}
+
+function onSectionChange(section) {
+  // Enable/disable OrbitControls
+  controls.enabled = (section === 1);
+
+  // Auto-rotate only in hero
+  autoRotate = (section === 0) && !prefersReducedMotion;
+
+  // Animate headphone position/scale per section
+  if (!headphoneGroup) return;
+
+  if (section === 0) {
+    // Hero: centered
+    gsap.to(headphoneGroup.position, { x: 0, y: -0.2, duration: 0.8, ease: 'power2.out' });
+    gsap.to(headphoneGroup.scale, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'power2.out' });
+  } else if (section === 1) {
+    // 360: centered
+    gsap.to(headphoneGroup.position, { x: 0, y: -0.2, duration: 0.8, ease: 'power2.out' });
+    gsap.to(headphoneGroup.scale, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'power2.out' });
+  } else if (section === 2) {
+    // Specs: move left
+    gsap.to(headphoneGroup.position, { x: isMobile ? 0 : -1.5, y: -0.2, duration: 0.8, ease: 'power2.out' });
+    gsap.to(headphoneGroup.scale, { x: 0.85, y: 0.85, z: 0.85, duration: 0.8, ease: 'power2.out' });
+  } else if (section === 3) {
+    // Colors: centered, slightly back
+    gsap.to(headphoneGroup.position, { x: 0, y: -0.2, duration: 0.8, ease: 'power2.out' });
+    gsap.to(headphoneGroup.scale, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'power2.out' });
+  } else {
+    // CTA: centered, slightly smaller
+    gsap.to(headphoneGroup.position, { x: 0, y: -0.3, duration: 0.8, ease: 'power2.out' });
+    gsap.to(headphoneGroup.scale, { x: 0.9, y: 0.9, z: 0.9, duration: 0.8, ease: 'power2.out' });
+  }
+}
+
+// =============================================
+// RESIZE
+// =============================================
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// =============================================
+// ANIMATION LOOP
+// =============================================
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+  const elapsed = clock.getElapsedTime();
+
+  // Auto-rotate headphone in hero
+  if (autoRotate && headphoneGroup) {
+    headphoneGroup.rotation.y += 0.1 * delta; // 0.1 rad/s
+  }
+
+  // Subtle floating motion
+  if (headphoneGroup) {
+    headphoneGroup.position.y += Math.sin(elapsed * 0.8) * 0.0003;
+  }
+
+  // Update controls
+  if (controls.enabled) {
+    controls.update();
+  }
+
+  // Update hotspot screen positions
+  if (currentSection === 1) {
+    updateHotspotPositions();
+  }
+
+  renderer.render(scene, camera);
+}
+
+// =============================================
+// EVENT BINDINGS
+// =============================================
+function bindEvents() {
+  // Scroll
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Hero color buttons
+  document.querySelectorAll('.color-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchColor(btn.dataset.color));
+  });
+
+  // Color cards
+  document.querySelectorAll('.color-card').forEach(card => {
+    card.addEventListener('click', () => switchColor(card.dataset.color));
+  });
+
+  // Double-click to reset camera
+  renderer.domElement.addEventListener('dblclick', () => {
+    gsap.to(camera.position, {
+      x: 0, y: 1.2, z: 4.5,
+      duration: 0.8,
+      ease: 'power2.inOut'
+    });
+    controls.target.set(0, 0, 0);
+  });
+}
+
+// =============================================
+// BOOT
+// =============================================
+async function boot() {
+  try {
+    initScene();
+    bindEvents();
+    animate();
+
+    // Simulate loading completion
+    setLoadProgress(100);
+
+    await new Promise(r => setTimeout(r, 600));
+    loadingScreen.classList.add('hidden');
+
+    // Initial section
+    onSectionChange(0);
+
+  } catch (err) {
+    console.error('Init failed:', err);
+    document.getElementById('webgl-fallback').style.display = 'flex';
+    loadingScreen.classList.add('hidden');
+  }
+}
+
+boot();
+</script>
+</body>
+</html>
