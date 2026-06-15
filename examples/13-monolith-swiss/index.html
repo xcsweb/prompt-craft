@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MONOLITH / STUDIO — DESIGN IS INFRASTRUCTURE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ===== 基础重置 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+  /* ===== 颜色系统 ===== */
+  :root {
+    --bg: #E8E6DF;
+    --text: #0A0A0A;
+    --accent: #E11D48;
+    --accent-2: #1E40AF;
+    --muted: #6B6B6B;
+    --border: rgba(10, 10, 10, 0.2);
+  }
+
+  /* ===== 字体工具类 ===== */
+  .display { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.03em; line-height: 0.95; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  .tracking { letter-spacing: 0.15em; }
+
+  /* ===== 导航 ===== */
+  .nav {
+    height: 120px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+    padding: 0 clamp(20px, 3vw, 48px);
+    gap: 24px;
+  }
+  .nav-left { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+  .nav-center { display: flex; justify-content: center; gap: clamp(16px, 2.5vw, 48px); font-family: 'Space Grotesk', sans-serif; font-weight: 500; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; }
+  .nav-center a { position: relative; transition: color 0.3s; }
+  .nav-center a::after { content:''; position: absolute; bottom:-4px; left:0; width:0; height:1px; background: var(--accent); transition: width 0.3s; }
+  .nav-center a:hover { color: var(--accent); }
+  .nav-center a:hover::after { width: 100%; }
+  .nav-right { display: flex; justify-content: flex-end; align-items: center; gap: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  @media (max-width: 768px) {
+    .nav { grid-template-columns: 1fr 1fr; height: 80px; }
+    .nav-center { display: none; }
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    min-height: calc(100vh - 120px);
+    padding: clamp(32px, 5vw, 80px) clamp(20px, 3vw, 48px);
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .grid-lines {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    pointer-events: none;
+    opacity: 0;
+  }
+  .grid-lines span {
+    border-right: 1px solid rgba(10,10,10,0.08);
+  }
+  .grid-lines span:last-child { border-right: none; }
+
+  .hero-title {
+    font-size: clamp(56px, 13vw, 220px);
+    line-height: 0.9;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    margin-top: clamp(24px, 4vw, 60px);
+  }
+  .hero-title .line {
+    display: block;
+    overflow: hidden;
+    transform: translateX(-8%);
+    opacity: 0;
+  }
+  .hero-title .line:nth-child(2) { padding-left: 10%; }
+  .hero-title .line:nth-child(3) { padding-left: 5%; color: var(--accent); }
+  .hero-title .line:nth-child(4) { padding-left: 15%; font-style: italic; font-weight: 500; }
+
+  .hero-meta {
+    position: absolute;
+    bottom: clamp(32px, 5vw, 80px);
+    left: clamp(20px, 3vw, 48px);
+    right: clamp(20px, 3vw, 48px);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .hero-meta .left-line { max-width: 320px; line-height: 1.4; }
+  .hero-meta .clock { font-family: 'Space Grotesk', sans-serif; font-size: clamp(32px, 5vw, 72px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+
+  /* ===== News Ticker ===== */
+  .ticker {
+    height: 60px;
+    background: var(--accent);
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+    border-bottom: 1px solid var(--text);
+    display: flex;
+    align-items: center;
+  }
+  .ticker-track {
+    display: flex;
+    gap: 60px;
+    white-space: nowrap;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding-left: 60px;
+  }
+  .ticker-track span { display: inline-block; }
+  .ticker-track .dot { color: rgba(255,255,255,0.6); }
+
+  /* ===== Selected Works ===== */
+  .works {
+    padding: clamp(80px, 15vh, 160px) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .works-header {
+    padding: 0 clamp(20px, 3vw, 48px) clamp(32px, 5vw, 60px);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .works-header h2 { font-size: clamp(28px, 4vw, 56px); font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
+  .works-header .sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+
+  .work-item {
+    padding: clamp(24px, 3vw, 40px) clamp(20px, 3vw, 48px);
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    align-items: center;
+    gap: 32px;
+    cursor: pointer;
+    transition: background 0.3s, padding 0.4s;
+    position: relative;
+  }
+  .work-item:hover { background: var(--text); color: var(--bg); padding-left: calc(clamp(20px, 3vw, 48px) + 40px); }
+  .work-item .num { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+  .work-item:hover .num { color: var(--accent); }
+  .work-item .title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(22px, 3vw, 44px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .work-item .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: right; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); line-height: 1.6; }
+  .work-item:hover .meta { color: rgba(232, 230, 223, 0.6); }
+  .work-item .underline {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    width: 0;
+    background: var(--accent);
+    transition: width 0.5s ease;
+  }
+  .work-item:hover .underline { width: 100%; }
+
+  @media (max-width: 768px) {
+    .work-item { grid-template-columns: 50px 1fr; gap: 16px; }
+    .work-item .meta { grid-column: 2; text-align: left; }
+  }
+
+  /* ===== Manifesto ===== */
+  .manifesto {
+    padding: clamp(80px, 20vh, 220px) clamp(20px, 8vw, 160px);
+    background: var(--text);
+    color: var(--bg);
+    border-bottom: 1px solid var(--text);
+  }
+  .manifesto .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    color: var(--accent);
+  }
+  .manifesto h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(40px, 7vw, 140px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 80px;
+    max-width: 1400px;
+  }
+  .manifesto h2 .line { display: block; }
+  .manifesto h2 .line:nth-child(2) { padding-left: 15%; color: var(--accent); font-style: italic; font-weight: 400; }
+  .manifesto h2 .line:nth-child(3) { padding-left: 8%; }
+
+  .manifesto-body {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 60px;
+    max-width: 1200px;
+  }
+  .manifesto-body .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(232, 230, 223, 0.5);
+  }
+  .manifesto-body p {
+    font-size: clamp(15px, 1.1vw, 18px);
+    line-height: 1.7;
+    margin-bottom: 20px;
+    color: rgba(232, 230, 223, 0.85);
+  }
+  .manifesto-body p strong { color: var(--accent); font-weight: 500; }
+
+  @media (max-width: 768px) {
+    .manifesto-body { grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  /* ===== Process ===== */
+  .process {
+    padding: clamp(80px, 20vh, 200px) clamp(20px, 3vw, 48px);
+    border-bottom: 1px solid var(--border);
+  }
+  .process-header { margin-bottom: 80px; display:flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 16px; }
+  .process-header h2 { font-size: clamp(40px, 6vw, 100px); font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.03em; }
+  .process-header .sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 2px solid var(--border);
+  }
+  .process-step {
+    background: var(--bg);
+    padding: 40px 32px 60px;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    transition: background 0.4s, color 0.4s;
+  }
+  .process-step:hover { background: var(--text); color: var(--bg); }
+  .process-step .num { font-family: 'Space Grotesk', sans-serif; font-size: 64px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
+  .process-step .label { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  .process-step h3 { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .process-step p { font-size: 14px; line-height: 1.6; color: #4a4a4a; transition: color 0.4s; }
+  .process-step:hover p { color: rgba(232, 230, 223, 0.7); }
+
+  @media (max-width: 768px) { .process-grid { grid-template-columns: 1fr 1fr; } }
+
+  /* ===== People / Team ===== */
+  .team {
+    padding: clamp(80px, 20vh, 200px) clamp(20px, 3vw, 48px);
+    border-bottom: 1px solid var(--border);
+  }
+  .team-header { margin-bottom: 80px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 16px; }
+  .team-header h2 { font-size: clamp(40px, 6vw, 100px); font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.03em; }
+  .team-header .sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+  .team-card {
+    padding: 32px 24px;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .team-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .team-card .initial { font-family: 'Space Grotesk', sans-serif; font-size: clamp(60px, 8vw, 120px); font-weight: 700; line-height: 1; letter-spacing: -0.04em; color: var(--text); transition: color 0.3s; margin-bottom: 24px; }
+  .team-card:hover .initial { color: var(--accent); }
+  .team-card h4 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .team-card .role { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+
+  @media (max-width: 768px) { .team-grid { grid-template-columns: 1fr 1fr; gap: 16px; } }
+
+  /* ===== Contact / CTA ===== */
+  .contact {
+    padding: clamp(80px, 25vh, 250px) clamp(20px, 5vw, 80px);
+    background: var(--accent);
+    color: #fff;
+  }
+  .contact .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+  }
+  .contact h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(48px, 10vw, 180px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.92;
+    margin-bottom: 80px;
+  }
+  .contact h2 .line { display: block; }
+  .contact h2 .line:nth-child(2) { font-style: italic; font-weight: 400; padding-left: 10%; }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: end;
+  }
+  .email {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 80px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    border-bottom: 2px solid #fff;
+    padding-bottom: 16px;
+    display: inline-block;
+    transition: transform 0.3s;
+    width: 100%;
+    word-break: break-all;
+  }
+  .email:hover { transform: translateX(10px); }
+  .address-block { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.05em; line-height: 1.8; }
+  .address-block .label { opacity: 0.6; margin-bottom: 8px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; }
+  .address-block a:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+  /* ===== Footer ===== */
+  .footer {
+    padding: 60px clamp(20px, 3vw, 48px) 40px;
+    background: var(--text);
+    color: var(--bg);
+  }
+  .footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .footer-logo { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .footer-social { display: flex; gap: 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .footer-social a { transition: color 0.3s; }
+  .footer-social a:hover { color: var(--accent); }
+  .footer-bottom {
+    padding-top: 32px;
+    border-top: 1px solid rgba(232, 230, 223, 0.15);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(232, 230, 223, 0.5);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  /* ===== 滚动入场类 ===== */
+  .reveal { opacity: 0; transform: translateY(40px); will-change: transform, opacity; }
+</style>
+</head>
+<body>
+
+<!-- 导航 -->
+<nav class="nav">
+  <div class="nav-left">[ MONOLITH / STUDIO ]</div>
+  <div class="nav-center">
+    <a href="#works">WORKS</a>
+    <a href="#process">ABOUT</a>
+    <a href="#team">JOURNAL</a>
+    <a href="#contact">CONTACT</a>
+  </div>
+  <div class="nav-right">
+    <span>[↗] EN / FR</span>
+    <span class="mono" id="nav-date">2024.11.28 / FRI 14:32</span>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="grid-lines" id="grid-lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <div class="hero-title display">
+    <span class="line">We design</span>
+    <span class="line">systems</span>
+    <span class="line">that make</span>
+    <span class="line">brands feel inevitable.</span>
+  </div>
+
+  <div class="hero-meta">
+    <div class="left-line">
+      [ / Studio for ambitious brands. / Est. 2019 / Berlin · Copenhagen · Tokyo ]
+    </div>
+    <div>
+      <div class="clock" id="clock">00:00:00</div>
+      <div style="margin-top: 12px;">[ N 48.8566° / E 2.3522° ]</div>
+    </div>
+  </div>
+</section>
+
+<!-- News Ticker -->
+<div class="ticker">
+  <div class="ticker-track" id="ticker-track">
+    <span>LATEST WORK →</span>
+    <span class="dot">●</span>
+    <span>STUDIO IN BERLIN</span>
+    <span class="dot">●</span>
+    <span>NEW IDENTITY FOR MERIDIAN PAPER</span>
+    <span class="dot">●</span>
+    <span>BRAND SYSTEM FOR HELIOS AI</span>
+    <span class="dot">●</span>
+    <span>WE ARE HIRING</span>
+    <span class="dot">●</span>
+    <span>2024 REPORT</span>
+    <span class="dot">●</span>
+    <span>LATEST WORK →</span>
+    <span class="dot">●</span>
+    <span>STUDIO IN BERLIN</span>
+    <span class="dot">●</span>
+    <span>NEW IDENTITY FOR MERIDIAN PAPER</span>
+    <span class="dot">●</span>
+    <span>BRAND SYSTEM FOR HELIOS AI</span>
+    <span class="dot">●</span>
+    <span>WE ARE HIRING</span>
+    <span class="dot">●</span>
+    <span>2024 REPORT</span>
+    <span class="dot">●</span>
+  </div>
+</div>
+
+<!-- Selected Works -->
+<section class="works" id="works">
+  <div class="works-header">
+    <h2>[ 01 — SELECTED WORKS ]</h2>
+    <span class="sub">2019 — 2024 / 48 PROJECTS</span>
+  </div>
+
+  <div class="work-item">
+    <div class="num">N° 001</div>
+    <div class="title">THE MERIDIAN PAPER — Editorial identity system</div>
+    <div class="meta">2024<br/>BRAND / EDITORIAL</div>
+    <div class="underline"></div>
+  </div>
+  <div class="work-item">
+    <div class="num">N° 002</div>
+    <div class="title">HELIOS — Type system &amp; specimen book</div>
+    <div class="meta">2024<br/>TYPE / PRINT</div>
+    <div class="underline"></div>
+  </div>
+  <div class="work-item">
+    <div class="num">N° 003</div>
+    <div class="title">NORTH STAR IDENTITY — Full brand ecosystem</div>
+    <div class="meta">2023<br/>BRAND / DIGITAL</div>
+    <div class="underline"></div>
+  </div>
+  <div class="work-item">
+    <div class="num">N° 004</div>
+    <div class="title">ARCHIVE / 07 — Exhibition &amp; wayfinding</div>
+    <div class="meta">2023<br/>EXHIBITION / SPATIAL</div>
+    <div class="underline"></div>
+  </div>
+  <div class="work-item">
+    <div class="num">N° 005</div>
+    <div class="title">OBSIDIAN WATCH CO. — Product art direction</div>
+    <div class="meta">2023<br/>PRODUCT / CAMPAIGN</div>
+    <div class="underline"></div>
+  </div>
+  <div class="work-item">
+    <div class="num">N° 006</div>
+    <div class="title">ATLAS — Digital publishing platform</div>
+    <div class="meta">2022<br/>DIGITAL / PRODUCT</div>
+    <div class="underline"></div>
+  </div>
+</section>
+
+<!-- Manifesto -->
+<section class="manifesto" id="manifesto">
+  <div class="kicker">// MANIFESTO — EST. 2019</div>
+  <h2>
+    <span class="line">Design is not decoration.</span>
+    <span class="line">Design is infrastructure.</span>
+    <span class="line">Everything else is typing.</span>
+  </h2>
+  <div class="manifesto-body">
+    <div class="label">[ 01 / PHILOSOPHY ]</div>
+    <div>
+      <p>We reject the idea that design is what <strong>happens after</strong> the real work. Design is the real work. It is the structure that allows strategy, product, and voice to move at speed — to compound, to compound, to compound again.</p>
+      <p>A brand that is not designed as infrastructure will crack under the first real pressure. It will feel fragile, reactive, thin. It will not ship, it will not ship consistently, and it will not ship <strong>with confidence</strong>.</p>
+      <p>We build systems, not one-off executions. Systems scale. Systems survive creative directors, recessions, and pivots. Systems are what great brands are made of.</p>
+      <p>Monolith is a studio for brands that intend to still be here in 2034, and in 2044. Brands that ship. Brands that take design as seriously as they take finance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Process -->
+<section class="process" id="process">
+  <div class="process-header">
+    <h2>PROCESS.</h2>
+    <span class="sub">FOUR STEPS / NO EXCEPTIONS</span>
+  </div>
+  <div class="process-grid">
+    <div class="process-step">
+      <div class="num">01</div>
+      <div class="label">/ LISTEN</div>
+      <h3>Before anything, we understand.</h3>
+      <p>Two weeks of deep immersion: interviews, audits, competitive research, and one long conversation about what the brand actually is — not what it wants to look like.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">02</div>
+      <div class="label">/ BUILD</div>
+      <h3>Systems are designed, not drawn.</h3>
+      <p>Type systems, grid systems, motion systems, voice systems. Every module specified to production level. No surprises at handoff.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">03</div>
+      <div class="label">/ TEST</div>
+      <h3>Stress-tested against the real world.</h3>
+      <p>A brand must work on a billboard and a favicon. On a CEO slide deck and a receipt. We test edge cases before we ship, not after.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">04</div>
+      <div class="label">/ SHIP</div>
+      <h3>Handover is when the real work starts.</h3>
+      <p>Full documentation, team training, and a 90-day support retainer. We do not disappear after the final presentation. We stay until it works.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="team" id="team">
+  <div class="team-header">
+    <h2>THE PEOPLE.</h2>
+    <span class="sub">32 HUMANS / 4 CITIES</span>
+  </div>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="initial">AM</div>
+      <h4>A. Müller</h4>
+      <div class="role">Founding Partner</div>
+    </div>
+    <div class="team-card">
+      <div class="initial">JC</div>
+      <h4>J. Chen</h4>
+      <div class="role">Design Director</div>
+    </div>
+    <div class="team-card">
+      <div class="initial">MR</div>
+      <h4>M. Rossi</h4>
+      <div class="role">Lead Developer</div>
+    </div>
+    <div class="team-card">
+      <div class="initial">KO</div>
+      <h4>K. Okafor</h4>
+      <div class="role">Brand Strategy</div>
+    </div>
+    <div class="team-card">
+      <div class="initial">EL</div>
+      <h4>E. Lindqvist</h4>
+      <div class="role">Type Design</div>
+    </div>
+    <div class="team-card">
+      <div class="initial">RS</div>
+      <h4>R. Santos</h4>
+      <div class="role">Motion Director</div>
+    </div>
+    <div class="team-card">
+      <div class="initial">TY</div>
+      <h4>T. Yamamoto</h4>
+      <div class="role">Creative Lead</div>
+    </div>
+    <div class="team-card">
+      <div class="initial">AH</div>
+      <h4>A. Hassan</h4>
+      <div class="role">Studio Operations</div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="contact" id="contact">
+  <div class="kicker">// [ 05 / CONTACT ]</div>
+  <h2>
+    <span class="line">LET'S BUILD</span>
+    <span class="line">something permanent.</span>
+  </h2>
+  <div class="contact-grid">
+    <a href="mailto:studio@monolith.studio" class="email">studio@monolith.studio →</a>
+    <div class="address-block">
+      <div class="label">[ STUDIO / HOURS ]</div>
+      <div>Prenzlauer Berg, Berlin</div>
+      <div>Mon — Fri / 09:00 — 19:00 CET</div>
+      <div style="margin-top: 16px;"><a href="#">[ → ] Open in Google Maps</a></div>
+      <div style="margin-top: 16px;"><a href="#">[ → ] Book an intro call</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-logo">MONOLITH / STUDIO — EST. 2019</div>
+    <div class="footer-social">
+      <a href="#">IG</a>
+      <a href="#">TW</a>
+      <a href="#">LI</a>
+      <a href="#">DR</a>
+      <a href="#">RSS</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 MONOLITH STUDIO</span>
+    <span>ALL WRONG RESERVED / DESIGN IS INFRASTRUCTURE</span>
+    <span>BERLIN · COPENHAGEN · TOKYO</span>
+  </div>
+</footer>
+
+<!-- GSAP + ScrollTrigger + Lenis -->
+<script src="https://esm.sh/gsap"></script>
+<script src="https://esm.sh/gsap/ScrollTrigger"></script>
+<script type="module">
+  import Lenis from 'https://esm.sh/@studio-freight/lenis';
+
+  const gsap = window.gsap;
+  const ScrollTrigger = window.ScrollTrigger;
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ===== Lenis 平滑滚动 =====
+  const lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+  });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+  gsap.ticker.lagSmoothing(0);
+
+  // ===== Hero 每行标题滑入 =====
+  gsap.to('.hero-title .line', {
+    x: 0,
+    opacity: 1,
+    duration: 1.2,
+    stagger: 0.15,
+    ease: 'power3.out',
+    delay: 0.2,
+  });
+
+  // 网格线渐显
+  gsap.to('#grid-lines', { opacity: 1, duration: 1.5, ease: 'power2.out', delay: 0.6 });
+
+  // ===== 时钟更新 =====
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+
+    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const date = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} / ${days[now.getDay()]} ${h}:${m}`;
+    const navDate = document.getElementById('nav-date');
+    if (navDate) navDate.textContent = date;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ===== News Ticker 无限循环 =====
+  const track = document.getElementById('ticker-track');
+  function animateTicker() {
+    gsap.fromTo(track,
+      { x: 0 },
+      { x: '-50%', duration: 40, ease: 'none', repeat: -1 }
+    );
+  }
+  animateTicker();
+
+  // ===== Section 入场 =====
+  document.querySelectorAll('.works-header, .work-item, .process-step, .team-card, .manifesto h2, .manifesto-body').forEach((el, i) => {
+    gsap.from(el, {
+      opacity: 0,
+      y: 40,
+      duration: 1,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 85%',
+        toggleActions: 'play none none none',
+      },
+      delay: (i % 6) * 0.05,
+    });
+  });
+
+  // ===== Works hover 下划线 =====
+  // CSS 已处理
+
+  // ===== 滚动时背景色切换（Manifesto 区域附近） =====
+  const manifestoEl = document.getElementById('manifesto');
+  ScrollTrigger.create({
+    trigger: manifestoEl,
+    start: 'top bottom',
+    end: 'bottom top',
+    onEnter: () => { document.documentElement.style.setProperty('--bg', '#0A0A0A'); },
+    onLeave: () => { document.documentElement.style.setProperty('--bg', '#E8E6DF'); },
+    onEnterBack: () => { document.documentElement.style.setProperty('--bg', '#0A0A0A'); },
+    onLeaveBack: () => { document.documentElement.style.setProperty('--bg', '#E8E6DF'); },
+  });
+
+  // ===== Contact 区域平滑过渡 =====
+  ScrollTrigger.create({
+    trigger: '.contact',
+    start: 'top center',
+    onEnter: () => { document.documentElement.style.setProperty('--bg', '#E11D48'); },
+    onLeave: () => { document.documentElement.style.setProperty('--bg', '#E8E6DF'); },
+    onEnterBack: () => { document.documentElement.style.setProperty('--bg', '#E11D48'); },
+    onLeaveBack: () => { document.documentElement.style.setProperty('--bg', '#0A0A0A'); },
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WONDERLAND - Where Learning is an Adventure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=JetBrains+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "gsap": "https://esm.sh/gsap@3.12.5",
+    "gsap/ScrollTrigger": "https://esm.sh/gsap@3.12.5/ScrollTrigger"
+  }
+}
+</script>
+<style>
+/* ===== CSS RESET & BASE ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --sky: #87CEEB; --grass: #7CFC00; --dirt: #D2691E;
+  --cloud: #FFFFFF; --accent: #FF3333;
+  --font-title: 'Fredoka One', cursive;
+  --font-body: 'Nunito', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+html { font-size: 16px; }
+body {
+  font-family: var(--font-body);
+  background: var(--sky);
+  overflow: hidden;
+  color: #333;
+  cursor: none;
+}
+
+/* ===== CUSTOM CURSOR ===== */
+.custom-cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 40px; height: 40px;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s ease-out;
+}
+.custom-cursor svg { width: 100%; height: 100%; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2)); }
+
+/* ===== LOADING SCREEN ===== */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--sky);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.loading-car-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  margin-bottom: 40px;
+}
+.loading-car {
+  position: absolute;
+  left: -120px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 80px;
+  height: 50px;
+}
+.loading-car svg { width: 100%; height: 100%; }
+.loading-smoke {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.loading-text {
+  font-family: var(--font-title);
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  color: #fff;
+  text-shadow: 3px 3px 0 var(--accent);
+  margin-bottom: 30px;
+  display: flex;
+  gap: 2px;
+}
+.loading-text span { display: inline-block; opacity: 0; transform: translateY(20px); }
+.loading-stars {
+  display: flex;
+  gap: 8px;
+}
+.loading-star {
+  width: 24px; height: 24px;
+  color: rgba(255,255,255,0.3);
+  transition: color 0.3s, transform 0.3s;
+}
+.loading-star.lit { color: #FFD700; transform: scale(1.2); }
+
+/* ===== MAIN GAME WORLD ===== */
+#game-world {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+#world-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== UI OVERLAYS ===== */
+.ui-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+.ui-layer > * { pointer-events: auto; }
+
+/* Hero Text */
+.hero-text {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 10;
+}
+.hero-title {
+  font-family: var(--font-title);
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  line-height: 1.1;
+  color: #fff;
+  text-shadow: 4px 4px 0 var(--accent), 8px 8px 0 rgba(0,0,0,0.1);
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-title .letter { display: inline-block; opacity: 0; transform: translateY(50px) rotate(-10deg); }
+.hero-subtitle {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-weight: 600;
+  color: #fff;
+  margin-top: 16px;
+  opacity: 0;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+}
+.hero-hint {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.9);
+  margin-top: 24px;
+  padding: 8px 16px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 20px;
+  display: inline-block;
+  opacity: 0;
+}
+
+/* Music Toggle */
+.music-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 200;
+}
+.music-toggle:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.music-toggle svg { width: 24px; height: 24px; fill: #fff; }
+.music-toggle.muted { background: #999; }
+
+/* ===== STATION POPUPS ===== */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.popup-overlay.active { opacity: 1; pointer-events: auto; }
+.popup-card {
+  background: var(--cloud);
+  border-radius: 30px 30px 30px 10px;
+  padding: 40px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  transform: scale(0.8) translateY(50px);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 4px solid var(--dirt);
+}
+.popup-overlay.active .popup-card { transform: scale(1) translateY(0); }
+.popup-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #fff;
+  color: #fff;
+  font-family: var(--font-title);
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.popup-close:hover { transform: rotate(90deg) scale(1.1); }
+.popup-title {
+  font-family: var(--font-title);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+.popup-body { font-size: clamp(1rem, 1.2vw, 1.125rem); line-height: 1.7; color: #444; }
+
+/* Course Cards */
+.course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px; margin-top: 20px; }
+.course-card {
+  background: linear-gradient(135deg, #FFF5E6, #FFE4CC);
+  border-radius: 20px;
+  padding: 24px 16px;
+  text-align: center;
+  border: 3px solid var(--dirt);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+.course-card:hover { transform: scale(1.05) rotate(1deg); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
+.course-icon { width: 60px; height: 60px; margin: 0 auto 12px; position: relative; }
+.course-icon svg { width: 100%; height: 100%; }
+.course-name { font-family: var(--font-title); font-size: 1.1rem; color: var(--dirt); margin-bottom: 8px; }
+.course-desc { font-size: 0.875rem; color: #666; margin-bottom: 8px; }
+.course-age {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+/* Team Cards */
+.team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 20px; margin-top: 20px; }
+.team-card { text-align: center; }
+.team-avatar {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  border: 4px solid var(--accent);
+  overflow: hidden;
+  transition: transform 0.5s;
+  cursor: pointer;
+}
+.team-avatar:hover { transform: rotate(360deg); }
+.team-avatar .avatar-gradient {
+  width: 100%; height: 100%;
+}
+.team-name { font-family: var(--font-title); font-size: 1rem; color: var(--dirt); }
+.team-role { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); margin: 4px 0; }
+.team-fun { font-size: 0.8rem; color: #777; }
+
+/* Contact Form */
+.contact-form { margin-top: 20px; }
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--dirt);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 3px solid var(--dirt);
+  border-radius: 12px 12px 12px 4px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  background: #FFFDF5;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255,51,51,0.2);
+}
+.form-group textarea { resize: vertical; min-height: 100px; }
+.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  border: 3px solid #fff;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+.submit-btn.sent { background: #32CD32; }
+.paper-plane {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+}
+.paper-plane.fly {
+  animation: flyAway 1.5s ease-out forwards;
+}
+@keyframes flyAway {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(200px, -200px) scale(0.3) rotate(45deg); }
+}
+
+/* ===== MOBILE FALLBACK ===== */
+.mobile-fallback {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--sky);
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+.mobile-fallback .mobile-hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.mobile-fallback .mobile-hero h1 {
+  font-family: var(--font-title);
+  font-size: 3rem;
+  color: #fff;
+  text-shadow: 3px 3px 0 var(--accent);
+}
+.mobile-fallback .mobile-hero p {
+  font-size: 1.1rem;
+  color: #fff;
+  margin-top: 12px;
+}
+.mobile-section {
+  background: var(--cloud);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  border: 3px solid var(--dirt);
+}
+.mobile-section h2 {
+  font-family: var(--font-title);
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+}
+.mobile-section p { line-height: 1.7; color: #444; margin-bottom: 12px; }
+.mobile-warning {
+  background: rgba(255,255,255,0.9);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 30px;
+  border: 3px dashed var(--accent);
+}
+.mobile-warning p {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .custom-cursor { display: none; }
+  body { cursor: auto; }
+}
+
+/* ===== MOBILE QUERY ===== */
+@media (max-width: 768px) {
+  #game-world, .ui-layer, .music-toggle { display: none; }
+  .mobile-fallback { display: block; }
+  body { cursor: auto; overflow-y: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== CUSTOM CURSOR ===== -->
+<div class="custom-cursor" id="cursor">
+  <svg viewBox="0 0 40 40" fill="none">
+    <rect x="4" y="14" width="28" height="14" rx="4" fill="#FF3333" stroke="#fff" stroke-width="2"/>
+    <rect x="22" y="10" width="12" height="10" rx="3" fill="#87CEEB" stroke="#fff" stroke-width="2"/>
+    <circle cx="10" cy="28" r="5" fill="#333" stroke="#fff" stroke-width="2"/>
+    <circle cx="28" cy="28" r="5" fill="#333" stroke="#fff" stroke-width="2"/>
+    <circle cx="10" cy="28" r="2" fill="#999"/>
+    <circle cx="28" cy="28" r="2" fill="#999"/>
+    <rect x="26" y="16" width="6" height="4" rx="1" fill="#FFD700"/>
+  </svg>
+</div>
+
+<!-- ===== LOADING SCREEN ===== -->
+<div id="loading-screen">
+  <div class="loading-car-container">
+    <div class="loading-car" id="loading-car">
+      <svg viewBox="0 0 80 50" fill="none">
+        <rect x="4" y="18" width="52" height="20" rx="6" fill="#FF3333" stroke="#fff" stroke-width="2"/>
+        <rect x="38" y="8" width="22" height="14" rx="4" fill="#87CEEB" stroke="#fff" stroke-width="2"/>
+        <circle cx="16" cy="38" r="8" fill="#333" stroke="#fff" stroke-width="2"/>
+        <circle cx="44" cy="38" r="8" fill="#333" stroke="#fff" stroke-width="2"/>
+        <circle cx="16" cy="38" r="3" fill="#999"/>
+        <circle cx="44" cy="38" r="3" fill="#999"/>
+        <rect x="48" y="22" width="8" height="6" rx="1" fill="#FFD700"/>
+        <path d="M4 24 L0 22 M4 28 L0 30" stroke="#FF6B6B" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+  <div class="loading-text" id="loading-text"></div>
+  <div class="loading-stars" id="loading-stars"></div>
+</div>
+
+<!-- ===== GAME WORLD ===== -->
+<div id="game-world">
+  <canvas id="world-canvas"></canvas>
+</div>
+
+<!-- ===== UI LAYER ===== -->
+<div class="ui-layer" id="ui-layer">
+  <div class="hero-text" id="hero-text">
+    <h1 class="hero-title" id="hero-title"></h1>
+    <p class="hero-subtitle">Where Learning is an Adventure</p>
+    <div class="hero-hint">&larr; &rarr; to drive &middot; SPACE to jump</div>
+  </div>
+</div>
+
+<!-- ===== MUSIC TOGGLE ===== -->
+<button class="music-toggle" id="music-toggle" title="Toggle Music">
+  <svg viewBox="0 0 24 24" id="music-icon-on">
+    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+  </svg>
+  <svg viewBox="0 0 24 24" id="music-icon-off" style="display:none">
+    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+    <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="2"/>
+  </svg>
+</button>
+
+<!-- ===== POPUP: ABOUT ===== -->
+<div class="popup-overlay" id="popup-about">
+  <div class="popup-card">
+    <button class="popup-close" data-popup="about">&times;</button>
+    <h2 class="popup-title">Our Story</h2>
+    <div class="popup-body">
+      <p>Welcome to WONDERLAND, where every child becomes an explorer! Founded in 2020, we believe learning should feel like the greatest adventure of all.</p>
+      <p>Our mission is simple: spark curiosity, nurture creativity, and build confidence through play-based education. We blend storytelling, hands-on experiments, and collaborative games to make every lesson unforgettable.</p>
+      <p>From our mushroom-shaped classrooms to our circus-themed science labs, every corner of WONDERLAND is designed to inspire wonder. Join us, and let the adventure begin!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== POPUP: COURSES ===== -->
+<div class="popup-overlay" id="popup-courses">
+  <div class="popup-card">
+    <button class="popup-close" data-popup="courses">&times;</button>
+    <h2 class="popup-title">Our Courses</h2>
+    <div class="course-grid">
+      <div class="course-card">
+        <div class="course-icon">
+          <svg viewBox="0 0 60 60"><rect x="10" y="20" width="40" height="30" rx="4" fill="#FF6B6B"/><polygon points="30,5 45,20 15,20" fill="#FFD700"/></svg>
+        </div>
+        <div class="course-name">Creative Arts</div>
+        <div class="course-desc">Painting, sculpting, and crafting adventures</div>
+        <span class="course-age">Ages 4-8</span>
+      </div>
+      <div class="course-card">
+        <div class="course-icon">
+          <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="20" fill="#4ECDC4"/><circle cx="24" cy="26" r="4" fill="#fff"/><circle cx="36" cy="26" r="4" fill="#fff"/><path d="M22 36 Q30 44 38 36" stroke="#fff" stroke-width="3" fill="none"/></svg>
+        </div>
+        <div class="course-name">Science Lab</div>
+        <div class="course-desc">Fun experiments and discovery</div>
+        <span class="course-age">Ages 6-10</span>
+      </div>
+      <div class="course-card">
+        <div class="course-icon">
+          <svg viewBox="0 0 60 60"><rect x="8" y="10" width="44" height="40" rx="4" fill="#96CEB4"/><rect x="16" y="18" width="28" height="4" fill="#fff"/><rect x="16" y="28" width="20" height="4" fill="#fff"/><rect x="16" y="38" width="24" height="4" fill="#fff"/></svg>
+        </div>
+        <div class="course-name">Story World</div>
+        <div class="course-desc">Reading, writing, and imagination</div>
+        <span class="course-age">Ages 5-9</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== POPUP: TEAM ===== -->
+<div class="popup-overlay" id="popup-team">
+  <div class="popup-card">
+    <button class="popup-close" data-popup="team">&times;</button>
+    <h2 class="popup-title">Our Team</h2>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">
+          <div class="avatar-gradient" style="background:linear-gradient(135deg,#FF6B6B,#FFD700)"></div>
+        </div>
+        <div class="team-name">Ms. Sunny</div>
+        <div class="team-role">Founder</div>
+        <div class="team-fun">Loves rainbows &amp; robots</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">
+          <div class="avatar-gradient" style="background:linear-gradient(135deg,#4ECDC4,#44A08D)"></div>
+        </div>
+        <div class="team-name">Mr. Bubbles</div>
+        <div class="team-role">Science Lead</div>
+        <div class="team-fun">Makes volcanoes erupt daily</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">
+          <div class="avatar-gradient" style="background:linear-gradient(135deg,#A8E6CF,#7FD1B9)"></div>
+        </div>
+        <div class="team-name">Ms. Twinkle</div>
+        <div class="team-role">Art Director</div>
+        <div class="team-fun">Never without glitter glue</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">
+          <div class="avatar-gradient" style="background:linear-gradient(135deg,#C7CEEA,#B5B9FF)"></div>
+        </div>
+        <div class="team-name">Mr. Gizmo</div>
+        <div class="team-role">Tech Wizard</div>
+        <div class="team-fun">Builds LEGO castles at 3am</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== POPUP: CONTACT ===== -->
+<div class="popup-overlay" id="popup-contact">
+  <div class="popup-card">
+    <button class="popup-close" data-popup="contact">&times;</button>
+    <h2 class="popup-title">Send Us a Letter</h2>
+    <form class="contact-form" id="contact-form">
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" placeholder="Alice in Wonderland" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" placeholder="alice@wonderland.com" required>
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea placeholder="Tell us about your adventure..."></textarea>
+      </div>
+      <button type="submit" class="submit-btn" id="submit-btn">
+        <span>SEND LETTER</span>
+        <svg class="paper-plane" id="paper-plane" width="24" height="24" viewBox="0 0 24 24" fill="#fff">
+          <path d="M2 12l20-10-10 10-10 10 3-10z"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MOBILE FALLBACK ===== -->
+<div class="mobile-fallback">
+  <div class="mobile-hero">
+    <h1>WONDERLAND</h1>
+    <p>Where Learning is an Adventure</p>
+  </div>
+  <div class="mobile-warning">
+    <p>Please visit on desktop to experience the driving adventure!</p>
+  </div>
+  <div class="mobile-section">
+    <h2>Our Story</h2>
+    <p>Welcome to WONDERLAND, where every child becomes an explorer! We believe learning should feel like the greatest adventure of all.</p>
+    <p>Our mission: spark curiosity, nurture creativity, and build confidence through play-based education.</p>
+  </div>
+  <div class="mobile-section">
+    <h2>Our Courses</h2>
+    <p><strong>Creative Arts</strong> - Painting, sculpting, and crafting adventures (Ages 4-8)</p>
+    <p><strong>Science Lab</strong> - Fun experiments and discovery (Ages 6-10)</p>
+    <p><strong>Story World</strong> - Reading, writing, and imagination (Ages 5-9)</p>
+  </div>
+  <div class="mobile-section">
+    <h2>Our Team</h2>
+    <p><strong>Ms. Sunny</strong> - Founder, loves rainbows & robots</p>
+    <p><strong>Mr. Bubbles</strong> - Science Lead, makes volcanoes erupt</p>
+    <p><strong>Ms. Twinkle</strong> - Art Director, never without glitter</p>
+    <p><strong>Mr. Gizmo</strong> - Tech Wizard, builds LEGO castles</p>
+  </div>
+  <div class="mobile-section">
+    <h2>Contact Us</h2>
+    <p>Email: hello@wonderland.edu</p>
+    <p>Phone: (555) 123-4567</p>
+    <p>Address: 123 Mushroom Lane, Fantasy City</p>
+  </div>
+</div>
+
+<script type="module">
+import gsap from 'gsap';
+
+/* ============================================================
+   WONDERLAND - Playful Driving Adventure
+   ============================================================ */
+
+/* ===== AUDIO ENGINE ===== */
+class AudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.masterGain = null;
+    this.musicGain = null;
+    this.isPlaying = false;
+    this.isMuted = false;
+    this.musicInterval = null;
+  }
+
+  init() {
+    if (this.ctx) return;
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.value = 0.3;
+    this.masterGain.connect(this.ctx.destination);
+    this.musicGain = this.ctx.createGain();
+    this.musicGain.gain.value = 0;
+    this.musicGain.connect(this.masterGain);
+  }
+
+  // C major scale: C4, D4, E4, F4, G4, A4, B4, C5
+  getFrequency(note) {
+    const freqs = {
+      'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
+      'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25,
+      'G3': 196.00, 'E3': 164.81
+    };
+    return freqs[note] || 261.63;
+  }
+
+  playTone(freq, duration, type = 'sine', when = 0) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.3, this.ctx.currentTime + when);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + when + duration);
+    osc.connect(gain);
+    gain.connect(this.musicGain);
+    osc.start(this.ctx.currentTime + when);
+    osc.stop(this.ctx.currentTime + when + duration);
+  }
+
+  startMusic() {
+    if (!this.ctx) this.init();
+    if (this.isPlaying) return;
+    this.isPlaying = true;
+    // Fade in
+    this.musicGain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + 1);
+    // Simple C major melody loop
+    const melody = [
+      'C4','E4','G4','C5','G4','E4','C4','E4',
+      'D4','F4','A4','D5','A4','F4','D4','F4',
+      'E4','G4','B4','E5','B4','G4','E4','G4',
+      'C4','E4','G4','C5','G4','E4','C4','G3'
+    ];
+    let noteIndex = 0;
+    this.musicInterval = setInterval(() => {
+      if (this.isMuted) return;
+      const note = melody[noteIndex % melody.length];
+      this.playTone(this.getFrequency(note), 0.4, 'sine');
+      noteIndex++;
+    }, 500);
+  }
+
+  stopMusic() {
+    this.isPlaying = false;
+    if (this.musicInterval) clearInterval(this.musicInterval);
+    if (this.musicGain) this.musicGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5);
+  }
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    if (this.musicGain) {
+      this.musicGain.gain.cancelScheduledValues(this.ctx.currentTime);
+      this.musicGain.gain.setValueAtTime(this.isMuted ? 0 : 0.2, this.ctx.currentTime);
+    }
+    return this.isMuted;
+  }
+
+  // Hover "pop" sound - short high sine
+  playHover() {
+    if (!this.ctx) this.init();
+    if (this.isMuted) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.1);
+  }
+
+  // Click "ding" sound - triangle wave
+  playClick() {
+    if (!this.ctx) this.init();
+    if (this.isMuted) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.15);
+  }
+
+  // Jump sound
+  playJump() {
+    if (!this.ctx) this.init();
+    if (this.isMuted) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.25);
+  }
+}
+
+const audio = new AudioEngine();
+
+/* ===== CANVAS & GAME STATE ===== */
+const canvas = document.getElementById('world-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+let dpr = Math.min(window.devicePixelRatio, 2);
+
+function resize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Game state
+const game = {
+  scrollX: 0,
+  worldWidth: 8000,
+  groundY: 0,
+  keys: {},
+  car: {
+    x: 150,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    width: 70,
+    height: 40,
+    onGround: false,
+    angle: 0,
+    wheelRot: 0
+  },
+  particles: [],
+  clouds: [],
+  stars: [],
+  stations: [],
+  stationBounce: {},
+  popupOpen: null,
+  started: false,
+  time: 0
+};
+
+/* ===== TERRAIN GENERATION ===== */
+function getTerrainHeight(x) {
+  // Combine multiple sine waves for organic terrain
+  const base = H * 0.75;
+  const h1 = Math.sin(x * 0.003) * 30;
+  const h2 = Math.sin(x * 0.007 + 1) * 15;
+  const h3 = Math.sin(x * 0.015 + 2) * 8;
+  return base + h1 + h2 + h3;
+}
+
+function getTerrainSlope(x) {
+  const dx = 5;
+  return (getTerrainHeight(x + dx) - getTerrainHeight(x - dx)) / (dx * 2);
+}
+
+/* ===== CAR PHYSICS ===== */
+const CAR_ACCEL = 0.8;
+const CAR_FRICTION = 0.92;
+const CAR_MAX_SPEED = 12;
+const CAR_JUMP_FORCE = -14;
+const GRAVITY = 0.6;
+
+function updateCar() {
+  const car = game.car;
+
+  // Horizontal movement
+  if (game.keys['ArrowLeft'] || game.keys['KeyA']) {
+    car.vx -= CAR_ACCEL;
+  }
+  if (game.keys['ArrowRight'] || game.keys['KeyD']) {
+    car.vx += CAR_ACCEL;
+  }
+
+  // Friction
+  car.vx *= CAR_FRICTION;
+
+  // Clamp speed
+  car.vx = Math.max(-CAR_MAX_SPEED, Math.min(CAR_MAX_SPEED, car.vx));
+
+  // Update position
+  car.x += car.vx;
+
+  // Clamp to world bounds
+  car.x = Math.max(50, Math.min(game.worldWidth - 50, car.x));
+
+  // Camera follow
+  const targetScroll = car.x - W * 0.3;
+  game.scrollX += (targetScroll - game.scrollX) * 0.1;
+  game.scrollX = Math.max(0, Math.min(game.worldWidth - W, game.scrollX));
+
+  // Jump
+  if ((game.keys['Space'] || game.keys['ArrowUp']) && car.onGround) {
+    car.vy = CAR_JUMP_FORCE;
+    car.onGround = false;
+    audio.playJump();
+    // Jump particles
+    for (let i = 0; i < 8; i++) {
+      game.particles.push({
+        x: car.x - game.scrollX + car.width / 2,
+        y: car.y,
+        vx: (Math.random() - 0.5) * 6,
+        vy: Math.random() * -3 - 1,
+        life: 1,
+        color: `hsl(${Math.random() * 60 + 10}, 80%, 60%)`,
+        size: Math.random() * 6 + 3
+      });
+    }
+  }
+
+  // Gravity
+  car.vy += GRAVITY;
+  car.y += car.vy;
+
+  // Ground collision
+  const groundH = getTerrainHeight(car.x);
+  if (car.y + car.height / 2 >= groundH) {
+    car.y = groundH - car.height / 2;
+    car.vy = 0;
+    car.onGround = true;
+  } else {
+    car.onGround = false;
+  }
+
+  // Car angle follows terrain
+  const slope = getTerrainSlope(car.x);
+  const targetAngle = Math.atan(slope);
+  car.angle += (targetAngle - car.angle) * 0.2;
+
+  // Wheel rotation
+  car.wheelRot += car.vx * 0.15;
+
+  // Exhaust particles
+  if (Math.abs(car.vx) > 0.5 && Math.random() > 0.3) {
+    const exhaustX = car.x - game.scrollX + (car.vx > 0 ? 5 : car.width - 5);
+    const exhaustY = car.y + 10;
+    game.particles.push({
+      x: exhaustX,
+      y: exhaustY,
+      vx: (Math.random() - 0.5) * 2 - car.vx * 0.3,
+      vy: Math.random() * -2 - 1,
+      life: 1,
+      color: `hsl(${Math.random() * 60 + 300}, 70%, ${Math.random() * 30 + 60}%)`,
+      size: Math.random() * 8 + 4
+    });
+  }
+}
+
+/* ===== BACKGROUND LAYERS ===== */
+function initBackground() {
+  // Clouds
+  for (let i = 0; i < 15; i++) {
+    game.clouds.push({
+      x: Math.random() * game.worldWidth,
+      y: Math.random() * H * 0.4,
+      w: 60 + Math.random() * 80,
+      h: 30 + Math.random() * 30,
+      speed: 0.2 + Math.random() * 0.5,
+      opacity: 0.6 + Math.random() * 0.4
+    });
+  }
+  // Stars (background twinkles)
+  for (let i = 0; i < 50; i++) {
+    game.stars.push({
+      x: Math.random() * game.worldWidth,
+      y: Math.random() * H * 0.5,
+      size: Math.random() * 3 + 1,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.5 + Math.random() * 1.5
+    });
+  }
+}
+
+function drawSky() {
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#87CEEB');
+  grad.addColorStop(1, '#B0E0E6');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function drawStars() {
+  game.stars.forEach(star => {
+    const alpha = 0.3 + 0.7 * Math.sin(game.time * star.speed + star.phase);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    const sx = star.x - game.scrollX * 0.1;
+    if (sx < -10 || sx > W + 10) return;
+    ctx.arc(sx, star.y, star.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawClouds() {
+  game.clouds.forEach(cloud => {
+    const cx = cloud.x - game.scrollX * 0.2;
+    if (cx < -200 || cx > W + 200) return;
+    ctx.globalAlpha = cloud.opacity;
+    ctx.fillStyle = '#fff';
+    // Draw cloud as overlapping circles
+    ctx.beginPath();
+    ctx.arc(cx, cloud.y, cloud.h * 0.5, 0, Math.PI * 2);
+    ctx.arc(cx + cloud.w * 0.25, cloud.y - cloud.h * 0.2, cloud.h * 0.6, 0, Math.PI * 2);
+    ctx.arc(cx + cloud.w * 0.5, cloud.y, cloud.h * 0.5, 0, Math.PI * 2);
+    ctx.arc(cx + cloud.w * 0.35, cloud.y + cloud.h * 0.1, cloud.h * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawMountains() {
+  // Far mountains - slow parallax
+  ctx.fillStyle = '#6B8E9F';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 10) {
+    const wx = x + game.scrollX * 0.3;
+    const h = H * 0.4 + Math.sin(wx * 0.002) * 80 + Math.sin(wx * 0.005) * 40;
+    ctx.lineTo(x, h);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Mid mountains
+  ctx.fillStyle = '#5A8F7B';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 10) {
+    const wx = x + game.scrollX * 0.5;
+    const h = H * 0.55 + Math.sin(wx * 0.003 + 1) * 50 + Math.sin(wx * 0.008) * 25;
+    ctx.lineTo(x, h);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawTrees() {
+  // Mid-ground trees
+  const treeSpacing = 300;
+  const startTree = Math.floor(game.scrollX * 0.7 / treeSpacing) - 1;
+  const endTree = startTree + Math.ceil(W / treeSpacing) + 2;
+
+  for (let i = startTree; i < endTree; i++) {
+    const tx = i * treeSpacing - game.scrollX * 0.7;
+    const ty = H * 0.65 + Math.sin(i * 2.5) * 20;
+
+    // Trunk
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(tx - 6, ty, 12, 40);
+
+    // Leaves (triangle)
+    ctx.fillStyle = '#228B22';
+    ctx.beginPath();
+    ctx.moveTo(tx - 30, ty);
+    ctx.lineTo(tx, ty - 60);
+    ctx.lineTo(tx + 30, ty);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(tx - 25, ty - 30);
+    ctx.lineTo(tx, ty - 80);
+    ctx.lineTo(tx + 25, ty - 30);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawGround() {
+  // Grass top
+  ctx.fillStyle = '#7CFC00';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 5) {
+    const wx = x + game.scrollX;
+    ctx.lineTo(x, getTerrainHeight(wx));
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Dirt layer
+  ctx.fillStyle = '#D2691E';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 5) {
+    const wx = x + game.scrollX;
+    ctx.lineTo(x, getTerrainHeight(wx) + 20);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Grass blades (near foreground)
+  const bladeSpacing = 40;
+  const startBlade = Math.floor(game.scrollX / bladeSpacing) - 1;
+  const endBlade = startBlade + Math.ceil(W / bladeSpacing) + 2;
+  for (let i = startBlade; i < endBlade; i++) {
+    const bx = i * bladeSpacing - game.scrollX;
+    const by = getTerrainHeight(i * bladeSpacing);
+    ctx.strokeStyle = '#32CD32';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.quadraticCurveTo(bx + 5, by - 15, bx + 10, by - 5);
+    ctx.stroke();
+  }
+}
+
+/* ===== STATIONS ===== */
+function initStations() {
+  game.stations = [
+    { id: 'about', x: 1200, type: 'mushroom', title: 'Our Story', width: 100, height: 120 },
+    { id: 'courses', x: 2800, type: 'library', title: 'Courses', width: 120, height: 100 },
+    { id: 'team', x: 4500, type: 'circus', title: 'Team', width: 130, height: 110 },
+    { id: 'contact', x: 6200, type: 'postoffice', title: 'Contact', width: 100, height: 100 }
+  ];
+  game.stations.forEach(s => game.stationBounce[s.id] = 0);
+}
+
+function drawStation(station) {
+  const sx = station.x - game.scrollX;
+  if (sx < -200 || sx > W + 200) return;
+
+  const groundH = getTerrainHeight(station.x);
+  const bounce = game.stationBounce[station.id] || 0;
+  const by = groundH - station.height - bounce;
+
+  ctx.save();
+  ctx.translate(sx, by);
+
+  switch (station.type) {
+    case 'mushroom':
+      // Stem
+      ctx.fillStyle = '#F5DEB3';
+      ctx.fillRect(-20, 40, 40, 80);
+      // Cap
+      ctx.fillStyle = '#FF6B6B';
+      ctx.beginPath();
+      ctx.arc(0, 40, 50, Math.PI, 0);
+      ctx.closePath();
+      ctx.fill();
+      // Spots
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(-20, 20, 8, 0, Math.PI * 2);
+      ctx.arc(15, 25, 6, 0, Math.PI * 2);
+      ctx.arc(0, 10, 7, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+
+    case 'library':
+      // Building
+      ctx.fillStyle = '#8B7355';
+      ctx.fillRect(-50, 0, 100, 100);
+      // Roof
+      ctx.fillStyle = '#CD5C5C';
+      ctx.beginPath();
+      ctx.moveTo(-60, 0);
+      ctx.lineTo(0, -40);
+      ctx.lineTo(60, 0);
+      ctx.closePath();
+      ctx.fill();
+      // Door
+      ctx.fillStyle = '#654321';
+      ctx.fillRect(-15, 50, 30, 50);
+      // Windows
+      ctx.fillStyle = '#87CEEB';
+      ctx.fillRect(-35, 20, 20, 20);
+      ctx.fillRect(15, 20, 20, 20);
+      break;
+
+    case 'circus':
+      // Tent body
+      ctx.fillStyle = '#FF6347';
+      ctx.beginPath();
+      ctx.moveTo(-60, 100);
+      ctx.lineTo(0, -20);
+      ctx.lineTo(60, 100);
+      ctx.closePath();
+      ctx.fill();
+      // Stripes
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath();
+      ctx.moveTo(-20, 100);
+      ctx.lineTo(0, -20);
+      ctx.lineTo(10, 100);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(20, 100);
+      ctx.lineTo(0, -20);
+      ctx.lineTo(-10, 100);
+      ctx.closePath();
+      ctx.fill();
+      // Flag
+      ctx.strokeStyle = '#8B4513';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, -20);
+      ctx.lineTo(0, -50);
+      ctx.stroke();
+      ctx.fillStyle = '#FF3333';
+      ctx.beginPath();
+      ctx.moveTo(0, -50);
+      ctx.lineTo(25, -40);
+      ctx.lineTo(0, -30);
+      ctx.closePath();
+      ctx.fill();
+      break;
+
+    case 'postoffice':
+      // Building
+      ctx.fillStyle = '#DEB887';
+      ctx.fillRect(-40, 20, 80, 80);
+      // Roof
+      ctx.fillStyle = '#708090';
+      ctx.beginPath();
+      ctx.moveTo(-50, 20);
+      ctx.lineTo(0, -10);
+      ctx.lineTo(50, 20);
+      ctx.closePath();
+      ctx.fill();
+      // Door
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(-12, 50, 24, 50);
+      // Sign
+      ctx.fillStyle = '#FF3333';
+      ctx.fillRect(-30, 30, 60, 16);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('POST', 0, 42);
+      break;
+  }
+
+  // Label
+  ctx.fillStyle = '#333';
+  ctx.font = 'bold 14px "Fredoka One", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(station.title, 0, station.height + 20);
+
+  ctx.restore();
+}
+
+function checkStationProximity() {
+  const car = game.car;
+  game.stations.forEach(station => {
+    const dist = Math.abs(car.x - station.x);
+    if (dist < 120 && !game.popupOpen) {
+      // Bounce animation
+      if (game.stationBounce[station.id] <= 0) {
+        gsap.to(game.stationBounce, {
+          [station.id]: 15,
+          duration: 0.3,
+          yoyo: true,
+          repeat: 1,
+          ease: 'power2.out'
+        });
+      }
+    }
+  });
+}
+
+function openStation(stationId) {
+  if (game.popupOpen) return;
+  game.popupOpen = stationId;
+  const popup = document.getElementById('popup-' + stationId);
+  if (popup) {
+    popup.classList.add('active');
+    audio.playClick();
+  }
+}
+
+function closePopup() {
+  if (!game.popupOpen) return;
+  const popup = document.getElementById('popup-' + game.popupOpen);
+  if (popup) popup.classList.remove('active');
+  game.popupOpen = null;
+  audio.playClick();
+}
+
+/* ===== CAR DRAWING ===== */
+function drawCar() {
+  const car = game.car;
+  const cx = car.x - game.scrollX;
+  const cy = car.y;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(car.angle);
+
+  // Car body (red)
+  ctx.fillStyle = '#FF3333';
+  ctx.beginPath();
+  ctx.moveTo(-35, -12);
+  ctx.lineTo(-35, -6);
+  ctx.quadraticCurveTo(-35, 0, -29, 0);
+  ctx.lineTo(14, 0);
+  ctx.quadraticCurveTo(20, 0, 20, -6);
+  ctx.lineTo(20, -12);
+  ctx.quadraticCurveTo(20, -18, 14, -18);
+  ctx.lineTo(-29, -18);
+  ctx.quadraticCurveTo(-35, -18, -35, -12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Car top (light blue)
+  ctx.fillStyle = '#87CEEB';
+  ctx.beginPath();
+  ctx.moveTo(-5, -28);
+  ctx.lineTo(-5, -24);
+  ctx.quadraticCurveTo(-5, -20, -1, -20);
+  ctx.lineTo(21, -20);
+  ctx.quadraticCurveTo(25, -20, 25, -24);
+  ctx.lineTo(25, -28);
+  ctx.quadraticCurveTo(25, -32, 21, -32);
+  ctx.lineTo(-1, -32);
+  ctx.quadraticCurveTo(-5, -32, -5, -28);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Headlight
+  ctx.fillStyle = '#FFD700';
+  ctx.fillRect(18, -12, 6, 8);
+
+  // Wheels
+  const wheelY = 8;
+  [-20, 12].forEach(wx => {
+    ctx.save();
+    ctx.translate(wx, wheelY);
+    ctx.rotate(car.wheelRot);
+    // Tire
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(0, 0, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // Rim
+    ctx.fillStyle = '#999';
+    ctx.beginPath();
+    ctx.arc(0, 0, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // Spokes
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(i * Math.PI / 2) * 8, Math.sin(i * Math.PI / 2) * 8);
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+/* ===== PARTICLES ===== */
+function updateParticles() {
+  for (let i = game.particles.length - 1; i >= 0; i--) {
+    const p = game.particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.1;
+    p.life -= 0.02;
+    if (p.life <= 0) game.particles.splice(i, 1);
+  }
+}
+
+function drawParticles() {
+  game.particles.forEach(p => {
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+/* ===== MAIN RENDER LOOP ===== */
+function render() {
+  game.time += 0.016;
+
+  ctx.clearRect(0, 0, W, H);
+
+  drawSky();
+  drawStars();
+  drawClouds();
+  drawMountains();
+  drawTrees();
+  drawGround();
+
+  // Draw stations
+  game.stations.forEach(drawStation);
+
+  // Update and draw car
+  if (game.started) {
+    updateCar();
+    checkStationProximity();
+  }
+  drawCar();
+
+  // Particles
+  updateParticles();
+  drawParticles();
+
+  requestAnimationFrame(render);
+}
+
+/* ===== INPUT HANDLING ===== */
+window.addEventListener('keydown', e => {
+  game.keys[e.code] = true;
+
+  // Prevent default for game keys
+  if (['ArrowLeft','ArrowRight','ArrowUp','Space','KeyA','KeyD'].includes(e.code)) {
+    e.preventDefault();
+  }
+
+  // Space to interact with station
+  if (e.code === 'Space' && game.started && !game.popupOpen) {
+    const car = game.car;
+    game.stations.forEach(station => {
+      if (Math.abs(car.x - station.x) < 120) {
+        openStation(station.id);
+      }
+    });
+  }
+
+  // Escape to close popup
+  if (e.code === 'Escape') {
+    closePopup();
+  }
+});
+
+window.addEventListener('keyup', e => {
+  game.keys[e.code] = false;
+});
+
+/* ===== CUSTOM CURSOR ===== */
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+
+/* ===== POPUP HANDLERS ===== */
+document.querySelectorAll('.popup-close').forEach(btn => {
+  btn.addEventListener('click', closePopup);
+});
+
+document.querySelectorAll('.popup-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closePopup();
+  });
+});
+
+// Hover sounds on interactive elements
+document.querySelectorAll('button, .course-card, .team-avatar').forEach(el => {
+  el.addEventListener('mouseenter', () => audio.playHover());
+});
+
+/* ===== MUSIC TOGGLE ===== */
+const musicToggle = document.getElementById('music-toggle');
+const musicIconOn = document.getElementById('music-icon-on');
+const musicIconOff = document.getElementById('music-icon-off');
+musicToggle.addEventListener('click', () => {
+  const muted = audio.toggleMute();
+  musicIconOn.style.display = muted ? 'none' : 'block';
+  musicIconOff.style.display = muted ? 'block' : 'none';
+  musicToggle.classList.toggle('muted', muted);
+  audio.playClick();
+});
+
+/* ===== CONTACT FORM ===== */
+document.getElementById('contact-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  const plane = document.getElementById('paper-plane');
+  btn.querySelector('span').textContent = 'SENT!';
+  btn.classList.add('sent');
+  plane.classList.add('fly');
+  audio.playClick();
+  setTimeout(() => {
+    closePopup();
+    setTimeout(() => {
+      btn.querySelector('span').textContent = 'SEND LETTER';
+      btn.classList.remove('sent');
+      plane.classList.remove('fly');
+      e.target.reset();
+    }, 300);
+  }, 1500);
+});
+
+/* ===== LOADING SEQUENCE ===== */
+function initLoading() {
+  const loadingText = document.getElementById('loading-text');
+  const loadingStars = document.getElementById('loading-stars');
+  const loadingCar = document.getElementById('loading-car');
+  const loadingScreen = document.getElementById('loading-screen');
+
+  // Create letter spans
+  const text = 'WONDERLAND LOADING...';
+  text.split('').forEach((char, i) => {
+    const span = document.createElement('span');
+    span.textContent = char === ' ' ? '\u00A0' : char;
+    loadingText.appendChild(span);
+  });
+
+  // Create stars
+  const totalStars = 10;
+  for (let i = 0; i < totalStars; i++) {
+    const star = document.createElement('div');
+    star.className = 'loading-star';
+    star.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+    loadingStars.appendChild(star);
+  }
+
+  const letters = loadingText.querySelectorAll('span');
+  const stars = loadingStars.querySelectorAll('.loading-star');
+
+  // Timeline
+  const tl = gsap.timeline();
+
+  // Car drives in
+  tl.to(loadingCar, {
+    left: '50%',
+    duration: 1.5,
+    ease: 'power2.out',
+    onUpdate: function() {
+      // Smoke particles
+      if (Math.random() > 0.5) {
+        const smoke = document.createElement('div');
+        smoke.className = 'loading-smoke';
+        const rect = loadingCar.getBoundingClientRect();
+        smoke.style.left = (rect.left + 10) + 'px';
+        smoke.style.top = (rect.top + rect.height / 2) + 'px';
+        smoke.style.background = `hsl(${Math.random() * 60 + 300}, 70%, 70%)`;
+        loadingScreen.appendChild(smoke);
+        gsap.to(smoke, {
+          x: -40 - Math.random() * 30,
+          y: -20 - Math.random() * 20,
+          opacity: 0,
+          scale: 2,
+          duration: 1,
+          onComplete: () => smoke.remove()
+        });
+      }
+    }
+  });
+
+  // Letters pop in
+  tl.to(letters, {
+    opacity: 1,
+    y: 0,
+    rotation: 0,
+    duration: 0.4,
+    stagger: 0.05,
+    ease: 'back.out(2)'
+  }, '-=0.5');
+
+  // Stars light up
+  tl.add(() => {
+    stars.forEach((star, i) => {
+      gsap.to(star, {
+        color: '#FFD700',
+        scale: 1.2,
+        delay: i * 0.15,
+        duration: 0.1
+      });
+    });
+  }, '-=0.5');
+
+  // Car drives out
+  tl.to(loadingCar, {
+    left: '110%',
+    duration: 0.8,
+    ease: 'power2.in',
+    delay: 0.5
+  });
+
+  // Fade out loading screen
+  tl.to(loadingScreen, {
+    opacity: 0,
+    duration: 0.5,
+    onComplete: () => {
+      loadingScreen.style.display = 'none';
+      game.started = true;
+      initHeroAnimation();
+      audio.startMusic();
+    }
+  });
+}
+
+/* ===== HERO ANIMATION ===== */
+function initHeroAnimation() {
+  const title = document.getElementById('hero-title');
+  const subtitle = document.querySelector('.hero-subtitle');
+  const hint = document.querySelector('.hero-hint');
+
+  // Colorful letters
+  const colors = ['#FF3333', '#FFD700', '#7CFC00', '#87CEEB', '#FF6B6B', '#FFA500', '#32CD32', '#FF69B4', '#00CED1', '#FF1493', '#ADFF2F'];
+  const text = 'WONDERLAND';
+  text.split('').forEach((char, i) => {
+    const span = document.createElement('span');
+    span.className = 'letter';
+    span.textContent = char;
+    span.style.color = colors[i % colors.length];
+    title.appendChild(span);
+  });
+
+  const letters = title.querySelectorAll('.letter');
+
+  gsap.to(letters, {
+    opacity: 1,
+    y: 0,
+    rotation: 0,
+    duration: 0.6,
+    stagger: 0.08,
+    ease: 'back.out(1.7)',
+    delay: 0.2
+  });
+
+  gsap.to(subtitle, {
+    opacity: 1,
+    y: 0,
+    duration: 0.8,
+    ease: 'power2.out',
+    delay: 0.8
+  });
+
+  gsap.to(hint, {
+    opacity: 1,
+    duration: 0.6,
+    delay: 1.2
+  });
+}
+
+/* ===== TILT 3D CARDS ===== */
+document.querySelectorAll('.course-card, .team-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `perspective(500px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) scale(1.05)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
+});
+
+/* ===== INITIALIZATION ===== */
+initBackground();
+initStations();
+initLoading();
+render();
+
+// First interaction starts audio context
+document.addEventListener('click', () => {
+  if (!audio.ctx) audio.init();
+}, { once: true });
+</script>
+</body>
+</html>

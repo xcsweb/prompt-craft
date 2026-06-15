@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AURORA — Design that feels inevitable.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ===== 基础重置 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+  /* ===== 颜色系统 ===== */
+  :root {
+    --bg: #F4F2ED;
+    --text: #1A1A1A;
+    --accent: #FF4D2E;
+    --muted: #8A8A8A;
+    --card: #F4F2ED;
+    --border: rgba(26, 26, 26, 0.12);
+  }
+
+  /* ===== 字体工具类 ===== */
+  .display { font-family: 'Fraunces', Georgia, serif; font-weight: 350; letter-spacing: -0.02em; line-height: 1.08; }
+  .mono { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  .mark { background: transparent; color: var(--accent); font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; }
+
+  /* ===== 顶部导航 ===== */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 clamp(24px, 5vw, 64px);
+    z-index: 100;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: 0.08em;
+  }
+  .nav-menu { display: flex; gap: 40px; font-size: 14px; font-weight: 500; }
+  .nav-menu a { transition: color 0.3s; }
+  .nav-menu a:hover { color: var(--accent); }
+  .nav-cta {
+    padding: 12px 24px;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.3s ease, background 0.3s;
+  }
+  .nav-cta:hover { background: var(--accent); transform: scale(1.03); }
+
+  @media (max-width: 768px) {
+    .nav-menu { display: none; }
+    .nav-cta { padding: 10px 18px; font-size: 13px; }
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    min-height: 100vh;
+    position: relative;
+    padding: 160px clamp(24px, 6vw, 96px) 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .hero-tag {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .hero-title {
+    font-size: clamp(56px, 11vw, 180px);
+    line-height: 1.05;
+    margin-bottom: 8px;
+  }
+  .hero-title .line { display: block; overflow: hidden; }
+  .hero-title .word { display: inline-block; transform: translateY(110%); will-change: transform; }
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .hero-desc {
+    max-width: 540px;
+    margin-top: 48px;
+    font-size: clamp(15px, 1.1vw, 17px);
+    line-height: 1.65;
+    color: #4a4a4a;
+    opacity: 0;
+  }
+
+  .hero-ctas {
+    margin-top: 48px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    opacity: 0;
+  }
+  .btn-primary {
+    padding: 18px 32px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-primary:hover { box-shadow: 0 12px 30px -10px var(--accent); transform: translateY(-2px); }
+  .btn-secondary {
+    padding: 18px 32px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: border-color 0.3s, color 0.3s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-meta {
+    position: absolute;
+    right: clamp(24px, 6vw, 96px);
+    bottom: 80px;
+    text-align: right;
+    font-family: 'Fraunces', serif;
+  }
+  .hero-meta .num { font-size: clamp(36px, 5vw, 64px); font-weight: 350; line-height: 1; }
+  .hero-meta .est { font-size: 13px; letter-spacing: 0.2em; color: var(--muted); margin-top: 8px; }
+
+  /* ===== Noise 覆盖层 ===== */
+  .noise-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    z-index: 1;
+    mix-blend-mode: multiply;
+  }
+
+  /* ===== Logo Cloud ===== */
+  .logo-cloud {
+    padding: 14vh clamp(24px, 6vw, 96px);
+    border-top: 1px solid var(--border);
+  }
+  .logo-cloud-title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 48px;
+    text-align: center;
+  }
+  .logo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 48px 24px;
+    text-align: center;
+  }
+  .logo-grid span {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(18px, 2.2vw, 28px);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+  .logo-grid span:hover { color: var(--text); }
+  @media (max-width: 768px) { .logo-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; } }
+
+  /* ===== Manifesto ===== */
+  .manifesto {
+    padding: 20vh clamp(24px, 10vw, 160px);
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+  .manifesto-title {
+    font-size: clamp(36px, 5.5vw, 84px);
+    line-height: 1.1;
+    max-width: 1200px;
+  }
+  .manifesto-body {
+    max-width: 680px;
+    align-self: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    font-size: clamp(15px, 1.1vw, 18px);
+    line-height: 1.7;
+    color: #3a3a3a;
+  }
+  @media (max-width: 768px) { .manifesto-body { align-self: flex-start; } }
+
+  /* ===== Feature Grid ===== */
+  .features {
+    padding: 20vh clamp(24px, 6vw, 96px);
+    border-top: 1px solid var(--border);
+  }
+  .features-header {
+    margin-bottom: 96px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .features-title {
+    font-size: clamp(40px, 6vw, 96px);
+    line-height: 1.08;
+  }
+  .features-title span { display: block; }
+  .features-sub { font-size: 14px; color: var(--muted); letter-spacing: 0.1em; }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 2px solid var(--border);
+  }
+  .feature-card {
+    background: var(--bg);
+    padding: 48px 36px;
+    transition: background 0.4s, transform 0.4s;
+    cursor: pointer;
+    position: relative;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+  }
+  .feature-card:hover { background: #fff; transform: scale(1.015); z-index: 2; box-shadow: 0 30px 60px -30px rgba(0,0,0,0.15); }
+  .feature-card .icon {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    color: var(--accent);
+  }
+  .feature-card h3 {
+    font-size: clamp(20px, 1.8vw, 26px);
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .feature-card p { font-size: 14px; line-height: 1.65; color: #5a5a5a; }
+
+  @media (max-width: 768px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    .features-header { flex-direction: column; margin-bottom: 56px; }
+  }
+
+  /* ===== Large Feature ===== */
+  .large-feature {
+    padding: 25vh clamp(24px, 6vw, 96px);
+    background: linear-gradient(180deg, var(--bg) 0%, #FFFFFF 100%);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .feature-visual {
+    aspect-ratio: 4/5;
+    background: linear-gradient(135deg, var(--accent) 0%, #FF8A3D 100%);
+    border-radius: 32px;
+    position: relative;
+    overflow: hidden;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: #fff;
+  }
+  .feature-visual::before {
+    content: '';
+    position: absolute;
+    top: 40px; left: 40px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+  }
+  .feature-visual::after {
+    content: '';
+    position: absolute;
+    top: 80px; right: 60px;
+    width: 140px; height: 140px;
+    border-radius: 30px;
+    background: rgba(255,255,255,0.12);
+    transform: rotate(20deg);
+  }
+  .feature-visual .visual-label {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+  }
+  .feature-visual h3 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 3vw, 44px);
+    line-height: 1.1;
+    font-weight: 400;
+    position: relative;
+    z-index: 2;
+  }
+  .large-feature-text h2 {
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 1.08;
+    margin-bottom: 32px;
+  }
+  .large-feature-text p {
+    font-size: clamp(15px, 1.1vw, 18px);
+    line-height: 1.7;
+    color: #4a4a4a;
+    max-width: 480px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) {
+    .large-feature { grid-template-columns: 1fr; gap: 48px; }
+  }
+
+  /* ===== Stats ===== */
+  .stats {
+    padding: 15vh clamp(24px, 6vw, 96px);
+    background: #fff;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 48px;
+  }
+  .stat-item .num {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(48px, 6vw, 104px);
+    line-height: 1;
+    font-weight: 350;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .stat-item .label {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+  @media (max-width: 768px) { .stats { grid-template-columns: repeat(2, 1fr); gap: 32px; } }
+
+  /* ===== CTA ===== */
+  .cta {
+    padding: 25vh clamp(24px, 6vw, 96px);
+    background: var(--bg);
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .cta h2 {
+    font-size: clamp(56px, 10vw, 160px);
+    line-height: 1.05;
+    margin-bottom: 48px;
+  }
+  .cta .btn-primary { padding: 22px 48px; font-size: 16px; }
+
+  /* ===== Footer ===== */
+  .footer {
+    padding: 10vh clamp(24px, 6vw, 96px) 6vh;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 48px;
+  }
+  .footer-logo { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; margin-bottom: 16px; }
+  .footer-desc { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 280px; }
+  .footer-col h4 { font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 20px; color: var(--text); }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .footer-col a { font-size: 14px; color: #5a5a5a; transition: color 0.3s; }
+  .footer-col a:hover { color: var(--accent); }
+  .footer-bottom {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  @media (max-width: 768px) { .footer { grid-template-columns: 1fr 1fr; } }
+
+  /* ===== 滚动入场类 ===== */
+  .reveal { opacity: 0; transform: translateY(30px); will-change: transform, opacity; }
+</style>
+</head>
+<body>
+
+<!-- SVG Noise 纹理 -->
+<svg class="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+  <filter id="noise">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
+  </filter>
+  <rect width="100%" height="100%" filter="url(#noise)" />
+</svg>
+
+<!-- 导航 -->
+<nav class="nav">
+  <div class="nav-logo">AURORA</div>
+  <div class="nav-menu">
+    <a href="#features">Product</a>
+    <a href="#manifesto">Philosophy</a>
+    <a href="#">Customers</a>
+    <a href="#">Pricing</a>
+  </div>
+  <button class="nav-cta magnetic">Get started</button>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-tag">Next-generation product analytics</div>
+  <h1 class="hero-title display">
+    <span class="line"><span class="word">Design</span> <span class="word">that</span></span>
+    <span class="line"><span class="word"><em>feels</em></span> <span class="word">inevitable.</span></span>
+  </h1>
+  <p class="hero-desc">
+    Aurora brings clarity to the chaos of modern product work. A single system for analytics, automation, and collaboration — designed to get out of your way and let ideas move at the speed of thought.
+  </p>
+  <div class="hero-ctas">
+    <button class="btn-primary magnetic">Start free <span>→</span></button>
+    <button class="btn-secondary magnetic">Book a demo</button>
+  </div>
+  <div class="hero-meta">
+    <div class="num display">01/06</div>
+    <div class="est">EST. 2024</div>
+  </div>
+</section>
+
+<!-- Logo Cloud -->
+<section class="logo-cloud reveal">
+  <div class="logo-cloud-title">Trusted by teams at</div>
+  <div class="logo-grid">
+    <span>HELIOS</span><span>NORTHSTAR</span><span>MERIDIAN</span><span>OBSIDIAN</span>
+    <span>ATLAS CO.</span><span>PENTAGON</span><span>LUMEN</span><span>VERTEX</span>
+  </div>
+</section>
+
+<!-- Manifesto -->
+<section class="manifesto" id="manifesto">
+  <h2 class="manifesto-title display reveal">
+    The quiet power of systems that <span class="mark">think ahead.</span>
+  </h2>
+  <div class="manifesto-body reveal">
+    <p>Most software gets in the way. It fills your screen with noise, forces you into its workflow, and makes simple things complex. We built Aurora as the opposite — an interface so considered it becomes invisible.</p>
+    <p>Every pixel, every interaction, every delay has been interrogated. The result is a tool that <span style="color:var(--accent);font-weight:500;">amplifies intent</span> instead of demanding attention. It doesn't shout. It doesn't beg. It simply works, and that is the point.</p>
+    <p>Teams at over 150 countries use Aurora to ship faster, collaborate deeper, and understand their product without needing a degree in data science.</p>
+  </div>
+</section>
+
+<!-- Feature Grid -->
+<section class="features" id="features">
+  <div class="features-header reveal">
+    <h2 class="features-title display">
+      <span>Everything you need.</span>
+      <span style="color:var(--accent);font-style:italic;">Nothing you don't.</span>
+    </h2>
+    <div class="features-sub">SIX MODULES · ONE PLATFORM</div>
+  </div>
+  <div class="feature-grid reveal">
+    <div class="feature-card">
+      <div class="icon">01</div>
+      <h3>Real-time analytics</h3>
+      <p>Event-level visibility into every user action. Stream data the moment it happens, with sub-second latency across regions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">02</div>
+      <h3>Smart automations</h3>
+      <p>Natural-language triggers that convert intent into workflows. Describe what you want; Aurora handles the rest.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">03</div>
+      <h3>Team collaboration</h3>
+      <p>Shared context, async comments, and a versioned history of every decision. Built for remote-first teams.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">04</div>
+      <h3>Custom dashboards</h3>
+      <p>Drag-and-drop composability with 80+ chart types. Export, embed, or publish with a single click.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">05</div>
+      <h3>Enterprise security</h3>
+      <p>SOC 2 Type II, GDPR, HIPAA-ready. SSO, SCIM, and audit logs included on every business plan.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">06</div>
+      <h3>Lightning-fast API</h3>
+      <p>GraphQL and REST, with predictable pricing and an SDK for every major language. Ship in minutes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Large Feature -->
+<section class="large-feature">
+  <div class="feature-visual reveal">
+    <div class="visual-label">N° 01 — CORE</div>
+    <h3>Thinking visually, shipping daily.</h3>
+  </div>
+  <div class="large-feature-text reveal">
+    <h2 class="display">Work the way your <span class="mark">brain</span> thinks.</h2>
+    <p>Aurora maps to the mental models people already use. There's no training course, no onboarding checklist, no mandatory academy. You open it, you understand it, you use it.</p>
+    <p>Under the hood, a state-of-the-art columnar engine powers queries over billions of events. What takes minutes elsewhere responds in milliseconds here — and that changes how teams think.</p>
+    <button class="btn-secondary magnetic" style="margin-top:24px;">Read the architecture whitepaper →</button>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats">
+  <div class="stat-item reveal">
+    <div class="num counter" data-target="99.9">0</div>
+    <div class="label">% Uptime</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="num counter" data-target="2.4">0</div>
+    <div class="label">Million users</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="num counter" data-target="150">0</div>
+    <div class="label">+ Countries</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="num counter" data-target="0" data-suffix="">$0</div>
+    <div class="label">To start</div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta reveal">
+  <h2 class="display">Ready when <span class="mark">you</span> are.</h2>
+  <button class="btn-primary magnetic">Start free — no credit card →</button>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-col">
+    <div class="footer-logo">AURORA</div>
+    <div class="footer-desc">Design-forward product analytics. Built quietly in Copenhagen, shipped loudly to the world.</div>
+  </div>
+  <div class="footer-col">
+    <h4>Product</h4>
+    <ul><li><a href="#">Analytics</a></li><li><a href="#">Automations</a></li><li><a href="#">Dashboards</a></li><li><a href="#">API</a></li></ul>
+  </div>
+  <div class="footer-col">
+    <h4>Company</h4>
+    <ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li><li><a href="#">Contact</a></li></ul>
+  </div>
+  <div class="footer-col">
+    <h4>Resources</h4>
+    <ul><li><a href="#">Docs</a></li><li><a href="#">Changelog</a></li><li><a href="#">Status</a></li><li><a href="#">Blog</a></li></ul>
+  </div>
+  <div class="footer-col">
+    <h4>Legal</h4>
+    <ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Security</a></li><li><a href="#">Cookies</a></li></ul>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 AURORA ANALYTICS APS</span>
+    <span>COPENHAGEN · DENMARK</span>
+    <span>V. 2.4.1</span>
+  </div>
+</footer>
+
+<!-- Motion + Lenis -->
+<script type="module">
+  import { animate, stagger, spring, inView } from 'https://esm.sh/motion';
+  import Lenis from 'https://esm.sh/@studio-freight/lenis';
+
+  // ===== Lenis 平滑滚动 =====
+  const lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+  });
+  function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+
+  // ===== Hero 文字遮罩入场 =====
+  const words = document.querySelectorAll('.hero-title .word');
+  animate(words, { y: 0 }, {
+    delay: stagger(0.08, { start: 0.2 }),
+    duration: 0.9,
+    easing: [0.22, 0.03, 0.26, 1],
+  });
+
+  // 描述入场
+  animate('.hero-desc', { opacity: 1, y: [-20, 0] }, { delay: 0.8, duration: 0.8, easing: [0.22, 0.03, 0.26, 1] });
+
+  // CTA 入场（spring）
+  animate('.hero-ctas', { opacity: 1, y: [20, 0] }, { delay: 1.0, duration: 0.8, easing: [0.22, 0.03, 0.26, 1] });
+
+  // ===== Section 入场 =====
+  document.querySelectorAll('.reveal').forEach((el) => {
+    inView(el, () => {
+      animate(el, { opacity: 1, y: 0 }, { duration: 0.8, easing: [0.22, 0.03, 0.26, 1] });
+      return () => {};
+    }, { amount: 0.2 });
+  });
+
+  // ===== 数字滚动 =====
+  document.querySelectorAll('.counter').forEach((el) => {
+    const target = parseFloat(el.dataset.target);
+    const suffix = el.dataset.suffix !== undefined ? el.dataset.suffix : (target === 99.9 ? '%' : '');
+    inView(el, () => {
+      const obj = { value: 0 };
+      animate(obj, { value: target }, {
+        duration: 1.6,
+        easing: [0.22, 0.03, 0.26, 1],
+        onUpdate: () => {
+          if (target === 99.9) el.textContent = obj.value.toFixed(1) + '%';
+          else if (target === 2.4) el.textContent = obj.value.toFixed(1) + 'M';
+          else el.textContent = Math.round(obj.value).toString();
+        },
+      });
+      return () => {};
+    }, { amount: 0.5 });
+  });
+
+  // ===== 磁吸力按钮 =====
+  document.querySelectorAll('.magnetic').forEach((btn) => {
+    btn.addEventListener('mousemove', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      animate(btn, { x: x * 0.25, y: y * 0.25 }, { duration: 0.3, easing: [0.22, 0.03, 0.26, 1] });
+    });
+    btn.addEventListener('mouseleave', () => {
+      animate(btn, { x: 0, y: 0 }, { duration: 0.5, easing: [0.22, 0.03, 0.26, 1] });
+    });
+  });
+</script>
+</body>
+</html>

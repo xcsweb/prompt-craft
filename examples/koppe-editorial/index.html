@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KOPPE — Specialty Coffee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <script type="importmap">
+  {
+    "imports": {
+      "gsap": "https://esm.sh/gsap@3.12.5",
+      "gsap/ScrollTrigger": "https://esm.sh/gsap@3.12.5/ScrollTrigger"
+    }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #F5F3EF;
+      --text: #1A1A1A;
+      --accent: #D4A574;
+      --accent-light: #D4A574;
+      --accent-medium: #8B6914;
+      --accent-dark: #3D2314;
+      --bg-light: #FAF8F4;
+      --bg-medium: #F5F3EF;
+      --bg-dark: #EDE9E2;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: auto;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      body {
+        cursor: auto;
+      }
+      .custom-cursor {
+        display: none !important;
+      }
+    }
+
+    /* Mobile cursor */
+    @media (max-width: 768px) {
+      body {
+        cursor: auto;
+      }
+      .custom-cursor {
+        display: none !important;
+      }
+    }
+
+    /* Typography */
+    .font-serif {
+      font-family: 'Newsreader', serif;
+    }
+    .font-sans {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-logo {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      color: var(--text);
+      position: relative;
+    }
+
+    .loading-ink {
+      position: absolute;
+      inset: -20% -10%;
+      background: radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%);
+      opacity: 0;
+      filter: blur(20px);
+      transform: scale(0.5);
+    }
+
+    .loading-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-top: 1.5rem;
+      opacity: 0.6;
+    }
+
+    /* Custom Cursor */
+    .custom-cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--text);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10000;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s cubic-bezier(0.7, 0, 0.2, 1),
+                  height 0.3s cubic-bezier(0.7, 0, 0.2, 1),
+                  background 0.3s cubic-bezier(0.7, 0, 0.2, 1);
+      mix-blend-mode: difference;
+    }
+
+    .custom-cursor.expanded {
+      width: 60px;
+      height: 60px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .custom-cursor-text {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10001;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text);
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .custom-cursor-text.visible {
+      opacity: 1;
+    }
+
+    /* Noise overlay */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.04;
+    }
+
+    /* Audio toggle */
+    .audio-toggle {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--text);
+      border-radius: 50%;
+      background: transparent;
+      cursor: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .audio-toggle:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .audio-toggle svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    /* Roast Switcher */
+    .roast-switcher {
+      position: fixed;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: rgba(245, 243, 239, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(26, 26, 26, 0.1);
+      padding: 0.5rem;
+    }
+
+    .roast-option {
+      position: relative;
+      padding: 0.75rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text);
+      cursor: none;
+      background: none;
+      border: none;
+      transition: color 0.3s;
+    }
+
+    .roast-option::after {
+      content: '';
+      position: absolute;
+      bottom: 0.25rem;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.4s cubic-bezier(0.7, 0, 0.2, 1), left 0.4s cubic-bezier(0.7, 0, 0.2, 1);
+    }
+
+    .roast-option.active::after {
+      width: 60%;
+      left: 20%;
+    }
+
+    /* Sections */
+    section {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      padding: 6rem 4rem;
+    }
+
+    @media (max-width: 768px) {
+      section {
+        padding: 4rem 1.5rem;
+      }
+      .roast-switcher {
+        top: 1rem;
+        padding: 0.35rem;
+      }
+      .roast-option {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.6rem;
+      }
+    }
+
+    /* Hero */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-logo {
+      position: absolute;
+      top: 2rem;
+      left: 4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(3.5rem, 12vw, 10rem);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .hero-title-line {
+      display: block;
+      overflow: hidden;
+    }
+
+    .hero-title-line span {
+      display: block;
+      transform: translateY(110%);
+    }
+
+    .hero-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(0.875rem, 1.2vw, 1.125rem);
+      font-weight: 400;
+      margin-top: 2rem;
+      opacity: 0.7;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 3rem;
+      right: 4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0.6;
+    }
+
+    .hero-cup {
+      position: absolute;
+      right: 8%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 280px;
+      height: 340px;
+    }
+
+    .cup-shape {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #E8E4DE 0%, #D5CFC7 50%, #C8C2B8 100%);
+      border-radius: 40% 40% 45% 45%;
+      position: relative;
+      box-shadow: 
+        inset -20px -10px 40px rgba(0,0,0,0.08),
+        20px 30px 60px rgba(0,0,0,0.12),
+        0 0 0 1px rgba(0,0,0,0.05);
+    }
+
+    .cup-shape::before {
+      content: '';
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 25%;
+      background: linear-gradient(180deg, rgba(61,35,20,0.9) 0%, rgba(139,105,20,0.7) 100%);
+      border-radius: 50%;
+      box-shadow: inset 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .cup-handle {
+      position: absolute;
+      right: -50px;
+      top: 30%;
+      width: 60px;
+      height: 100px;
+      border: 12px solid #D5CFC7;
+      border-left: none;
+      border-radius: 0 50% 50% 0;
+      box-shadow: 5px 5px 15px rgba(0,0,0,0.08);
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        padding: 2rem;
+      }
+      .hero-logo {
+        left: 2rem;
+        top: 1.5rem;
+      }
+      .hero-cup {
+        display: none;
+      }
+      .hero-scroll {
+        right: 2rem;
+        bottom: 2rem;
+      }
+    }
+
+    /* Origin */
+    .origin {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .origin-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .origin-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 400;
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+
+    .origin-title {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 300;
+    }
+
+    .origin-content {
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+      padding-top: 2rem;
+    }
+
+    .origin-item {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+
+    .origin-tag {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      transition: background 0.4s cubic-bezier(0.7, 0, 0.2, 1), color 0.4s cubic-bezier(0.7, 0, 0.2, 1), border-color 0.4s;
+      cursor: none;
+    }
+
+    .origin-tag:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .origin-text {
+      font-size: clamp(1rem, 1.2vw, 1.125rem);
+      line-height: 1.7;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      .origin {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .origin-content {
+        padding-top: 0;
+        gap: 2rem;
+      }
+    }
+
+    /* Roast */
+    .roast {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .roast-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .roast-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .roast-title {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 300;
+    }
+
+    .roast-cards {
+      display: flex;
+      gap: 2rem;
+      width: 100%;
+      max-width: 1000px;
+      justify-content: center;
+    }
+
+    .roast-card {
+      flex: 1;
+      max-width: 280px;
+      padding: 3rem 2rem;
+      border-left: 2px solid transparent;
+      cursor: none;
+      transition: border-color 0.8s cubic-bezier(0.7, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .roast-card.active {
+      border-left-color: var(--accent);
+    }
+
+    .roast-card-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      transform: translateX(-101%);
+      transition: transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
+      z-index: 0;
+    }
+
+    .roast-card:hover .roast-card-bg {
+      transform: translateX(0);
+    }
+
+    .roast-card:hover .roast-card-content {
+      color: #fff;
+    }
+
+    .roast-card-content {
+      position: relative;
+      z-index: 1;
+      transition: color 0.4s cubic-bezier(0.7, 0, 0.2, 1);
+    }
+
+    .roast-card-name {
+      font-family: 'Newsreader', serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      margin-bottom: 1rem;
+    }
+
+    .roast-card-temp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 400;
+      margin-bottom: 1.5rem;
+      opacity: 0.6;
+    }
+
+    .roast-card-desc {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      opacity: 0.7;
+    }
+
+    @media (max-width: 768px) {
+      .roast-cards {
+        flex-direction: column;
+        align-items: center;
+      }
+      .roast-card {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+
+    /* Process */
+    .process-wrapper {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .process-container {
+      display: flex;
+      width: 400vw;
+      height: 100%;
+    }
+
+    .process-step {
+      width: 100vw;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4rem;
+      padding: 4rem;
+      position: relative;
+    }
+
+    .process-number {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(6rem, 15vw, 12rem);
+      font-weight: 300;
+      line-height: 1.1;
+      position: relative;
+      -webkit-text-stroke: 1.5px var(--text);
+      color: transparent;
+      transition: color 0.6s cubic-bezier(0.7, 0, 0.2, 1);
+    }
+
+    .process-number.filled {
+      color: var(--text);
+    }
+
+    .process-content {
+      max-width: 400px;
+    }
+
+    .process-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .process-title {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+    }
+
+    .process-desc {
+      font-size: clamp(1rem, 1.2vw, 1.125rem);
+      line-height: 1.7;
+      opacity: 0.8;
+    }
+
+    .process-image {
+      width: 300px;
+      height: 400px;
+      background: linear-gradient(135deg, #E8E4DE, #D5CFC7);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .process-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.05) 100%);
+    }
+
+    @media (max-width: 768px) {
+      .process-wrapper {
+        height: auto;
+        overflow: visible;
+      }
+      .process-container {
+        width: 100%;
+        flex-direction: column;
+      }
+      .process-step {
+        width: 100%;
+        height: auto;
+        min-height: 80vh;
+        flex-direction: column;
+        padding: 3rem 1.5rem;
+      }
+      .process-image {
+        width: 100%;
+        max-width: 300px;
+        height: 250px;
+      }
+    }
+
+    /* Menu */
+    .menu {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .menu-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .menu-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .menu-title {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 300;
+    }
+
+    .menu-list {
+      border-top: 1px solid rgba(26, 26, 26, 0.15);
+    }
+
+    .menu-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 2rem;
+      align-items: center;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid rgba(26, 26, 26, 0.15);
+      cursor: none;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.3s;
+    }
+
+    .menu-item-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      transform: translateX(-101%);
+      transition: transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
+      z-index: 0;
+    }
+
+    .menu-item:hover .menu-item-bg {
+      transform: translateX(0);
+    }
+
+    .menu-item:hover .menu-item-content,
+    .menu-item:hover .menu-item-origin,
+    .menu-item:hover .menu-item-price,
+    .menu-item:hover .menu-item-arrow {
+      color: #fff;
+    }
+
+    .menu-item-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .menu-item-name {
+      font-family: 'Newsreader', serif;
+      font-size: 1.25rem;
+      font-weight: 300;
+    }
+
+    .menu-item-origin {
+      position: relative;
+      z-index: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      transition: color 0.3s;
+    }
+
+    .menu-item-price {
+      position: relative;
+      z-index: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 400;
+      transition: color 0.3s;
+    }
+
+    .menu-item-arrow {
+      position: relative;
+      z-index: 1;
+      font-size: 1.2rem;
+      transition: transform 0.3s cubic-bezier(0.7, 0, 0.2, 1), color 0.3s;
+      opacity: 0.4;
+    }
+
+    .menu-item:hover .menu-item-arrow {
+      transform: translateX(8px);
+    }
+
+    @media (max-width: 768px) {
+      .menu-item {
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+      }
+      .menu-item-origin {
+        display: none;
+      }
+    }
+
+    /* CTA */
+    .cta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 80vh;
+    }
+
+    .cta-title {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(2.5rem, 8vw, 6rem);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 3rem;
+    }
+
+    .magnetic-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem 3rem;
+      border: 1px solid var(--text);
+      background: transparent;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: none;
+      overflow: hidden;
+      transition: color 0.4s cubic-bezier(0.7, 0, 0.2, 1);
+    }
+
+    .magnetic-btn-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      transform: translateY(101%);
+      transition: transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
+      z-index: 0;
+    }
+
+    .magnetic-btn:hover .magnetic-btn-bg {
+      transform: translateY(0);
+    }
+
+    .magnetic-btn:hover {
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .magnetic-btn span {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Footer */
+    .footer {
+      min-height: auto;
+      padding: 4rem;
+      border-top: 1px solid rgba(26, 26, 26, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .footer-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .footer-address {
+      font-size: 0.875rem;
+      opacity: 0.6;
+      line-height: 1.6;
+      text-align: right;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      justify-content: flex-end;
+    }
+
+    .footer-social a {
+      color: var(--text);
+      opacity: 0.5;
+      transition: opacity 0.3s, color 0.3s;
+      text-decoration: none;
+      cursor: none;
+    }
+
+    .footer-social a:hover {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2rem;
+        padding: 3rem 1.5rem;
+      }
+      .footer-address {
+        text-align: left;
+      }
+      .footer-social {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-logo">
+      KOPPE
+      <div class="loading-ink" id="loadingInk"></div>
+    </div>
+    <div class="loading-text">KOPPE · EST. 2026</div>
+  </div>
+
+  <!-- Noise Overlay -->
+  <svg class="noise-overlay" id="noiseOverlay">
+    <filter id="noiseFilter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+  </svg>
+
+  <!-- Custom Cursor -->
+  <div class="custom-cursor" id="customCursor"></div>
+  <div class="custom-cursor-text" id="cursorText"></div>
+
+  <!-- Audio Toggle -->
+  <button class="audio-toggle" id="audioToggle" aria-label="Toggle ambient sound">
+    <svg id="audioIconOn" viewBox="0 0 24 24" style="display:none;">
+      <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+      <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/>
+    </svg>
+    <svg id="audioIconOff" viewBox="0 0 24 24">
+      <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+      <line x1="23" y1="9" x2="17" y2="15"/>
+      <line x1="17" y1="9" x2="23" y2="15"/>
+    </svg>
+  </button>
+
+  <!-- Roast Switcher -->
+  <div class="roast-switcher" id="roastSwitcher">
+    <button class="roast-option active" data-roast="light">Light</button>
+    <button class="roast-option" data-roast="medium">Medium</button>
+    <button class="roast-option" data-roast="dark">Dark</button>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-logo">[KOPPE]</div>
+    <h1 class="hero-title">
+      <span class="hero-title-line"><span>从一颗</span></span>
+      <span class="hero-title-line"><span>咖啡豆</span></span>
+      <span class="hero-title-line"><span>到一杯</span></span>
+      <span class="hero-title-line"><span>艺术</span></span>
+    </h1>
+    <p class="hero-subtitle">Specialty Coffee · Copenhagen · Since 2026</p>
+    <div class="hero-scroll">
+      <span>↓</span>
+      <span>SCROLL</span>
+    </div>
+    <div class="hero-cup">
+      <div class="cup-shape"></div>
+      <div class="cup-handle"></div>
+    </div>
+  </section>
+
+  <!-- Origin -->
+  <section class="origin" id="origin">
+    <div>
+      <div class="origin-label">[Section]</div>
+      <div class="origin-number">[01]</div>
+      <h2 class="origin-title">Origin</h2>
+    </div>
+    <div class="origin-content">
+      <div class="origin-item">
+        <span class="origin-tag">Ethiopia</span>
+        <p class="origin-text">耶加雪菲的高海拔产区，赋予了咖啡豆独特的花香与柑橘调性。每一颗豆子都经过手工采摘，在非洲晒床上自然干燥，保留最纯粹的风土表达。</p>
+      </div>
+      <div class="origin-item">
+        <span class="origin-tag">Colombia</span>
+        <p class="origin-text">安第斯山脉的火山土壤，孕育出圆润饱满的咖啡果实。水洗处理带来清澈的酸质与焦糖甜感，是平衡之美的最佳诠释。</p>
+      </div>
+      <div class="origin-item">
+        <span class="origin-tag">Brazil</span>
+        <p class="origin-text">米纳斯吉拉斯的阳光与季风，造就了坚果与巧克力的醇厚基调。日晒处理的工艺，让每一口都充满热带大地的温暖记忆。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roast -->
+  <section class="roast" id="roast">
+    <div class="roast-header">
+      <div class="roast-label">[Section]</div>
+      <h2 class="roast-title">Roast</h2>
+    </div>
+    <div class="roast-cards">
+      <div class="roast-card active" data-roast="light" id="cardLight">
+        <div class="roast-card-bg"></div>
+        <div class="roast-card-content">
+          <div class="roast-card-name">Light Roast</div>
+          <div class="roast-card-temp" data-temp="205">205°C</div>
+          <div class="roast-card-desc">花香明亮，酸质突出，保留产地最原始的风味特征。适合手冲与冷萃。</div>
+        </div>
+      </div>
+      <div class="roast-card" data-roast="medium" id="cardMedium">
+        <div class="roast-card-bg"></div>
+        <div class="roast-card-content">
+          <div class="roast-card-name">Medium Roast</div>
+          <div class="roast-card-temp" data-temp="220">220°C</div>
+          <div class="roast-card-desc">酸甜平衡，焦糖与坚果交织，口感圆润饱满。最适合意式浓缩。</div>
+        </div>
+      </div>
+      <div class="roast-card" data-roast="dark" id="cardDark">
+        <div class="roast-card-bg"></div>
+        <div class="roast-card-content">
+          <div class="roast-card-name">Dark Roast</div>
+          <div class="roast-card-temp" data-temp="235">235°C</div>
+          <div class="roast-card-desc">醇厚浓烈，黑巧克力与烟熏气息，回甘持久。传统法式烘焙的极致表达。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <div class="process-wrapper" id="processWrapper">
+    <div class="process-container" id="processContainer">
+      <div class="process-step">
+        <div class="process-number" data-outline>01</div>
+        <div class="process-image"></div>
+        <div class="process-content">
+          <div class="process-label">[Step 01]</div>
+          <h3 class="process-title">Select</h3>
+          <p class="process-desc">从全球顶级产区严选咖啡生豆，每一批次都经过杯测评分，只有达到 85+ 分的精品级豆子才能进入我们的烘焙工坊。</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="process-number" data-outline>02</div>
+        <div class="process-image"></div>
+        <div class="process-content">
+          <div class="process-label">[Step 02]</div>
+          <h3 class="process-title">Roast</h3>
+          <p class="process-desc">使用 Probat  vintage 烘焙机，由资深烘焙师根据每款豆子的特性，精确控制温度曲线与时间，释放最佳风味。</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="process-number" data-outline>03</div>
+        <div class="process-image"></div>
+        <div class="process-content">
+          <div class="process-label">[Step 03]</div>
+          <h3 class="process-title">Brew</h3>
+          <p class="process-desc">从 V60 手冲到意式浓缩，每一种冲煮方式都经过反复调试。水质、温度、时间——每一个细节都决定最终的风味呈现。</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="process-number" data-outline>04</div>
+        <div class="process-image"></div>
+        <div class="process-content">
+          <div class="process-label">[Step 04]</div>
+          <h3 class="process-title">Serve</h3>
+          <p class="process-desc">以丹麦设计美学呈现每一杯咖啡。温度恰好的杯具、精心拉花的奶泡、以及一份对品质的执着，构成完整的咖啡体验。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <section class="menu" id="menu">
+    <div class="menu-header">
+      <div class="menu-label">[Section]</div>
+      <h2 class="menu-title">Menu</h2>
+    </div>
+    <div class="menu-list">
+      <div class="menu-item">
+        <div class="menu-item-bg"></div>
+        <div class="menu-item-content">
+          <span class="menu-item-name">Yirgacheffe Pour Over</span>
+        </div>
+        <span class="menu-item-origin">Ethiopia</span>
+        <span class="menu-item-price" data-price="68">¥68</span>
+        <span class="menu-item-arrow">→</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-bg"></div>
+        <div class="menu-item-content">
+          <span class="menu-item-name">Huila Cold Brew</span>
+        </div>
+        <span class="menu-item-origin">Colombia</span>
+        <span class="menu-item-price" data-price="52">¥52</span>
+        <span class="menu-item-arrow">→</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-bg"></div>
+        <div class="menu-item-content">
+          <span class="menu-item-name">Cerrado Espresso</span>
+        </div>
+        <span class="menu-item-origin">Brazil</span>
+        <span class="menu-item-price" data-price="38">¥38</span>
+        <span class="menu-item-arrow">→</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-bg"></div>
+        <div class="menu-item-content">
+          <span class="menu-item-name">Nordic Latte</span>
+        </div>
+        <span class="menu-item-origin">Blend</span>
+        <span class="menu-item-price" data-price="45">¥45</span>
+        <span class="menu-item-arrow">→</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-bg"></div>
+        <div class="menu-item-content">
+          <span class="menu-item-name">Cortado</span>
+        </div>
+        <span class="menu-item-origin">Blend</span>
+        <span class="menu-item-price" data-price="42">¥42</span>
+        <span class="menu-item-arrow">→</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-bg"></div>
+        <div class="menu-item-content">
+          <span class="menu-item-name">Geisha Reserve</span>
+        </div>
+        <span class="menu-item-origin">Panama</span>
+        <span class="menu-item-price" data-price="128">¥128</span>
+        <span class="menu-item-arrow">→</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA + Footer -->
+  <section class="cta" id="cta">
+    <h2 class="cta-title">Find Your<br>Perfect Cup</h2>
+    <button class="magnetic-btn" id="magneticBtn">
+      <div class="magnetic-btn-bg"></div>
+      <span>Visit Our Café</span>
+    </button>
+  </section>
+
+  <footer class="footer" id="footer">
+    <div class="footer-logo">[KOPPE]</div>
+    <div>
+      <div class="footer-address">
+        KOPPE Specialty Coffee<br>
+        Nyhavn 17, 1051 Copenhagen<br>
+        Denmark
+      </div>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram">IG</a>
+        <a href="#" aria-label="Twitter">TW</a>
+        <a href="#" aria-label="Facebook">FB</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import gsap from 'gsap';
+    import { ScrollTrigger } from 'gsap/ScrollTrigger';
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ============================
+    // STATE
+    // ============================
+    const state = {
+      roast: 'light',
+      audioEnabled: false,
+      audioStarted: false,
+      audioContext: null,
+      noiseNode: null,
+      gainNode: null,
+    };
+
+    const roasts = {
+      light: { accent: '#D4A574', bg: '#FAF8F4', temp: 205 },
+      medium: { accent: '#8B6914', bg: '#F5F3EF', temp: 220 },
+      dark: { accent: '#3D2314', bg: '#EDE9E2', temp: 235 },
+    };
+
+    // ============================
+    // DOM ELEMENTS
+    // ============================
+    const root = document.documentElement;
+    const loadingScreen = document.getElementById('loadingScreen');
+    const loadingInk = document.getElementById('loadingInk');
+    const cursor = document.getElementById('customCursor');
+    const cursorText = document.getElementById('cursorText');
+    const audioToggle = document.getElementById('audioToggle');
+    const audioIconOn = document.getElementById('audioIconOn');
+    const audioIconOff = document.getElementById('audioIconOff');
+    const roastSwitcher = document.getElementById('roastSwitcher');
+    const roastOptions = document.querySelectorAll('.roast-option');
+    const roastCards = document.querySelectorAll('.roast-card');
+    const magneticBtn = document.getElementById('magneticBtn');
+    const processNumbers = document.querySelectorAll('.process-number');
+
+    // ============================
+    // AUDIO ENGINE (Web Audio API)
+    // ============================
+    function createBrownNoise() {
+      const bufferSize = 2 * state.audioContext.sampleRate;
+      const buffer = state.audioContext.createBuffer(1, bufferSize, state.audioContext.sampleRate);
+      const output = buffer.getChannelData(0);
+      let lastOut = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        output[i] = (lastOut + (0.02 * white)) / 1.02;
+        lastOut = output[i];
+        output[i] *= 3.5;
+      }
+      const noise = state.audioContext.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+      return noise;
+    }
+
+    function initAudio() {
+      if (state.audioContext) return;
+      state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      state.noiseNode = createBrownNoise();
+      state.gainNode = state.audioContext.createGain();
+      state.gainNode.gain.value = 0;
+      const filter = state.audioContext.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 400;
+      state.noiseNode.connect(filter);
+      filter.connect(state.gainNode);
+      state.gainNode.connect(state.audioContext.destination);
+      state.noiseNode.start();
+    }
+
+    function fadeAudio(targetVolume, duration = 2) {
+      if (!state.gainNode) return;
+      const now = state.audioContext.currentTime;
+      state.gainNode.gain.cancelScheduledValues(now);
+      state.gainNode.gain.linearRampToValueAtTime(targetVolume, now + duration);
+    }
+
+    function toggleAudio() {
+      if (!state.audioStarted) {
+        initAudio();
+        state.audioStarted = true;
+        state.audioEnabled = true;
+        fadeAudio(0.08, 2);
+        audioIconOn.style.display = 'block';
+        audioIconOff.style.display = 'none';
+      } else {
+        state.audioEnabled = !state.audioEnabled;
+        fadeAudio(state.audioEnabled ? 0.08 : 0, 1);
+        audioIconOn.style.display = state.audioEnabled ? 'block' : 'none';
+        audioIconOff.style.display = state.audioEnabled ? 'none' : 'block';
+      }
+    }
+
+    // First interaction starts audio
+    document.addEventListener('click', () => {
+      if (!state.audioStarted) {
+        toggleAudio();
+      }
+    }, { once: true });
+
+    audioToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAudio();
+    });
+
+    // ============================
+    // CUSTOM CURSOR
+    // ============================
+    let mouseX = 0, mouseY = 0;
+    let cursorX = 0, cursorY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function animateCursor() {
+      cursorX += (mouseX - cursorX) * 0.15;
+      cursorY += (mouseY - cursorY) * 0.15;
+      cursor.style.left = cursorX + 'px';
+      cursor.style.top = cursorY + 'px';
+      cursorText.style.left = cursorX + 'px';
+      cursorText.style.top = cursorY + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // Cursor interactions
+    const hoverTargets = document.querySelectorAll('button, a, .menu-item, .roast-card, .origin-tag');
+    hoverTargets.forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.classList.add('expanded');
+        if (el.classList.contains('magnetic-btn')) {
+          cursorText.textContent = 'CLICK';
+          cursorText.classList.add('visible');
+        }
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.classList.remove('expanded');
+        cursorText.classList.remove('visible');
+      });
+    });
+
+    // ============================
+    // MAGNETIC BUTTON
+    // ============================
+    magneticBtn.addEventListener('mousemove', (e) => {
+      const rect = magneticBtn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      gsap.to(magneticBtn, {
+        x: x * 0.3,
+        y: y * 0.3,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+    });
+
+    magneticBtn.addEventListener('mouseleave', () => {
+      gsap.to(magneticBtn, {
+        x: 0,
+        y: 0,
+        duration: 0.5,
+        ease: 'elastic.out(1, 0.3)'
+      });
+    });
+
+    // ============================
+    // ROAST SWITCHER
+    // ============================
+    function setRoast(roastKey) {
+      if (state.roast === roastKey) return;
+      state.roast = roastKey;
+      const config = roasts[roastKey];
+
+      // Update CSS variables with GSAP
+      gsap.to(root, {
+        '--accent': config.accent,
+        '--bg': config.bg,
+        duration: 0.8,
+        ease: 'power2.out'
+      });
+
+      // Update active states
+      roastOptions.forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.roast === roastKey);
+      });
+      roastCards.forEach(card => {
+        card.classList.toggle('active', card.dataset.roast === roastKey);
+      });
+
+      // Animate temperature numbers
+      document.querySelectorAll('.roast-card-temp').forEach(el => {
+        const target = parseInt(el.dataset.temp);
+        gsap.to(el, {
+          innerText: target,
+          duration: 0.8,
+          snap: { innerText: 1 },
+          ease: 'power2.out',
+          onUpdate: function() {
+            el.innerText = Math.round(this.targets()[0].innerText) + '°C';
+          }
+        });
+      });
+    }
+
+    roastOptions.forEach(opt => {
+      opt.addEventListener('click', () => setRoast(opt.dataset.roast));
+    });
+
+    roastCards.forEach(card => {
+      card.addEventListener('click', () => setRoast(card.dataset.roast));
+    });
+
+    // ============================
+    // LOADING ANIMATION
+    // ============================
+    const loadingTl = gsap.timeline({
+      onComplete: () => {
+        // Hide loading screen
+        gsap.to(loadingScreen, {
+          yPercent: -100,
+          duration: 1,
+          ease: 'power3.inOut',
+          onComplete: () => {
+            loadingScreen.style.display = 'none';
+            initHeroAnimations();
+          }
+        });
+      }
+    });
+
+    // Ink bloom animation
+    loadingTl
+      .to(loadingInk, {
+        opacity: 0.6,
+        scale: 1.5,
+        duration: 1.5,
+        ease: 'power2.out'
+      })
+      .to(loadingInk, {
+        opacity: 0,
+        scale: 2,
+        duration: 0.8,
+        ease: 'power2.in'
+      }, '+=0.3')
+      .to('.loading-logo', {
+        y: -30,
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power3.in'
+      }, '-=0.2')
+      .to('.loading-text', {
+        y: -20,
+        opacity: 0,
+        duration: 0.5,
+        ease: 'power3.in'
+      }, '-=0.4');
+
+    // ============================
+    // HERO ANIMATIONS
+    // ============================
+    function initHeroAnimations() {
+      const heroLines = document.querySelectorAll('.hero-title-line span');
+      gsap.to(heroLines, {
+        yPercent: 0,
+        duration: 1.2,
+        stagger: 0.12,
+        ease: 'power3.out'
+      });
+
+      gsap.from('.hero-subtitle', {
+        opacity: 0,
+        y: 20,
+        duration: 1,
+        delay: 0.6,
+        ease: 'power2.out'
+      });
+
+      gsap.from('.hero-cup', {
+        opacity: 0,
+        x: 50,
+        duration: 1.2,
+        delay: 0.4,
+        ease: 'power2.out'
+      });
+
+      gsap.from('.hero-scroll', {
+        opacity: 0,
+        duration: 1,
+        delay: 1,
+        ease: 'power2.out'
+      });
+    }
+
+    // ============================
+    // ORIGIN SCROLL ANIMATIONS
+    // ============================
+    document.querySelectorAll('.origin-item').forEach((item, i) => {
+      gsap.to(item, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: item,
+          start: 'top 80%',
+          toggleActions: 'play none none none'
+        },
+        delay: i * 0.15
+      });
+    });
+
+    // ============================
+    // PROCESS HORIZONTAL SCROLL
+    // ============================
+    const isMobile = window.innerWidth <= 768;
+
+    if (!isMobile) {
+      const processContainer = document.getElementById('processContainer');
+      const processWrapper = document.getElementById('processWrapper');
+
+      gsap.to(processContainer, {
+        x: () => -(processContainer.scrollWidth - window.innerWidth),
+        ease: 'none',
+        scrollTrigger: {
+          trigger: processWrapper,
+          pin: true,
+          scrub: 1,
+          end: () => '+=' + (processContainer.scrollWidth - window.innerWidth),
+          invalidateOnRefresh: true
+        }
+      });
+
+      // Number fill animation
+      processNumbers.forEach((num) => {
+        ScrollTrigger.create({
+          trigger: num,
+          containerAnimation: gsap.getById && gsap.getById('processScroll'),
+          start: 'left 60%',
+          onEnter: () => num.classList.add('filled'),
+          onLeaveBack: () => num.classList.remove('filled')
+        });
+      });
+
+      // Alternative: use scroll position to fill numbers
+      processNumbers.forEach((num, i) => {
+        ScrollTrigger.create({
+          trigger: processWrapper,
+          start: 'top top',
+          end: 'bottom bottom',
+          onUpdate: (self) => {
+            const progress = self.progress;
+            const threshold = (i + 1) * 0.22;
+            if (progress >= threshold - 0.1) {
+              num.classList.add('filled');
+            } else {
+              num.classList.remove('filled');
+            }
+          }
+        });
+      });
+    } else {
+      // Mobile: vertical layout, simple fade in
+      processNumbers.forEach((num) => {
+        gsap.from(num, {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: num,
+            start: 'top 80%',
+            toggleActions: 'play none none none'
+          }
+        });
+      });
+    }
+
+    // ============================
+    // MENU ITEM ANIMATIONS
+    // ============================
+    document.querySelectorAll('.menu-item').forEach((item, i) => {
+      gsap.from(item, {
+        opacity: 0,
+        x: -20,
+        duration: 0.6,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: item,
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        },
+        delay: i * 0.05
+      });
+    });
+
+    // ============================
+    // CTA ANIMATIONS
+    // ============================
+    gsap.from('.cta-title', {
+      opacity: 0,
+      y: 50,
+      duration: 1,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: '.cta',
+        start: 'top 70%',
+        toggleActions: 'play none none none'
+      }
+    });
+
+    gsap.from('.magnetic-btn', {
+      opacity: 0,
+      y: 30,
+      duration: 0.8,
+      delay: 0.3,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: '.cta',
+        start: 'top 70%',
+        toggleActions: 'play none none none'
+      }
+    });
+
+    // ============================
+    // FOOTER ANIMATIONS
+    // ============================
+    gsap.from('.footer > *', {
+      opacity: 0,
+      y: 20,
+      duration: 0.8,
+      stagger: 0.1,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: '.footer',
+        start: 'top 90%',
+        toggleActions: 'play none none none'
+      }
+    });
+
+    // ============================
+    // SMOOTH SCROLL FOR HERO SCROLL INDICATOR
+    // ============================
+    document.querySelector('.hero-scroll').addEventListener('click', () => {
+      document.getElementById('origin').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // ============================
+    // ROAST SWITCHER SCROLL BEHAVIOR
+    // ============================
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.scrollY;
+      if (currentScroll > 100) {
+        gsap.to(roastSwitcher, {
+          y: 0,
+          opacity: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      } else {
+        gsap.to(roastSwitcher, {
+          y: -20,
+          opacity: 0,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      }
+      lastScroll = currentScroll;
+    });
+
+    // Initially hide roast switcher
+    gsap.set(roastSwitcher, { y: -20, opacity: 0 });
+  </script>
+</body>
+</html>

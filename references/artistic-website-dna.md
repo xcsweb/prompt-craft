@@ -5,7 +5,7 @@
 
 ---
 
-## 三大设计方向
+## 六大设计方向
 
 每个方向都有：核心特征、配色模板、字体建议、内容结构、适用行业。你必须选 1 个方向作为项目的"主 DNA"。
 
@@ -114,6 +114,68 @@
 **适用行业**：汽车、消费电子、家具、珠宝、工业设备、任何需要"看到实物感"的产品
 
 **技术栈要求**：见 `project-rules/3d-product-showcase.md`
+
+---
+
+### 方向 E：Neo-Swiss / 新瑞士粗野主义
+
+> **代表项目**：Studio Moniker · Monolith Studio · Swiss Legacy
+
+**核心感觉**：冷静、严谨、结构化——像在翻阅一本 1960 年代的瑞士平面设计年鉴
+
+**设计语言**
+| 维度 | 具体做法 |
+|------|---------|
+| **颜色** | 4 色：瑞士米灰 (#E8E6DF) 背景 + 纯墨 (#0A0A0A) 文本 + 瑞士红 (#E11D48) 强调 + 瑞士蓝 (#1E40AF) 次强调 |
+| **字体** | 几何无衬线 Display (Space Grotesk 500-700) + Inter 正文；数字和代码用 JetBrains Mono |
+| **排版节奏** | 可见的 12 列网格线 + 大字号标题（clamp 3rem,12vw,14rem）+ 大量数字装饰（N°/编号/日期） |
+| **布局** | 严格的水平基线对齐；大量 border（边框不是装饰，是结构）；news ticker / marquee 横向滚动 |
+| **特殊元素** | 实时时钟显示、项目编号索引、垂直方向文字、反向色（反色）manifesto 区块 |
+
+**内容结构模板**
+```
+1. Nav：品牌名 + 菜单 + 实时时钟 / 状态
+2. Hero：12 列可见网格 + 3-4 行超大标题 + 四角装饰（N°/日期/编号）
+3. News Ticker：红色横向无限滚动 marquee
+4. Selected Works：编号列表 (001 → / 002 → ...)，hover 时整行右移 + 变色
+5. Manifesto：反色区块（黑底白字），宣言式标题
+6. Process：4 步编号（01/02/03/04），大数字 + 标题 + 描述
+7. Contact：红色背景，白色标题 + 超大邮箱
+8. Footer：版权 + 社交
+```
+
+**适用行业**：设计工作室、建筑事务所、法律/金融品牌、出版社、学术机构、科技公司"严肃品牌"
+
+---
+
+### 方向 F：Dark Luxury / 深色奢华风
+
+> **代表项目**：Audemars Piguet · Hermès 数字体验 · Obsidian Watch Co.
+
+**核心感觉**：低调、内敛、有重量感——用户像在私人展厅里，灯光聚焦产品，周围是暗黑色调的高级感
+
+**设计语言**
+| 维度 | 具体做法 |
+|------|---------|
+| **颜色** | 4 色：深墨 (#0A0A0C/#0B0B0E) 背景 + 象牙白 (#E8E6E1) 文本 + 暖金 (#C9A962/#B8985F) 主强调 + 青铜 (#8B7355) 次强调 |
+| **字体** | 极细无衬线 Display（Inter 200-300）超大字号；正文 Inter 300；技术规格 / 数字用 JetBrains Mono；金色标题用渐变填充 |
+| **排版节奏** | 大量"暗色空间"（不是空而是设计）；规格以 HUD 形式出现；产品描述窄栏（40-50 字符） |
+| **材质** | 径向渐变模拟金属反射（watch face / jewelry）；深墨背景的微弱辉光；canvas 2D 金色粒子飘浮 |
+| **布局** | 产品/产品图像占 60-80% 屏幕空间（CSS 3D 或 Three.js），文字信息在边缘浮动；严格的黄金分割或对称布局 |
+
+**内容结构模板**
+```
+1. Nav：品牌极简 logo + 菜单（产品/系列/故事/联系）+ 状态指示
+2. Hero：全屏产品（手表/珠宝/汽车/香水）+ 产品名大字 + 1 行 slogan + HUD 规格
+3. Technical Specs：规格表，左标签右数值，等宽字体，金色分隔线
+4. Story / Manifesto：品牌故事区块，大段文字（金色首字母 dropcap）
+5. Collection / Series：产品系列，3-5 个产品卡
+6. Press / Reviews：媒体引用，斜体衬线
+7. CTA：预约 / 购买 / 联系 — 金色下划线强调
+8. Footer：地址/联系方式等，极简
+```
+
+**适用行业**：高端手表、珠宝、香水、奢侈品零售、高级家具、私人银行、限量版科技产品、高端汽车
 
 ---
 
@@ -324,11 +386,21 @@
 | 配方名 | 你需要的代码骨架 |
 |--------|----------------|
 | Smooth Scroll + GSAP | `new Lenis() + gsap.registerPlugin(ScrollTrigger) + lenis.on('scroll', ScrollTrigger.update)` |
-| Hero Mask Reveal | `gsap.fromTo('.hero-line span', {yPercent: 100}, {yPercent: 0, duration: 1.0, stagger: 0.1, ease: 'power3.out'})` |
-| Magnetic Button | `btn.parentElement.addEventListener('mousemove', e => { const rect = parent.getBoundingClientRect(); btn.style.transform = translate((mx-cx)*0.3, (my-cy)*0.3); })` |
-| Custom Cursor | `const cursor = document.querySelector('.cursor'); let cx=0,cy=0,mx=0,my=0; window.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; }); function raf(){ cx+=(mx-cx)*0.2; cy+=(my-cy)*0.2; cursor.style.left = cx+'px'; requestAnimationFrame(raf); } raf();` |
-| Shader Orb | `new THREE.Mesh(geometry, new THREE.ShaderMaterial({ uniforms: { uTime, uMouse }, vertexShader: distort with noise, fragmentShader: fresnel + gradient }))` |
+| Smooth Scroll + Motion | `new Lenis() + motion.inView() + motion.stagger() — Lenis 与 Motion 完美兼容` |
+| Hero Mask Reveal (GSAP) | `gsap.fromTo('.hero-line span', {yPercent: 100}, {yPercent: 0, duration: 1.0, stagger: 0.1, ease: 'power3.out'})` |
+| Hero Mask Reveal (Motion) | `animate('.hero-line span', {y: ['110%', '0%'], {duration: 0.9, delay: stagger(0.08), easing: [0.22, 0.03, 0.26, 1]})` |
+| Spring Button (Motion) | `animate('.cta-btn', {y: 0, opacity: 1, scale: 1}, {duration: 0.8, easing: spring({stiffness: 300, damping: 20})})` |
+| Magnetic Button | `mousemove → btn.style.transform = translate((mx-cx)*0.3, (my-cy)*0.3)` |
+| Custom Cursor | `const cursor = document.querySelector('.cursor'); let cx=0,cy=0; function raf(){ cx+=(mx-cx)*0.2; cursor.style.left = cx+'px'; requestAnimationFrame(raf); }` |
+| Shader Orb | `new THREE.Mesh(geometry, new THREE.ShaderMaterial(...))` |
 | Paper Noise | `<svg style="position:fixed; inset:0; pointer-events:none; opacity:0.03; mix-blend-mode: multiply"><filter><feTurbulence baseFrequency="0.9"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>` |
+| Ticker / Marquee | `animate('.ticker-track', {x: ['0%', '-50%']}, {duration: 30, repeat: Infinity, easing: 'linear'})` |
+| Radar / Particle Ring | Canvas 2D：粒子环 + 角度旋转 + 脉冲亮度 |
+| Number Counter | `animate('.stat-num', {innerText: [0, target]}, {duration: 1.5, easing: 'out-expo'})` |
+| SVG Path Draw (anime.js) | `anime({ targets: '.svg-path', strokeDashoffset: [anime.setDashoffset, 0], duration: 1500, easing: 'easeInOutSine'})` |
+| 3D Product Tilt | `animate('.product', {rotateY: -5, rotateX: 5}), easing: spring()})` |
+| Scroll-driven Reveal (Motion) | `inView('.section', (info) => { animate(info.target, {opacity: [0, 1], y: [30, 0]}, {duration: 0.6})})` |
+| HUD / Terminal Text | JS: `setInterval(() => { elem.textContent = formatNum(Math.random()*1000, 0)}, 1200)` |
 
 ---
 
@@ -361,4 +433,16 @@
 陷阱 6：字体尺寸超出设计
     问题：标题用 px 导致超大屏看不到
     解决：**所有标题使用 clamp(min, vw, max)** — 永远不用纯 px
+
+陷阱 7：line-height 过低导致文字裁剪
+    问题：为了"紧凑排版"使用 line-height: 0.88~0.95，结果升部/降部被裁
+    解决：
+      - Display 标题: line-height ≥ 1.05（绝对禁止 < 1.0）
+      - Section 标题: line-height ≥ 1.1
+      - 正文: line-height ≥ 1.5（西文），≥ 1.6（中文）
+      - 如果用了 overflow: hidden 做动画遮罩，line-height 必须 ≥ 1.1
+
+陷阱 8：overflow: hidden + 低 line-height 组合灾难
+    问题：动画需要 overflow: hidden，但 line-height 太低，文字被容器裁掉
+    解决：要么提高 line-height 到 ≥ 1.1，要么用 padding 代替 overflow 做动画边界
 ```

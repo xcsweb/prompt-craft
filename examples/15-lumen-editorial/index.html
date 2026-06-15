@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUMEN — A studio dedicated to light.</title>
+
+  <!-- 字体预连接 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       LUMEN — Editorial / Magazine Style
+       配色：奶油纸 / 深棕 / 赭石铁锈红 / 深海蓝
+       ============================================================ */
+    :root {
+      --bg: #F5F2EB;
+      --text: #1C1B1A;
+      --accent: #9C4A2B;
+      --accent-2: #2B4A5C;
+      --muted: #8A8275;
+      --line: rgba(28, 27, 26, 0.12);
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: auto;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse at top, rgba(156, 74, 43, 0.04), transparent 60%),
+        linear-gradient(180deg, #F8F5EE 0%, #F0EADF 100%);
+      color: var(--text);
+      line-height: 1.6;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    /* 自定义磁吸光标 */
+    .cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 18px;
+      height: 18px;
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: difference;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+    }
+
+    .cursor-dot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+    }
+
+    .cursor.is-hover {
+      width: 60px;
+      height: 60px;
+      background: rgba(156, 74, 43, 0.08);
+    }
+
+    /* SVG 噪点纹理覆盖层 */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.04;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0.7 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+
+    /* 通用容器 */
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    /* 强调字体 - Fraunces Italic */
+    .display {
+      font-family: 'Fraunces', serif;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .italic {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .accent {
+      color: var(--accent);
+    }
+
+    .accent-2 {
+      color: var(--accent-2);
+    }
+
+    .small-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--muted);
+    }
+
+    /* ================== Nav ================== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      align-items: center;
+      padding: 0 48px;
+      z-index: 1000;
+      background: transparent;
+    }
+
+    .nav-left {
+      font-family: 'Fraunces', serif;
+      font-weight: 300;
+      font-size: 22px;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-center {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+    }
+
+    .nav-center a {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .nav-center a:hover {
+      color: var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-right .menu-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+    }
+
+    .nav-right .search-icon {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--text);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+      font-size: 12px;
+    }
+
+    .nav-right .search-icon:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    /* ================== Hero ================== */
+    .hero {
+      min-height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 48px;
+      padding-top: 100px;
+    }
+
+    .hero-top-meta {
+      position: absolute;
+      top: 140px;
+      left: 48px;
+      right: 48px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .hero-index {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .hero-title-wrap {
+      margin-top: 10vh;
+    }
+
+    .hero-line {
+      overflow: hidden;
+      display: block;
+    }
+
+    .hero-line-inner {
+      display: inline-block;
+      font-family: 'Fraunces', serif;
+      font-weight: 300;
+      font-size: clamp(60px, 13vw, 220px);
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+      transform: translateY(110%);
+      will-change: transform;
+    }
+
+    .hero-line .accent-word {
+      color: var(--accent);
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .hero-bottom {
+      position: absolute;
+      bottom: 60px;
+      left: 48px;
+      right: 48px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: flex-end;
+      gap: 48px;
+    }
+
+    .hero-intro {
+      max-width: 420px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .hero-intro strong {
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    .hero-scroll {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .hero-scroll-line {
+      width: 80px;
+      height: 1px;
+      background: var(--text);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-scroll-line::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      transform: translateX(-100%);
+      animation: slideIn 2.5s ease-in-out infinite;
+    }
+
+    @keyframes slideIn {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(0); }
+      100% { transform: translateX(100%); }
+    }
+
+    .hero-decor {
+      position: absolute;
+      right: 48px;
+      top: 30vh;
+      font-family: 'Fraunces', serif;
+      font-size: clamp(80px, 9vw, 140px);
+      line-height: 1;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent-2);
+      writing-mode: vertical-rl;
+      letter-spacing: 0.02em;
+      opacity: 0.7;
+    }
+
+    /* ================== Section 通用 ================== */
+    section {
+      position: relative;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--muted);
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .section-label::before,
+    .section-label::after {
+      content: '';
+      height: 1px;
+      width: 40px;
+      background: var(--line);
+    }
+
+    /* ================== Works Index ================== */
+    .works {
+      padding: 25vh 48px;
+    }
+
+    .works-header {
+      margin-bottom: 80px;
+    }
+
+    .works-header h2 {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(28px, 3.5vw, 48px);
+      line-height: 1.15;
+      color: var(--muted);
+    }
+
+    .works-header h2 .highlight {
+      color: var(--text);
+    }
+
+    .works-list {
+      border-top: 1px solid var(--line);
+    }
+
+    .work-item {
+      display: grid;
+      grid-template-columns: 80px 1fr 2fr 120px 40px;
+      gap: 32px;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s;
+    }
+
+    .work-item:hover {
+      transform: translateX(40px);
+    }
+
+    .work-item:hover .work-title,
+    .work-item:hover .work-arrow {
+      color: var(--accent);
+    }
+
+    .work-item:hover .work-arrow {
+      transform: translateX(10px);
+    }
+
+    .work-num {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .work-title {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(20px, 2.5vw, 32px);
+      font-weight: 300;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      transition: color 0.4s;
+    }
+
+    .work-type {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    .work-year {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .work-arrow {
+      font-family: 'Fraunces', serif;
+      font-size: 24px;
+      font-weight: 300;
+      transition: transform 0.4s, color 0.4s;
+    }
+
+    /* ================== Quote / Manifesto ================== */
+    .quote-section {
+      padding: 30vh 48px;
+      text-align: center;
+    }
+
+    .quote-text {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(36px, 6vw, 96px);
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      max-width: 1300px;
+      margin: 0 auto 60px;
+      color: var(--text);
+      filter: blur(0);
+      opacity: 1;
+    }
+
+    .quote-text .accent {
+      color: var(--accent);
+    }
+
+    .quote-signature {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--muted);
+    }
+
+    /* ================== Journal Grid ================== */
+    .journal {
+      padding: 20vh 48px;
+    }
+
+    .journal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+      margin-top: 60px;
+    }
+
+    .journal-card {
+      cursor: pointer;
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .journal-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .journal-card .date {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: clamp(48px, 5vw, 72px);
+      line-height: 1;
+      color: var(--accent-2);
+      font-weight: 300;
+      margin-bottom: 24px;
+    }
+
+    .journal-card h3 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(20px, 1.8vw, 26px);
+      font-weight: 400;
+      line-height: 1.25;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .journal-card p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    /* ================== Process / Capabilities ================== */
+    .process {
+      padding: 20vh 48px;
+      border-top: 1px solid var(--line);
+    }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 48px;
+      margin-top: 60px;
+    }
+
+    .process-item {
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .process-item .num {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .process-item h3 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(22px, 2vw, 30px);
+      font-weight: 300;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .process-item p {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    /* ================== CTA ================== */
+    .cta {
+      padding: 25vh 48px;
+      text-align: center;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, transparent 0%, rgba(156, 74, 43, 0.03) 100%);
+    }
+
+    .cta h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 300;
+      font-size: clamp(40px, 6vw, 96px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 40px;
+    }
+
+    .cta h2 .italic {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .cta-email {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: clamp(28px, 3.5vw, 48px);
+      display: inline-block;
+      padding: 8px 0;
+      border-bottom: 2px solid var(--text);
+      margin-bottom: 60px;
+      transition: color 0.3s, border-color 0.3s;
+      cursor: pointer;
+    }
+
+    .cta-email:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .cta-info {
+      display: flex;
+      justify-content: center;
+      gap: 80px;
+      font-size: 12px;
+      line-height: 1.8;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    /* ================== Footer ================== */
+    .footer {
+      padding: 60px 48px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--muted);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer .brand {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      color: var(--text);
+      letter-spacing: 0.08em;
+    }
+
+    /* ================== 响应式 768px 降级 ================== */
+    @media (max-width: 768px) {
+      body {
+        cursor: auto;
+      }
+      .cursor, .cursor-dot { display: none; }
+
+      .container, .nav, .hero, .hero-top-meta, .hero-bottom,
+      .works, .quote-section, .journal, .process, .cta, .footer {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      .nav {
+        height: 70px;
+      }
+      .nav-center { gap: 16px; }
+      .nav-center a { font-size: 9px; }
+      .nav-right .menu-label { display: none; }
+
+      .hero {
+        padding-top: 70px;
+        min-height: 85vh;
+      }
+      .hero-top-meta { top: 90px; }
+      .hero-decor { display: none; }
+
+      .hero-bottom {
+        position: relative;
+        bottom: auto;
+        margin-top: 60px;
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .work-item {
+        grid-template-columns: 50px 1fr 80px 30px;
+        gap: 16px;
+        padding: 24px 0;
+      }
+      .work-item:hover { transform: translateX(10px); }
+      .work-type { display: none; }
+
+      .journal-grid, .process-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .cta-info { gap: 24px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 磁吸光标 -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <!-- 噪点纹理覆盖层 -->
+  <div class="noise-overlay"></div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-left">LUMEN</div>
+    <div class="nav-center">
+      <a href="#" data-hover>Index</a>
+      <a href="#" data-hover>Works</a>
+      <a href="#" data-hover>Journal</a>
+      <a href="#" data-hover>Contact</a>
+    </div>
+    <div class="nav-right">
+      <span class="menu-label">Menu</span>
+      <div class="search-icon" data-hover>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="20" y1="20" x2="16.5" y2="16.5"/>
+        </svg>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-top-meta">
+      <span class="hero-index">Issue N° 07 — Spring Edition</span>
+      <span class="hero-index">Since 2019 — Milan · Kyoto</span>
+    </div>
+
+    <div class="hero-title-wrap">
+      <span class="hero-line"><span class="hero-line-inner"><span class="accent-word">A</span> studio</span></span>
+      <span class="hero-line"><span class="hero-line-inner"><span class="accent-word">dedicated</span></span></span>
+      <span class="hero-line"><span class="hero-line-inner"><span class="accent-word">to</span> light.</span></span>
+    </div>
+
+    <div class="hero-decor">N° 07</div>
+
+    <div class="hero-bottom">
+      <div class="hero-intro">
+        An independent studio working at the intersection of <strong>photography, film, and light installations</strong>. We capture moments others walk past.
+      </div>
+      <div class="hero-scroll">
+        <div class="hero-scroll-line"></div>
+        <span>Scroll to enter</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Works Index -->
+  <section class="works" id="works">
+    <div class="works-header">
+      <div class="section-label">Index</div>
+      <h2><span class="highlight">Selected Works</span>, 2019 — 2024</h2>
+    </div>
+
+    <div class="works-list">
+      <div class="work-item" data-hover>
+        <div class="work-num">001</div>
+        <div class="work-title">Marfa Light</div>
+        <div class="work-type">Photography Series</div>
+        <div class="work-year">2024</div>
+        <div class="work-arrow">→</div>
+      </div>
+      <div class="work-item" data-hover>
+        <div class="work-num">002</div>
+        <div class="work-title">Tokyo After Hours</div>
+        <div class="work-type">Short Film</div>
+        <div class="work-year">2024</div>
+        <div class="work-arrow">→</div>
+      </div>
+      <div class="work-item" data-hover>
+        <div class="work-num">003</div>
+        <div class="work-title">Desert Sonata</div>
+        <div class="work-type">Light Installation</div>
+        <div class="work-year">2023</div>
+        <div class="work-arrow">→</div>
+      </div>
+      <div class="work-item" data-hover>
+        <div class="work-num">004</div>
+        <div class="work-title">Pale Northern Hours</div>
+        <div class="work-type">Editorial / Book</div>
+        <div class="work-year">2023</div>
+        <div class="work-arrow">→</div>
+      </div>
+      <div class="work-item" data-hover>
+        <div class="work-num">005</div>
+        <div class="work-title">Cinque Terre in Blue</div>
+        <div class="work-type">Photography</div>
+        <div class="work-year">2022</div>
+        <div class="work-arrow">→</div>
+      </div>
+      <div class="work-item" data-hover>
+        <div class="work-num">006</div>
+        <div class="work-title">Afterglow Kyoto</div>
+        <div class="work-type">Film / Editorial</div>
+        <div class="work-year">2022</div>
+        <div class="work-arrow">→</div>
+      </div>
+      <div class="work-item" data-hover>
+        <div class="work-num">007</div>
+        <div class="work-title">Monolith Atlas</div>
+        <div class="work-type">Installation</div>
+        <div class="work-year">2021</div>
+        <div class="work-arrow">→</div>
+      </div>
+      <div class="work-item" data-hover>
+        <div class="work-num">008</div>
+        <div class="work-title">In Praise of Shadows</div>
+        <div class="work-type">Editorial Series</div>
+        <div class="work-year">2019</div>
+        <div class="work-arrow">→</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quote / Manifesto -->
+  <section class="quote-section" id="quote">
+    <p class="quote-text" id="quoteText">
+      "<span class="accent italic">Light</span> is not a medium, <br>it is the message."
+    </p>
+    <div class="quote-signature">— Lumen Studio, Manifesto 2024</div>
+  </section>
+
+  <!-- Journal Grid -->
+  <section class="journal" id="journal">
+    <div class="section-label">Journal</div>
+    <div class="journal-grid">
+      <div class="journal-card" data-hover>
+        <div class="date">11.28</div>
+        <h3>On photographing the quiet hours of November.</h3>
+        <p>A short essay on patience, exposure, and the light that falls between 4 and 6 pm. Why the in-between moments are often the most truthful.</p>
+      </div>
+      <div class="journal-card" data-hover>
+        <div class="date">09.12</div>
+        <h3>Building a darkroom in the age of algorithmic image.</h3>
+        <p>We spend a season inside the chemical process of silver halide — and why we still believe hands-on craft matters for the studio of today.</p>
+      </div>
+      <div class="journal-card" data-hover>
+        <div class="date">06.04</div>
+        <h3>Six rooms of silence: a field report from Marfa.</h3>
+        <p>Three weeks inside the Chinati Foundation archives. Walking the long road between Donald Judd's concrete, the horizon, and the end of daylight.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process / Capabilities -->
+  <section class="process" id="process">
+    <div class="section-label">Capabilities</div>
+    <div class="process-grid">
+      <div class="process-item">
+        <div class="num">01 /</div>
+        <h3>Photography</h3>
+        <p>Editorial, campaign and book photography, from large format analog to contemporary digital capture. On location across four continents.</p>
+      </div>
+      <div class="process-item">
+        <div class="num">02 /</div>
+        <h3>Film</h3>
+        <p>Short form documentary, artist portraits and motion work for editorial clients. 16mm, 35mm, and digital cinema workflows.</p>
+      </div>
+      <div class="process-item">
+        <div class="num">03 /</div>
+        <h3>Installation</h3>
+        <p>Site-specific light, projection and sculptural installation for museums, private collections and public spaces around the world.</p>
+      </div>
+      <div class="process-item">
+        <div class="num">04 /</div>
+        <h3>Editorial</h3>
+        <p>Books, catalogues and long-form publications. We design, edit and print limited-run editions of 300 to 3,000 copies each year.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta" id="cta">
+    <h2>Have a project <span class="italic">in mind?</span><br><span class="italic">Let</span> there be light.</h2>
+    <div class="cta-email" data-hover>hello@lumen.studio</div>
+    <div class="cta-info">
+      <div>Via Savona 97<br>Milan, Italy</div>
+      <div>Instagram<br>Are.na</div>
+      <div>+39 02 8765 4321<br>Press inquiries</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="brand">LUMEN</div>
+    <div>© 2024 Lumen Studio · All rights reserved</div>
+    <div>Made in Milan · Printed in Verona</div>
+  </footer>
+
+  <!-- ================== 脚本（ES Modules） ================== -->
+  <script type="module">
+    import { animate, stagger, spring } from 'https://esm.sh/motion';
+    import Lenis from 'https://esm.sh/@studio-freight/lenis';
+
+    // ---------- Lenis 平滑滚动 ----------
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // ---------- 磁吸光标 ----------
+    const cursor = document.getElementById('cursor');
+    const cursorDot = document.getElementById('cursorDot');
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let cursorX = mouseX;
+    let cursorY = mouseY;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function animateCursor() {
+      cursorX += (mouseX - cursorX) * 0.18;
+      cursorY += (mouseY - cursorY) * 0.18;
+      if (cursor) {
+        cursor.style.transform = `translate(${cursorX}px, ${cursorY}px) translate(-50%, -50%)`;
+      }
+      if (cursorDot) {
+        cursorDot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
+      }
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // 交互元素 hover 放大
+    document.querySelectorAll('[data-hover], a, button, .cta-email').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('is-hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('is-hover'));
+    });
+
+    // ---------- Hero 标题动画：yPercent 110 → 0 ----------
+    const heroLines = document.querySelectorAll('.hero-line-inner');
+    heroLines.forEach((line, i) => {
+      animate(line, { transform: ['translateY(110%)', 'translateY(0%)'] }, {
+        duration: 1.1,
+        delay: 0.3 + i * 0.15,
+        easing: [0.22, 1, 0.36, 1] // power4.out 近似
+      });
+    });
+
+    // ---------- Intersection Observer 滚动动画 ----------
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+
+          // Manifesto: opacity 0→1, blur 10→0
+          if (el.id === 'quoteText') {
+            el.style.opacity = '0';
+            el.style.filter = 'blur(10px)';
+            animate(el, { opacity: [0, 1], filter: ['blur(10px)', 'blur(0px)'] }, {
+              duration: 1.2,
+              easing: [0.22, 1, 0.36, 1]
+            });
+          }
+
+          // Work item 逐行入场
+          el.querySelectorAll?.('.work-item').forEach((item, i) => {
+            animate(item, { opacity: [0, 1], transform: ['translateY(20px)', 'translateY(0)'] }, {
+              duration: 0.8,
+              delay: i * 0.08,
+              easing: [0.22, 1, 0.36, 1]
+            });
+          });
+
+          // Journal 卡片
+          el.querySelectorAll?.('.journal-card').forEach((card, i) => {
+            animate(card, { opacity: [0, 1], transform: ['translateY(30px)', 'translateY(0)'] }, {
+              duration: 0.9,
+              delay: i * 0.12,
+              easing: [0.22, 1, 0.36, 1]
+            });
+          });
+
+          // Process 能力项
+          el.querySelectorAll?.('.process-item').forEach((item, i) => {
+            animate(item, { opacity: [0, 1], transform: ['translateY(20px)', 'translateY(0)'] }, {
+              duration: 0.9,
+              delay: i * 0.15,
+              easing: [0.22, 1, 0.36, 1]
+            });
+          });
+
+          // CTA
+          if (el.id === 'cta') {
+            animate(el.querySelector('h2'), { opacity: [0, 1], transform: ['translateY(20px)', 'translateY(0)'] }, {
+              duration: 1,
+              easing: [0.22, 1, 0.36, 1]
+            });
+          }
+
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('#works, #journal, #process, #cta, #quoteText').forEach(el => io.observe(el));
+
+    console.log('%c LUMEN ', 'background:#9C4A2B;color:#F5F2EB;padding:2px 6px;font-family:Fraunces,serif;');
+  </script>
+</body>
+</html>

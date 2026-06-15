@@ -13,22 +13,59 @@ FRONTEND
 │   或 Vue 3 + Vite (生产级项目)
 │   或 Next.js 14 App Router (如需 CMS/SEO)
 │
-├─ 动画与滚动
-│   ├─ gsap@3.x                — 所有时间线动画
-│   │   └─ ScrollTrigger Plugin — 滚动驱动动画
-│   └─ @studio-freight/lenis   — 平滑滚动（替换原生滚动）
+├─ 动画引擎（3 个档位，按需求选择）
+│   ├─ 🏅 GSAP 3.x + ScrollTrigger   — 复杂时间线 / 滚动叙事 / Awwwards 级（首选）
+│   │                                  插件：ScrollTrigger / Flip / Draggable / MorphSVG
+│   │
+│   ├─ 🟢 motion@12.x (Motion.dev)   — 轻量 / 硬件加速 / 现代首选
+│   │   核心 API：animate() / timeline() / stagger() / spring()
+│   │   双引擎：Web Animations API + JS fallback（120fps 丝滑）
+│   │   纯 JS 版（原生 HTML 无依赖）：import { animate } from 'https://esm.sh/motion'
+│   │
+│   └─ 🟣 anime.js v4               — 极简 / SVG 友好 / 体积最小 (~15KB)
+│       核心 API：anime.timeline() / targets / keyframes / easing
+│
+├─ 平滑滚动
+│   └─ @studio-freight/lenis         — 惯性滚动 + GSAP/Motion 集成
 │
 ├─ 视觉（WebGL / Canvas）
-│   ├─ three.js                — 3D 几何、场景、复杂着色器
-│   ├─ ogl@0.x                 — 更轻的 WebGL 替代品（首选）
-│   └─ Canvas 2D API           — 简单粒子、线条、SVG 手绘
+│   ├─ three.js                      — 3D 几何、场景、复杂着色器
+│   ├─ ogl@0.x                       — 更轻的 WebGL 替代品
+│   └─ Canvas 2D API                 — 简单粒子、线条、SVG 手绘
 │
 └─ 字体
-    ├─ Google Fonts             — Inter (正文) / Newsreader (展示)
-    └─ 或自建 font family       — 永远在 `<head>` 用 `preconnect` + `font-display: swap`
+    ├─ Google Fonts                   — Inter (正文) / Newsreader (展示) / Fraunces (Display)
+    └─ 永远在 `<head>` 用 `preconnect` + `font-display: swap`
 
 NO BUILD TOOLS 模式（快速原型）
-└─ 通过 ESM.sh / unpkg CDN 直接 import { gsap } from 'https://esm.sh/gsap'
+└─ 通过 ESM.sh CDN 直接 import：
+   import { gsap } from 'https://esm.sh/gsap'
+   import { ScrollTrigger } from 'https://esm.sh/gsap/ScrollTrigger'
+   import { animate, timeline, stagger, spring } from 'https://esm.sh/motion'
+   import anime from 'https://esm.sh/animejs'
+   import Lenis from 'https://esm.sh/@studio-freight/lenis'
+```
+
+---
+
+## 动画库对比（选型速查表）
+
+| 维度 | GSAP | Motion.dev | anime.js |
+|------|------|-----------|---------|
+| **体积** | ~60KB (core) + plugins | ~20KB (core) | ~15KB |
+| **性能** | 极强，JS 引擎主循环优化 | 最强，双引擎（WAAPI + JS） | 良好，简单场景够用 |
+| **滚动驱动** | ScrollTrigger（行业标准） | 原生 supportScroll + ViewTransitions | 需要手写（无内置） |
+| **时间线** | timeline()（专业级） | timeline()（简洁版） | timeline()（基础） |
+| **SVG 支持** | 极好（MorphSVG/DrawSVG） | 良好 | 极好（路径动画） |
+| **学习曲线** | 中高（概念多） | 极低（一行 API） | 极低 |
+| **许可证** | Club GSAP 商业插件需授权 | MIT 免费开源 | MIT 免费开源 |
+| **适用场景** | Awwwards 级复杂滚动叙事 | 现代产品站 / 简洁动画 / UI 微交互 | 轻量动效 / SVG / 数据可视化 |
+
+### 推荐搭配策略
+```
+高端品牌站 / 滚动叙事 / 大奖作品  →  GSAP + Lenis
+现代 SaaS / 产品站 / 简洁动效      →  Motion.dev + Lenis
+创意微型站 / SVG 动画 / 数据展示    →  anime.js
 ```
 
 ---
@@ -79,6 +116,13 @@ Sizing（标题使用 vw 相对单位）：
   正文:          clamp(0.95rem, 1.2vw, 1.1rem)
   辅助文字:      0.8rem, letter-spacing 0.15em
 
+Line Height（排版安全 — 绝对禁止裁剪文字）：
+  Display 标题:  ≥ 1.05（绝对禁止 < 1.0，会导致升部/降部被裁剪）
+  大标题:        ≥ 1.1（clamp(2rem+, ...) 级别的标题）
+  正文:          ≥ 1.5（西文），≥ 1.6（中文）
+  等宽代码/标签:  ≥ 1.4
+  ⚠️ 警告: line-height < 1.1 与 overflow: hidden 组合 = 文字裁剪灾难
+
 Spacing：
   Hero padding:  0 6vw, centered, 100vh
   Section pad:   14-20vh vertical, 6vw horizontal
@@ -107,16 +151,98 @@ lenis.on('scroll', ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
-// 页面动画入口：各 section 自己在独立文件中
-import { initHero } from './animations/hero.js';
-import { initSections } from './animations/sections.js';
-import { initMagnetic } from './animations/magnetic.js';
-
 // 等待字体加载，避免 CLS 破坏动画节奏
 document.fonts.ready.then(() => {
-  initHero();
-  initSections();
-  initMagnetic();
+  // 各 section 动画入口
+});
+```
+
+---
+
+## Motion.dev + Lenis 标准启动代码（现代首选）
+
+```js
+// js/main.js — Motion.dev 简洁版入口
+import { animate, timeline, stagger, spring, inView } from 'motion';
+import Lenis from '@studio-freight/lenis';
+
+// 平滑滚动（Lenis 与 Motion 完美兼容）
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smoothWheel: true
+});
+
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+
+// Hero 入场动画 —— 声明式一行完成
+document.fonts.ready.then(() => {
+  // Hero: stagger 文字逐字入场
+  timeline([
+    ['.hero-title span', { y: ['100%', '0%'], opacity: [0, 1] }, { delay: stagger(0.03), duration: 0.8, easing: [0.22, 0.03, 0.26, 1] }],
+    ['.hero-desc', { opacity: [0, 1], y: [20, 0] }, { duration: 0.6, at: '-0.2' }],
+    ['.cta-btn', { opacity: [0, 1], y: [20, 0] }, { duration: 0.5, easing: spring() }],
+  ]);
+
+  // Section 入场：滚动进入视口自动触发
+  inView('.feature-card', (info) => {
+    animate(info.target, { opacity: [0, 1], y: [30, 0] }, {
+      duration: 0.6, easing: [0.22, 0.03, 0.26, 1]
+    });
+  }, { amount: 0.3 });
+});
+```
+
+---
+
+## anime.js 标准启动代码（极简 SVG 场景）
+
+```js
+// js/main.js — anime.js 入口（轻量站点 / SVG 场景）
+import anime from 'animejs';
+import Lenis from '@studio-freight/lenis';
+
+const lenis = new Lenis({ duration: 1.2 });
+
+function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+requestAnimationFrame(raf);
+
+document.fonts.ready.then(() => {
+
+  // 基础入场
+  anime({
+    targets: ['.hero-title', '.hero-desc'],
+    translateY: [30, 0],
+    opacity: [0, 1],
+    duration: 900,
+    delay: anime.stagger(200),
+    easing: 'cubicBezier(0.22, 0.03, 0.26, 1)',
+  });
+
+  // SVG 路径动画（绘制一条线）
+  anime({
+    targets: '.svg-path',
+    strokeDashoffset: [anime.setDashoffset, 0],
+    duration: 1500,
+    delay: 500,
+    easing: 'easeInOutSine',
+  });
+
+  // 悬浮循环（spring 感）
+  anime({
+    targets: '.floating',
+    translateY: [-10, 10],
+    rotate: [-3, 3],
+    duration: 3000,
+    direction: 'alternate',
+    loop: true,
+    easing: 'easeInOutSine',
+  });
+
 });
 ```
 

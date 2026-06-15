@@ -1,11 +1,12 @@
 ---
 name: prompt-craft
-version: 3.0.0
-description: "Prompt Craft v3 — 三层 Prompt 架构驱动的网页生成器。从用户一句需求 → 到设计方向 → 到技术栈 → 到可运行代码，一步到位。"
+version: 4.0.0
+description: "Prompt Craft v4 — 三层 Prompt 架构 + 3 引擎动画库 + 6 大设计方向。从用户一句需求 → 到设计方向 → 到技术栈 → 到可运行代码，一步到位。"
 metadata:
   architecture: "T1 项目规则 + T2 专家角色 + T3 任务模板"
-  default_flow: "Editorial 杂志风 + 🚀 快速原型档（用户未指定时的默认值）"
-  design_reference: "references/artistic-website-dna.md（4 大设计方向 + 20 个交互签名）"
+  default_flow: "Editorial 杂志风 + Motion.dev 动画引擎 + 🚀 快速原型档（用户未指定时的默认值）"
+  design_reference: "references/artistic-website-dna.md（6 大设计方向 + 16+ 个交互签名 + 8 个常见陷阱）"
+  animation_engines: "GSAP 3.x + ScrollTrigger / Motion.dev (Motion One) / anime.js v4 — 按方向智能匹配"
   key_resources:
     - "project-rules/artistic-stack.md — 艺术化官网技术栈（强制规则）"
     - "project-rules/3d-product-showcase.md — 3D 产品展示技术栈（Three.js + GLTF + PBR）"
@@ -91,13 +92,16 @@ metadata:
 
 > 详细清单请见 `references/artistic-website-dna.md`（约 280 行）。下面是给用户看的"选单" + 给 AI 看的"速查表"。
 
-### 3 个设计方向（选 1 个作为页面主 DNA）
+### 6 个设计方向（选 1 个作为页面主 DNA）
 
 | 方向 | 色彩（一组默认值） | 字体（标题 + 正文） | 布局关键词 | 典型交互 | 适合行业 |
 |-----|-------------------|-------------------|----------|---------|---------|
-| **A · Editorial 杂志博物馆风** | 奶油纸 `#F5F3EF` + 墨黑 `#1A1A1A` + 赭石 `#E0512B`（3 色原则） | **Display** Newsreader / Playfair（Serif，巨号，行高 1.1）<br>**Body** Inter，栏宽 50-65 字符 | 不对称双栏、巨量留白 14-20vh、section 间用巨型数字分隔 | 遮罩文字入场、纸张噪点、hover 反色卡片、滚动下划线生长、长文编辑滚动 | 设计工作室 / 文化机构 / 高端品牌 / 创意咨询 / 金融科技（需克制） |
-| **B · Cyberpunk 黑暗沉浸式** | 深黑 `#0A0A0F` + 近白文本 + 洋红 `#FF2E97` + 青 `#00F0FF`（双霓虹） | **Display** Condensed / 窄体几何 sans，全大写宽字距<br>**Body** 小号 sans，数字用等宽字体 | 画布优先（WebGL 占满屏），HTML UI 以 HUD 形式浮在 canvas 上 | Shader Orb、全屏 WebGL、粒子场、滚动驱动 shader、页面擦除切换、固定背景随滚动变形 | 游戏工作室 / 互动媒体 / 音乐厂牌 / 科幻 IP / 科技产品发布页 |
-| **C · Playful 游戏探索风** | 蓝天绿草橙砖 + 单个签名色（如法拉利红）作交互元素 | **Display** 圆润几何 sans<br>数字用等宽<br>所有标签文字"钉"在 3D 世界标牌上而非 HTML | 没有传统布局，页面是一张 3D 世界地图，区域间用物理导航 / 驾驶 / 探索链接 | 3D 世界地图、碰撞 / 物理、实体 Tilt Card、横向滚动章节、用户"驾驶"到达内容 | 个人作品集（技术背景）/ 游戏公司 / 儿童教育 / 创意工具发布 |
+| **A · Editorial 杂志博物馆风** | 奶油纸 `#F5F3EF` + 墨黑 `#1A1A1A` + 赭石 `#E0512B`（3 色原则） | **Display** Newsreader / Playfair（Serif，巨号，行高 ≥ 1.1）<br>**Body** Inter，栏宽 50-65 字符 | 不对称双栏、巨量留白 14-20vh、section 间用巨型数字分隔 | 遮罩文字入场、纸张噪点、hover 反色卡片、滚动下划线生长、长文编辑滚动 | 设计工作室 / 文化机构 / 高端品牌 / 创意咨询 / 金融科技 / 出版社 |
+| **B · Cyberpunk 黑暗沉浸式** | 深黑 `#0A0A0F` + 近白文本 + 洋红 `#FF2E97` + 青 `#00F0FF`（双霓虹） | **Display** Condensed / 窄体几何 sans，全大写宽字距<br>**Body** 小号 sans，数字用等宽字体 | 画布优先（WebGL 占满屏），HTML UI 以 HUD 形式浮在 canvas 上 | Shader Orb、全屏 Canvas 2D、粒子场、滚动驱动、HUD 状态面板、实时时钟 ticker | 游戏工作室 / 互动媒体 / 音乐厂牌 / 科幻 IP / 科技产品发布页 / AI 研究实验室 |
+| **C · Playful 游戏探索风** | 蓝天绿草橙砖 + 单个签名色（如法拉利红）作交互元素 | **Display** 圆润几何 sans<br>数字用等宽<br>所有标签文字"钉"在 3D 世界标牌上而非 HTML | 没有传统布局，页面是一张 3D 世界地图，区域间用物理导航 | 3D 世界地图、碰撞 / 物理、实体 Tilt Card、横向滚动章节、用户"驾驶"到达内容 | 个人作品集（技术背景）/ 游戏公司 / 儿童教育 / 创意工具发布 |
+| **D · 3D Product Showcase** | 深黑 / 纯白背景 + 产品本身材质色 + 1 个 UI 强调色（电蓝 / 霓虹橙） | **Display** 极细 Sans（Inter 300）+ 等宽字体用于规格数字 | 画布优先——WebGL Canvas 占满屏，HTML UI 以 HUD 浮层叠加 | 360° 产品旋转、颜色/材质切换、热点标注、环境光切换、规格表 | 汽车 / 消费电子 / 家具 / 珠宝 / 工业设备 / 高端产品展示 |
+| **E · Neo-Swiss 新瑞士粗野主义** | 瑞士米灰 `#E8E6DF` 背景 + 纯墨 `#0A0A0A` + 瑞士红 `#E11D48` + 瑞士蓝 `#1E40AF` | **Display** Space Grotesk（几何无衬线 500-900）<br>**Body** Inter + JetBrains Mono（数字/代码）| 12 列可见网格线、大字号 border 作为结构、news ticker 横向滚动、编号系统 | 反色 manifesto、项目编号列表 (001/002 →)、实时时钟 ticker、hover 时整行位移 | 设计工作室 / 建筑事务所 / 法律金融 / 出版社 / 学术机构 / 严肃科技品牌 |
+| **F · Dark Luxury 深色奢华风** | 深墨 `#0A0A0C` + 象牙白 `#E8E6E1` + 暖金 `#C9A962` + 青铜 `#8B7355` | **Display** Inter 200-300 极细（超大型）+ 金色渐变强调<br>**Body** Inter 300<br>**Specs** JetBrains Mono | 产品占 60-80% 屏幕空间，文字信息以 HUD 形式浮动；黄金分割；大量"暗色空间" | 产品 3D 倾斜展示、金色渐变文字、规格表、青铜色次强调、canvas 2D 金色粒子 | 高端手表 / 珠宝 / 香水 / 奢侈品零售 / 私人银行 / 限量版科技产品 / 高端汽车 |
 
 ### 15 个交互签名（"菜单" — 每次选 3-5 个）
 
@@ -142,22 +146,32 @@ metadata:
 | 🚀 **快速原型档** | 单文件 HTML + ES Modules **CDN**（`esm.sh` / `unpkg`）+ Google Fonts `<link>`，**零 npm install** | 全部写在一个 `index.html`：`<head>` 内联 `<style>` + `<body>` 末尾 `<script type="module">` | 验证想法、给客户看感觉、学习用途 |
 | 🏭 **生产级档** | Vue 3 / Next.js + TypeScript + Vite，模块化 CSS / JS / 组件 | 分离为 `styles/`、`js/animations/`、`js/webgl/`、`components/`、`sections/` | 真实项目、长期维护、需 CMS / SSR / CI |
 
-### 2. 强制项（两个档位都必须满足）
+### 2. 动画引擎（三选一，按方向智能匹配）
 
-- ✅ **Lenis 平滑滚动**：`new Lenis({ duration: 1.2, easing })` + `lenis.on('scroll', ScrollTrigger.update)`
-- ✅ **GSAP ScrollTrigger**：`gsap.registerPlugin(ScrollTrigger)`；scrub 使用数字（`0.6`–`0.8`）而非 `true`；永远 `markers: false`
+| 引擎 | 优势 | CDN Import | 适合方向 |
+|-----|------|-----------|----------|
+| 🏅 **GSAP 3.x + ScrollTrigger** | 精细时间线、复杂滚动叙事、Awwwards 级 | `import { gsap } from 'https://esm.sh/gsap'` + `import { ScrollTrigger } from 'https://esm.sh/gsap/ScrollTrigger'` | Editorial / Cyberpunk / 3D Product / Swiss |
+| 🟢 **Motion.dev (Motion One)** | 最小体积、硬件加速、简洁 API、spring 物理 | `import { animate, timeline, stagger, spring, inView } from 'https://esm.sh/motion'` | Modern SaaS / 产品站 / Editorial |
+| 🟣 **anime.js v4** | SVG 路径动画、数据可视化、轻量微交互 | `import anime from 'https://esm.sh/animejs'` | Publishing / SVG-heavy / 数据可视化 |
+
+### 3. 强制项（两个档位都必须满足）
+
+- ✅ **Lenis 平滑滚动**：`new Lenis({ duration: 1.2, easing })` + `lenis.on('scroll', ScrollTrigger.update)`（与 GSAP/Motion/anime.js 均兼容）
 - ✅ **2-3 色系统**：CSS Variables `--bg`、`--text`、`--accent`（可加 `--muted` 作为第 4 色）。永远不超过 4 色
 - ✅ **clamp 响应式字号**：所有标题使用 `clamp(min, vw, max)`，禁止纯 px 标题
 - ✅ **Google Fonts + preconnect**：在 `<head>` 里 `preconnect fonts.googleapis.com` + `preconnect fonts.gstatic.com crossorigin` + `font-display: swap`
 - ✅ **字体加载后再启动动画**：`document.fonts.ready.then(() => initHero())`，避免 CLS 导致动画跳帧
 - ✅ **语义化 HTML**：`<header> <main> <section> <footer> <nav>`；装饰性 canvas 使用 `aria-hidden`
+- ✅ **排版安全**：Display 标题 `line-height ≥ 1.05`，正文 `≥ 1.5`，中文 `≥ 1.6`；禁止 `overflow: hidden` 与 `line-height < 1.1` 组合
 
-### 3. 约束项（性能与可访问性降级）
+### 4. 约束项（性能与可访问性降级）
 
 - ⚠️ **prefers-reduced-motion 降级**：检测到 `(prefers-reduced-motion: reduce)` 时，所有 shaders 关闭、所有 ScrollTrigger scrub 改为瞬时 `opacity: 0→1`、所有 stagger 改为瞬时入场
 - ⚠️ **mobile 768px 降级**：在 `@media (max-width: 768px)` 中：关闭自定义光标、关闭 magnetic button、关闭 WebGL shader（降级为静态 SVG）、关闭 heavy scrub、改为简单 fade-in
 - ⚠️ **WebGL 预算**：桌面端最多 2 个 active canvas；移动端最多 1 个（且带 fail fallback）
 - ⚠️ **颜色对比度**：正文 ≥ 7:1（AAA），按钮文本 ≥ 4.5:1（AA）
+- ⚠️ **GSAP 约束**：`scrub` 必须用数字（`0.6`–`0.8`）；永远 `markers: false`
+- ⚠️ **Motion.dev 约束**：`easing` 使用 `[0.22, 0.03, 0.26, 1]`（标准 cubic），`spring()` 用于 UI 微交互，不要用 spring 做入场动画
 - ⚠️ **禁止第三方 cookies / analytics / ads**：除非用户明确要求，否则不要加任何外部分析脚本
 
 ### 4. 字体与字号速查表（AI 直接查表使用，不要自己瞎编）
@@ -362,6 +376,9 @@ metadata:
 ```
 ☐ 颜色系统 ≤ 4 色（--bg + --text + --accent + 可选 --muted）
 ☐ 标题字号使用 clamp() 含 vw 单位（例如 clamp(3rem, 10vw, 9rem)）
+☐ **排版安全：所有 line-height ≥ 1.0（display 标题 ≥ 1.05，body 正文 ≥ 1.5）**
+☐ **排版安全：无 overflow: hidden 与 line-height < 1.1 的组合（会导致文字裁剪）**
+☐ **排版安全：中文内容行高 ≥ 1.6，西文正文行高 ≥ 1.5**
 ☐ 实现了 ≥ 3 个交互签名（代码中能明确对应到 IS-xx）
 ☐ 响应式：存在 @media (max-width: 768px) 降级规则
 ☐ Lenis 初始化存在：new Lenis() + lenis.on('scroll', ScrollTrigger.update)

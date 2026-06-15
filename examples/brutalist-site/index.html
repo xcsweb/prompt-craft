@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRUTALIST / STUDIO — NEO-SWISS EDITORIAL</title>
+
+<!-- 字体预加载：Space Grotesk (display, 极粗) + JetBrains Mono (mono 标签) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+
+<style>
+/* ---------- 设计 tokens ---------- */
+:root {
+  --bg: #1a1a1a;
+  --bg-alt: #141414;
+  --text: #f2f2f0;
+  --muted: #8a8a8a;
+  --accent: #D4FF3A;         /* lime 强色 */
+  --line: rgba(242,242,240,0.08);
+  --line-strong: rgba(242,242,240,0.18);
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --pad-x: 4vw;
+  --pad-y: 12vh;
+
+  /* 12 列网格，作为 layout 骨架，同时作为可见装饰 */
+  --cols: 12;
+  --gutter: 24px;
+}
+
+/* ---------- Reset ---------- */
+*,
+*::before,
+*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+body { min-height: 100vh; }
+
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; background: none; border: 0; color: inherit; cursor: pointer; }
+
+/* 所有文字默认左对齐 — 瑞士设计规则 */
+h1,h2,h3,h4,h5,h6,p,ul,ol,div { text-align: left; }
+
+/* 选中反色，强调色 */
+::selection { background: var(--accent); color: #000; }
+
+/* 隐藏滚动条视觉（Lenis 接管） */
+html { scroll-behavior: auto; }
+
+/* ---------- 12 列可见网格（装饰层） ---------- */
+.grid-lines {
+  position: fixed; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: var(--gutter);
+  padding: 0 var(--pad-x);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.06;
+  transition: opacity 0.4s ease;
+}
+.grid-lines:hover { opacity: 0.22; }
+.grid-lines span {
+  border-left: 1px solid var(--text);
+  height: 100%;
+}
+.grid-lines span:last-child { border-right: 1px solid var(--text); }
+
+/* ---------- Nav ---------- */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 18px var(--pad-x);
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+.nav__brand {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  font-size: 18px;
+}
+.nav__nums {
+  display: flex; gap: 28px;
+}
+.nav__nums button {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  transition: color 0.3s ease;
+  position: relative;
+}
+.nav__nums button.is-active {
+  color: var(--accent);
+}
+.nav__nums button:hover { color: var(--text); }
+.nav__index {
+  justify-self: end;
+  color: var(--muted);
+}
+.nav__progress {
+  position: absolute; left: 0; bottom: -1px; height: 2px;
+  background: var(--accent);
+  width: 0%;
+}
+
+/* ---------- 通用 section ---------- */
+section {
+  position: relative;
+  padding: var(--pad-y) var(--pad-x);
+  border-top: 1px solid var(--line);
+  z-index: 2;
+}
+
+/* section 左上角编号 + 右下角标签（瑞士设计经典） */
+.sec-head {
+  position: absolute;
+  top: 28px; left: var(--pad-x);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sec-foot {
+  position: absolute;
+  bottom: 28px; right: var(--pad-x);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: right;
+}
+
+/* 巨型 display 标题（用于 hero / manifesto / contact） */
+.display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: var(--text);
+}
+.display--huge {
+  font-size: clamp(3.2rem, 14vw, 14rem);
+}
+.display--big {
+  font-size: clamp(2.5rem, 9vw, 9rem);
+}
+
+/* 工具：字/词分割后做 stagger reveal — 防止换行 */
+.split-word { display: inline-block; overflow: hidden; vertical-align: top; }
+.split-inner { display: inline-block; will-change: transform, opacity; }
+
+/* ---------- [01] HERO ---------- */
+.hero {
+  min-height: 100vh;
+  padding-top: 140px;
+  padding-bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border-top: 0;
+}
+.hero__label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gutter);
+}
+.hero__label span { display: block; }
+.hero__label span:nth-child(2) { text-align: center; }
+.hero__label span:nth-child(3) { text-align: right; }
+
+.hero__title {
+  margin-top: auto;
+}
+.hero__title .line { display: block; }
+.hero__title .line--zh {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  font-size: clamp(2.2rem, 7vw, 6rem);
+  line-height: 1.05;
+  margin-top: 0.6em;
+  padding-left: 20vw;
+}
+
+.hero__meta {
+  margin-top: 80px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hero__meta > div { grid-column: span 4; }
+.hero__meta .scroll {
+  grid-column: 10 / span 3;
+  justify-self: end;
+  color: var(--text);
+  display: flex; align-items: center; gap: 14px;
+}
+.hero__meta .scroll::before {
+  content: ""; display: inline-block;
+  width: 40px; height: 1px; background: var(--text);
+  transform-origin: left;
+}
+
+/* hero 中跟随鼠标的 canvas 光斑 */
+.hero__spotlight {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero__content { position: relative; z-index: 2; }
+
+/* ---------- [02] MANIFESTO ---------- */
+.manifesto {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gutter);
+  padding-top: 16vh;
+  padding-bottom: 16vh;
+}
+.manifesto__left {
+  grid-column: span 5;
+  position: sticky;
+  top: 120px;
+  align-self: start;
+}
+.manifesto__left h2 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 6vw, 6rem);
+  line-height: 1.1;
+}
+.manifesto__left .en-ghost {
+  margin-top: 40px;
+  min-height: 420px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+  color: var(--muted);
+  line-height: 1.4;
+  position: relative;
+}
+.manifesto__left .en-ghost p {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.manifesto__left .en-ghost p.is-active { opacity: 1; }
+
+.manifesto__right {
+  grid-column: 7 / span 6;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+.manifesto__item {
+  padding-bottom: 80px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: color 0.4s ease;
+}
+.manifesto__item:last-child { border-bottom: 0; }
+.manifesto__item .num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.manifesto__item .zh {
+  margin-top: 16px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+  line-height: 1.3;
+  color: var(--text);
+  transition: color 0.4s ease;
+}
+.manifesto__item:hover .zh { color: var(--accent); }
+
+/* ---------- [03] WORK / 作品列表 ---------- */
+.work { padding-bottom: 16vh; }
+.work__header {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gutter);
+  margin-bottom: 6vh;
+}
+.work__header h2 {
+  grid-column: span 8;
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 6vw, 5.5rem);
+  line-height: 1.1;
+}
+.work__header p {
+  grid-column: 10 / span 3;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  align-self: end;
+}
+
+.work__list { border-top: 1px solid var(--line-strong); }
+.work__row {
+  display: grid;
+  grid-template-columns: 80px 1fr 120px 2fr 100px;
+  gap: var(--gutter);
+  align-items: center;
+  padding: 28px 12px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.35s ease;
+}
+.work__row::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.45s cubic-bezier(.7,0,.2,1);
+  z-index: -1;
+}
+.work__row:hover { color: #000; }
+.work__row:hover::before { transform: scaleX(1); }
+.work__row .num { color: var(--muted); font-size: 12px; letter-spacing: 0.2em; }
+.work__row .title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  letter-spacing: -0.02em;
+}
+.work__row .year { color: var(--muted); }
+.work__row .client { color: var(--muted); }
+.work__row .arrow {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 20px;
+  transition: transform 0.45s cubic-bezier(.7,0,.2,1);
+  justify-self: end;
+}
+.work__row:hover .arrow { transform: translateX(20px); }
+
+.work__more {
+  margin-top: 40px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: inline-block;
+  border-bottom: 1px solid var(--line-strong);
+  padding-bottom: 4px;
+}
+.work__more:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------- [04] PROCESS / 横向滚动 ---------- */
+.process {
+  padding: 16vh var(--pad-x) 16vh;
+  overflow: hidden;
+}
+.process__head {
+  margin-bottom: 8vh;
+}
+.process__head h2 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 6vw, 5.5rem);
+  line-height: 1.1;
+  max-width: 22ch;
+}
+.process__head p {
+  margin-top: 28px;
+  max-width: 50ch;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+
+/* 横向轨道：纵向滚动时被 pin + translateX */
+.process__track-wrap {
+  position: relative;
+}
+.process__track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  will-change: transform;
+}
+.process__step {
+  flex: 0 0 auto;
+  width: 80vw;
+  max-width: 1100px;
+  min-height: 70vh;
+  padding: 60px 60px 80px;
+  margin-right: 40px;
+  border: 1px solid var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  background: var(--bg-alt);
+}
+.process__step .big {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  font-size: clamp(8rem, 22vw, 22rem);
+  line-height: 1.0;
+  /* outline 数字：用 -webkit-text-stroke 实现空心字 */
+  -webkit-text-stroke: 2px var(--text);
+  color: transparent;
+  transition: color 0.4s ease, -webkit-text-stroke 0.4s ease;
+}
+.process__step.is-active .big {
+  color: var(--accent);
+  -webkit-text-stroke: 2px var(--accent);
+}
+.process__step h3 {
+  margin-top: 20px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.6rem, 3vw, 3rem);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.process__step .desc {
+  margin-top: 18px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--muted);
+  max-width: 38ch;
+}
+.process__step .meta {
+  margin-top: auto;
+  padding-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-top: 1px solid var(--line-strong);
+  padding-top: 20px;
+}
+
+/* ---------- [05] PEOPLE / 团队网格 ---------- */
+.people { padding-bottom: 18vh; }
+.people__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-strong);
+}
+.person {
+  aspect-ratio: 1 / 1.1;
+  padding: 28px;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+.person::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.5s cubic-bezier(.7,0,.2,1);
+  z-index: 0;
+}
+.person:hover { color: #000; }
+.person:hover::before { transform: scaleY(1); }
+.person > * { position: relative; z-index: 1; }
+.person .initial {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  font-size: clamp(3rem, 7vw, 7rem);
+  line-height: 1.1;
+}
+.person .info {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.person .info .name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+.person .info .role,
+.person .info .since { color: inherit; opacity: 0.75; }
+
+/* ---------- [06] CONTACT ---------- */
+.contact {
+  padding-top: 20vh;
+  padding-bottom: 20vh;
+}
+.contact__email {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-size: clamp(2.5rem, 10vw, 10rem);
+  line-height: 1.05;
+  display: inline-block;
+  transition: color 0.4s ease;
+  word-break: break-all;
+  border-bottom: 2px solid transparent;
+}
+.contact__email:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.contact__meta {
+  margin-top: 10vh;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.contact__meta .col { grid-column: span 3; }
+.contact__meta .col strong {
+  display: block;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 14px;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  font-size: 16px;
+}
+.contact__meta .col a:hover { color: var(--accent); }
+
+/* ---------- Footer ---------- */
+footer {
+  padding: 40px var(--pad-x);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ---------- 响应式：≤ 768px 降级 ---------- */
+@media (max-width: 768px) {
+  :root { --pad-x: 5vw; --gutter: 16px; }
+  html { font-size: 14px; }
+  .nav { grid-template-columns: 1fr auto; padding: 14px var(--pad-x); }
+  .nav__nums { display: none; }
+  .nav__index { display: none; }
+
+  /* hero：关闭跟随光斑 */
+  .hero__spotlight { display: none; }
+  .hero { min-height: 90vh; padding-top: 120px; }
+  .hero__label { grid-template-columns: 1fr; gap: 10px; }
+  .hero__label span:nth-child(2),
+  .hero__label span:nth-child(3) { text-align: left; }
+  .hero__title .line--zh { padding-left: 0; }
+  .hero__meta { grid-template-columns: 1fr; gap: 18px; margin-top: 40px; }
+  .hero__meta > div { grid-column: 1 / -1; }
+  .hero__meta .scroll { grid-column: 1 / -1; justify-self: start; }
+
+  /* manifesto：单列 */
+  .manifesto { grid-template-columns: 1fr; padding-top: 10vh; padding-bottom: 10vh; }
+  .manifesto__left { grid-column: 1 / -1; position: static; margin-bottom: 40px; }
+  .manifesto__left .en-ghost { display: none; }
+  .manifesto__right { grid-column: 1 / -1; gap: 40px; }
+  .manifesto__item { padding-bottom: 40px; }
+  .manifesto__item .zh { font-size: 1.6rem; }
+
+  /* work：简化列 */
+  .work__row {
+    grid-template-columns: 40px 1fr 60px;
+    gap: 12px;
+    padding: 20px 8px;
+  }
+  .work__row .year, .work__row .client { display: none; }
+
+  /* process：关闭横向滚动，改为垂直卡片 */
+  .process__track { flex-direction: column; width: auto; }
+  .process__step {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 24px;
+    min-height: auto;
+    padding: 30px;
+  }
+
+  /* people：2 列 */
+  .people__grid { grid-template-columns: repeat(2, 1fr); }
+  .person .initial { font-size: clamp(3rem, 14vw, 5rem); }
+
+  /* contact */
+  .contact__meta { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .contact__meta .col { grid-column: span 2; }
+
+  footer { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .grid-lines { display: none; }
+}
+
+/* 减少动画偏好 — 全部降级为瞬时淡入 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .hero__spotlight { display: none; }
+}
+
+/* 无障碍：焦点样式 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 12 列可见网格（装饰层，hover 变清晰） ============ -->
+<div class="grid-lines" aria-hidden="true">
+  <span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span>
+</div>
+
+<!-- ============ 顶部导航 ============ -->
+<nav class="nav" aria-label="主导航">
+  <div class="nav__brand">BRUTALIST / STUDIO&nbsp;<span style="color:var(--accent)">°</span></div>
+  <div class="nav__nums" role="tablist" aria-label="章节编号">
+    <button data-target="hero" aria-label="前往 01">01</button>
+    <button data-target="manifesto" aria-label="前往 02">02</button>
+    <button data-target="work" aria-label="前往 03">03</button>
+    <button data-target="process" aria-label="前往 04">04</button>
+    <button data-target="people" aria-label="前往 05">05</button>
+    <button data-target="contact" aria-label="前往 06">06</button>
+  </div>
+  <div class="nav__index">INDEX / 2026</div>
+  <div class="nav__progress" aria-hidden="true"></div>
+</nav>
+
+<!-- ============ [01] HERO ============ -->
+<section id="hero" class="hero">
+  <canvas class="hero__spotlight" aria-hidden="true"></canvas>
+
+  <div class="hero__content">
+    <div class="hero__label">
+      <span>STUDIO / 01</span>
+      <span>INDEPENDENT DESIGN COLLECTIVE</span>
+      <span>EST. 2019 — SHANGHAI / BERLIN</span>
+    </div>
+
+    <div class="hero__title">
+      <h1 class="display display--huge reveal">
+        <span class="line" data-split>WE DESIGN<br>THINGS THAT<br><span style="color:var(--accent)">MEAN</span> SOMETHING.</span>
+      </h1>
+      <p class="line line--zh reveal" data-split>我们不做漂亮的东西，<br>我们做被记住的东西。</p>
+    </div>
+
+    <div class="hero__meta">
+      <div>◉ 独立设计工作室</div>
+      <div>品牌 · 出版物 · 数字体验</div>
+      <div>INDEX / N°017 — 2026/06</div>
+      <div class="scroll" data-scroll-hint>↓ SCROLL</div>
+    </div>
+  </div>
+
+  <span class="sec-foot">01 / HERO — LAT 31.23°N  LON 121.47°E</span>
+</section>
+
+<!-- ============ [02] MANIFESTO ============ -->
+<section id="manifesto" class="manifesto">
+  <span class="sec-head">[02] MANIFESTO / 我们相信</span>
+
+  <div class="manifesto__left">
+    <h2 class="reveal" data-split>TYPOGRAPHY<br>IS POLITICS.</h2>
+    <div class="en-ghost">
+      <p data-ghost="0">Design is not decoration. It is the careful arrangement of intention. Every letter carries a weight, every line carries a voice.</p>
+      <p data-ghost="1">We reject the noise of infinite choice. Three colors. Two families. One grid. Constraint is the soil of clarity.</p>
+      <p data-ghost="2">The page is a surface, not a stage. We work in the quiet tension between full and empty — and let the reader finish the sentence.</p>
+      <p data-ghost="3">A brand is not a logo. It is a promise, kept consistently, across every surface it touches. We build those surfaces.</p>
+    </div>
+  </div>
+
+  <div class="manifesto__right">
+    <article class="manifesto__item" data-item="0">
+      <div class="num">BELIEF / 01</div>
+      <p class="zh reveal" data-split>设计不是装饰，<br>而是被仔细安排的意图。</p>
+    </article>
+    <article class="manifesto__item" data-item="1">
+      <div class="num">BELIEF / 02</div>
+      <p class="zh reveal" data-split>三种颜色。两个字体。一个网格。<br>约束，是清晰的土壤。</p>
+    </article>
+    <article class="manifesto__item" data-item="2">
+      <div class="num">BELIEF / 03</div>
+      <p class="zh reveal" data-split>页面是一张纸，不是一个舞台。<br>我们在满与空之间工作，<br>由读者完成最后一句。</p>
+    </article>
+    <article class="manifesto__item" data-item="3">
+      <div class="num">BELIEF / 04</div>
+      <p class="zh reveal" data-split>品牌不是一个 logo，<br>而是一个在每一个表面上<br>被持续兑现的承诺。</p>
+    </article>
+  </div>
+
+  <span class="sec-foot">02 / MANIFESTO — 4 BELIEFS</span>
+</section>
+
+<!-- ============ [03] WORK / 作品列表 ============ -->
+<section id="work" class="work">
+  <span class="sec-head">[03] WORK / SELECTED PROJECTS</span>
+
+  <div class="work__header">
+    <h2 class="reveal" data-split>A RECENT<br>INDEX OF WORK.</h2>
+    <p>SELECTED / 2023 — 2026<br>(悬停查看 → 点击进入)</p>
+  </div>
+
+  <div class="work__list">
+    <a class="work__row" href="#">
+      <span class="num">001</span>
+      <span class="title">THE MERIDIAN PAPER</span>
+      <span class="year">2026</span>
+      <span class="client">MERIDIAN / EDITORIAL</span>
+      <span class="arrow">→</span>
+    </a>
+    <a class="work__row" href="#">
+      <span class="num">002</span>
+      <span class="title">HELIOS — TYPE SYSTEM 01</span>
+      <span class="year">2025</span>
+      <span class="client">HELIOS FOUNDRY / TYPE</span>
+      <span class="arrow">→</span>
+    </a>
+    <a class="work__row" href="#">
+      <span class="num">003</span>
+      <span class="title">NORTH STAR IDENTITY</span>
+      <span class="year">2025</span>
+      <span class="client">NSTAR / BRANDING</span>
+      <span class="arrow">→</span>
+    </a>
+    <a class="work__row" href="#">
+      <span class="num">004</span>
+      <span class="title">ARCHIVE / 07 — EXHIBITION</span>
+      <span class="year">2024</span>
+      <span class="client">UCCA / EXHIBITION</span>
+      <span class="arrow">→</span>
+    </a>
+    <a class="work__row" href="#">
+      <span class="num">005</span>
+      <span class="title">FIELD NOTES — ANNUAL REPORT</span>
+      <span class="year">2024</span>
+      <span class="client">FIELD CO. / PRINT</span>
+      <span class="arrow">→</span>
+    </a>
+    <a class="work__row" href="#">
+      <span class="num">006</span>
+      <span class="title">SIGNAL / BROADCAST SYSTEM</span>
+      <span class="year">2023</span>
+      <span class="client">SIGNAL TV / MOTION</span>
+      <span class="arrow">→</span>
+    </a>
+  </div>
+
+  <a class="work__more" href="#">查看全部作品 (127) →</a>
+
+  <span class="sec-foot">03 / WORK — N°001 — 006 / 127</span>
+</section>
+
+<!-- ============ [04] PROCESS / 横向滚动 4 步方法论 ============ -->
+<section id="process" class="process">
+  <span class="sec-head">[04] PROCESS / 方法论</span>
+
+  <div class="process__head">
+    <h2 class="reveal" data-split>FOUR STEPS.<br>NO BLACK BOX.</h2>
+    <p>每一个项目都穿过这四个房间。没有惊喜，没有魔法 — 只有可被追踪的决策。</p>
+  </div>
+
+  <div class="process__track-wrap">
+    <div class="process__track" id="processTrack">
+
+      <article class="process__step" data-step="1">
+        <div class="big">01</div>
+        <div>
+          <h3>LISTEN / 聆听</h3>
+          <p class="desc">在设计任何东西之前，我们先做研究。访谈、档案、实地观察 — 把模糊的问题翻译成具体的词语。</p>
+        </div>
+        <div class="meta"><span>PHASE 01</span><span>2 — 4 WEEKS</span></div>
+      </article>
+
+      <article class="process__step" data-step="2">
+        <div class="big">02</div>
+        <div>
+          <h3>BUILD / 构建</h3>
+          <p class="desc">从一个概念出发，我们同时推进三条设计线索：系统、符号、声音。每周评审，每周收敛。</p>
+        </div>
+        <div class="meta"><span>PHASE 02</span><span>4 — 8 WEEKS</span></div>
+      </article>
+
+      <article class="process__step" data-step="3">
+        <div class="big">03</div>
+        <div>
+          <h3>TEST / 验证</h3>
+          <p class="desc">把设计放回真实世界：打印、上线、朗读、在路上看、在手机上读、在会议室开投影看。</p>
+        </div>
+        <div class="meta"><span>PHASE 03</span><span>2 WEEKS</span></div>
+      </article>
+
+      <article class="process__step" data-step="4">
+        <div class="big">04</div>
+        <div>
+          <h3>SHIP / 交付</h3>
+          <p class="desc">交付不仅是文件。我们带走走流程的每一份文档与规范 — 让品牌在你手里，而不是在我们手里。</p>
+        </div>
+        <div class="meta"><span>PHASE 04</span><span>2 WEEKS + RETAINER</span></div>
+      </article>
+
+    </div>
+  </div>
+
+  <span class="sec-foot">04 / PROCESS — 4 PHASES / 8 — 16 WEEKS</span>
+</section>
+
+<!-- ============ [05] PEOPLE / 团队 ============ -->
+<section id="people" class="people">
+  <span class="sec-head">[05] PEOPLE / THE COLLECTIVE</span>
+
+  <div class="work__header" style="margin-bottom: 8vh;">
+    <h2 class="reveal" data-split>EIGHT VOICES.<br>ONE PAGE.</h2>
+    <p>FOUNDING COLLECTIVE<br>JOINED 2019 — 2024</p>
+  </div>
+
+  <div class="people__grid">
+    <div class="person"><span class="initial">M.A.</span><div class="info"><span class="name">MAYA ARNOLDT</span><span class="role">FOUNDER / CREATIVE DIRECTOR</span><span class="since">SINCE 2019</span></div></div>
+    <div class="person"><span class="initial">J.W.</span><div class="info"><span class="name">JUN WEI</span><span class="role">DESIGN DIRECTOR / TYPE</span><span class="since">SINCE 2020</span></div></div>
+    <div class="person"><span class="initial">S.K.</span><div class="info"><span class="name">SARA KIM</span><span class="role">BRAND STRATEGY</span><span class="since">SINCE 2021</span></div></div>
+    <div class="person"><span class="initial">L.R.</span><div class="info"><span class="name">LUCAS ROHR</span><span class="role">MOTION / EDITORIAL</span><span class="since">SINCE 2021</span></div></div>
+    <div class="person"><span class="initial">T.H.</span><div class="info"><span class="name">TOBI HARTMANN</span><span class="role">INTERACTIVE / CODE</span><span class="since">SINCE 2022</span></div></div>
+    <div class="person"><span class="initial">A.Z.</span><div class="info"><span class="name">ANNA ZHANG</span><span class="role">ART DIRECTOR / PRINT</span><span class="since">SINCE 2022</span></div></div>
+    <div class="person"><span class="initial">R.O.</span><div class="info"><span class="name">RAÚL ORTEGA</span><span class="role">SENIOR DESIGNER</span><span class="since">SINCE 2023</span></div></div>
+    <div class="person"><span class="initial">N.N.</span><div class="info"><span class="name">NORA NAKAMURA</span><span class="role">DESIGNER / RESEARCH</span><span class="since">SINCE 2024</span></div></div>
+  </div>
+
+  <span class="sec-foot">05 / PEOPLE — 8 MEMBERS / 4 CITIES</span>
+</section>
+
+<!-- ============ [06] CONTACT ============ -->
+<section id="contact" class="contact">
+  <span class="sec-head">[06] CONTACT / 开始一个项目</span>
+
+  <h2 class="reveal" data-split style="font-family:var(--font-mono);font-size:12px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-bottom:40px;">
+    NEW BUSINESS / 新项目咨询
+  </h2>
+
+  <a class="contact__email reveal" data-split href="mailto:studio@brutalist.studio">
+    studio@brutalist.studio
+  </a>
+
+  <div class="contact__meta">
+    <div class="col"><strong>SHANGHAI</strong>永康路 69 号 / 2F<br>周一 — 周五 / 10:00 — 19:00</div>
+    <div class="col"><strong>BERLIN</strong>Chausseestraße 102<br>Mo — Fr / 09:00 — 18:00</div>
+    <div class="col"><strong>GENERAL</strong><a href="mailto:hello@brutalist.studio">hello@brutalist.studio</a><br>+86 21 0000 0000</div>
+    <div class="col"><strong>SOCIAL</strong><a href="#">@brutalist.studio / IG</a><br><a href="#">/ ARE.NA / BRUTALIST</a></div>
+  </div>
+
+  <span class="sec-foot">06 / CONTACT — BRUTALIST / STUDIO — 2026</span>
+</section>
+
+<footer>
+  <span>© 2026 BRUTALIST / STUDIO — ALL RIGHTS UNRESERVED</span>
+  <span>SET IN SPACE GROTESK 900 + JETBRAINS MONO</span>
+  <span>INDEX / N°017</span>
+</footer>
+
+<!-- ============ JS：所有动画 / 交互 ============ -->
+<script type="module">
+// ---------- 依赖 ----------
+import { gsap } from 'https://esm.sh/gsap@3.12.5';
+import { ScrollTrigger } from 'https://esm.sh/gsap@3.12.5/ScrollTrigger';
+import Lenis from 'https://esm.sh/@studio-freight/lenis@1.0.42';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// ---------- 环境检测 ----------
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------- 平滑滚动：Lenis（移动端也开启，但在 reduced 模式下关闭） ----------
+let lenis = null;
+if (!prefersReduced) {
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
+    smoothWheel: !isMobile,
+  });
+  lenis.on('scroll', ScrollTrigger.update);
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+}
+
+// ---------- 文字按词拆分（用于 stagger reveal） ----------
+document.querySelectorAll('[data-split]').forEach((el) => {
+  const text = el.textContent;
+  el.textContent = '';
+  // 保留 <br> 的换行逻辑：按原始 innerHTML 处理更稳妥 — 但此处简化为把每个 "词 / 字符" 包一层
+  const tokens = text.split(/(\s+)/); // 保留空格
+  tokens.forEach((tk) => {
+    if (/^\s+$/.test(tk)) {
+      el.appendChild(document.createTextNode(tk));
+    } else {
+      const w = document.createElement('span');
+      w.className = 'split-word';
+      const inner = document.createElement('span');
+      inner.className = 'split-inner';
+      inner.textContent = tk;
+      w.appendChild(inner);
+      el.appendChild(w);
+    }
+  });
+});
+
+// ---------- Hero 入场动画（等字体加载完，避免跳帧） ----------
+function heroIntro() {
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+  // 标题：每个 split-inner 从 y=110% 滑入
+  const heroWords = document.querySelectorAll('.hero__title .split-inner');
+  tl.fromTo(heroWords,
+    { yPercent: 110 },
+    { yPercent: 0, duration: 1.1, stagger: 0.04 },
+    0
+  );
+  // hero label / meta 淡入上移
+  tl.fromTo('.hero__label', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.9 }, 0.1);
+  tl.fromTo('.hero__meta', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.9 }, 0.2);
+
+  return tl;
+}
+
+// ---------- 通用 split-reveal：出现在视口时 y=80→0 ----------
+function wireSplitReveals() {
+  // 排除 hero 里已经跑过的
+  const items = document.querySelectorAll('.reveal .split-inner');
+  gsap.set(items, { yPercent: 110, opacity: 1 });
+
+  ScrollTrigger.batch('.reveal', {
+    once: true,
+    start: 'top 85%',
+    onEnter: (els) => {
+      gsap.to(els.map(el => el.querySelectorAll('.split-inner')).flat(), {
+        yPercent: 0,
+        duration: 1.0,
+        stagger: 0.03,
+        ease: 'power3.out',
+      });
+    },
+  });
+}
+
+// ---------- Nav：滚动进度条 + 当前章节高亮 ----------
+function wireNav() {
+  const sections = ['hero', 'manifesto', 'work', 'process', 'people', 'contact'];
+  const btns = document.querySelectorAll('.nav__nums button');
+
+  // 点击跳转
+  btns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.target;
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (lenis) lenis.scrollTo(el, { offset: 0 });
+      else window.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
+    });
+  });
+
+  // 当前章节高亮
+  sections.forEach((id, idx) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 20%',
+      end: 'bottom 20%',
+      onToggle: (self) => {
+        if (self.isActive) {
+          btns.forEach((b) => b.classList.toggle('is-active', b.dataset.target === id));
+        }
+      },
+    });
+  });
+
+  // 顶部进度条
+  gsap.to('.nav__progress', {
+    width: '100%',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: document.body,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: true,
+    },
+  });
+}
+
+// ---------- Scroll hint 淡出 ----------
+function wireScrollHint() {
+  const hint = document.querySelector('[data-scroll-hint]');
+  if (!hint) return;
+  gsap.to(hint, {
+    opacity: 0,
+    y: -10,
+    scrollTrigger: {
+      trigger: '.hero',
+      start: 'top top',
+      end: 'bottom 80%',
+      scrub: true,
+    },
+  });
+}
+
+// ---------- Manifesto：hover 右侧条目时，左侧英文浮现 ----------
+function wireManifestoHover() {
+  const items = document.querySelectorAll('.manifesto__item');
+  const ghosts = document.querySelectorAll('.en-ghost p');
+  if (!items.length || !ghosts.length) return;
+
+  items.forEach((item) => {
+    item.addEventListener('mouseenter', () => {
+      const idx = item.dataset.item;
+      ghosts.forEach((g) => g.classList.toggle('is-active', g.dataset.ghost === idx));
+    });
+    item.addEventListener('mouseleave', () => {
+      // 离开时保留最后一个 hover 的（不强制清空），让它保持有一点内容
+    });
+    item.addEventListener('focus', () => {
+      const idx = item.dataset.item;
+      ghosts.forEach((g) => g.classList.toggle('is-active', g.dataset.ghost === idx));
+    });
+  });
+  // 默认显示第一条
+  if (ghosts[0]) ghosts[0].classList.add('is-active');
+}
+
+// ---------- Cursor-follow Spotlight (Canvas) ----------
+function wireSpotlight() {
+  if (isMobile || prefersReduced) return;
+
+  const canvas = document.querySelector('.hero__spotlight');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  // 鼠标当前位置 / 目标位置（lerp）
+  const mouse = { x: 0, y: 0 };
+  const target = { x: 0, y: 0 };
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    w = rect.width; h = rect.height;
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  // 初始放在屏幕中央
+  target.x = w * 0.5;
+  target.y = h * 0.5;
+  mouse.x = target.x;
+  mouse.y = target.y;
+
+  window.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    target.x = e.clientX - rect.left;
+    target.y = e.clientY - rect.top;
+  });
+
+  function draw() {
+    // lerp 平滑跟随
+    mouse.x += (target.x - mouse.x) * 0.08;
+    mouse.y += (target.y - mouse.y) * 0.08;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // 径向渐变光斑（lime 色，边缘透明）
+    const radius = Math.max(w, h) * 0.45;
+    const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, radius);
+    grad.addColorStop(0, 'rgba(212,255,58,0.55)');
+    grad.addColorStop(0.35, 'rgba(212,255,58,0.12)');
+    grad.addColorStop(1, 'rgba(212,255,58,0.00)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ---------- Process：横向滚动（pin + translateX） ----------
+function wireProcessHorizontal() {
+  if (isMobile) return; // 移动端走垂直流
+  const track = document.getElementById('processTrack');
+  const wrap = track?.parentElement;
+  if (!track || !wrap) return;
+
+  // 可滚动距离 = 内容总宽 - 视口宽
+  const getScrollAmount = () => {
+    return track.scrollWidth - window.innerWidth + parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pad-x')) * 2;
+  };
+
+  gsap.to(track, {
+    x: () => -getScrollAmount(),
+    ease: 'none',
+    scrollTrigger: {
+      trigger: wrap,
+      start: 'top top',
+      end: () => '+=' + getScrollAmount(),
+      pin: true,
+      scrub: 1,
+      invalidateOnRefresh: true,
+      anticipatePin: 1,
+    },
+  });
+
+  // 数字 outline → fill：每一步进入中心时激活
+  const steps = gsap.utils.toArray('.process__step');
+  steps.forEach((step) => {
+    ScrollTrigger.create({
+      trigger: step,
+      start: 'left 60%',
+      end: 'right 40%',
+      horizontal: true,
+      scroller: document.scrollingElement, // horizontal 在纵向 pin 内可能不直接生效，用事件手动判定
+      onToggle: (self) => {
+        step.classList.toggle('is-active', self.isActive);
+      },
+    });
+  });
+
+  // 由于 horizontal ScrollTrigger 在被 pin 的横向内容里行为不稳定，
+  // 再叠一层基于滚动位置的手动判定作为兜底。
+  const manualObserver = () => {
+    const scrolled = Math.abs(gsap.getProperty(track, 'x'));
+    const stepWidth = track.scrollWidth / steps.length;
+    steps.forEach((step, i) => {
+      const center = (i + 0.5) * stepWidth;
+      const inRange = Math.abs(scrolled + window.innerWidth * 0.5 - center) < stepWidth * 0.6;
+      step.classList.toggle('is-active', inRange);
+    });
+  };
+  ScrollTrigger.addEventListener('refresh', manualObserver);
+  ScrollTrigger.create({
+    trigger: wrap,
+    start: 'top top',
+    end: () => '+=' + getScrollAmount(),
+    scrub: true,
+    invalidateOnRefresh: true,
+    onUpdate: manualObserver,
+  });
+}
+
+// ---------- 启动 ----------
+function boot() {
+  const ready = () => {
+    if (prefersReduced) {
+      // 降级：瞬时淡入所有文字
+      gsap.set('.split-inner', { yPercent: 0 });
+      gsap.set('.reveal, .hero__label, .hero__meta', { opacity: 1 });
+      wireNav();
+      return;
+    }
+    heroIntro();
+    wireSplitReveals();
+    wireNav();
+    wireScrollHint();
+    wireManifestoHover();
+    wireSpotlight();
+    wireProcessHorizontal();
+    ScrollTrigger.refresh();
+  };
+
+  if ('fonts' in document) {
+    document.fonts.ready.then(ready);
+  } else {
+    window.addEventListener('load', ready);
+  }
+}
+
+boot();
+
+// 处理窗口尺寸变化
+window.addEventListener('resize', () => {
+  ScrollTrigger.refresh();
+});
+</script>
+
+</body>
+</html>

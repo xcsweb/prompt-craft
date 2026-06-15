@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS.LABS // Compute the Universe</title>
+
+  <!-- 字体预连接 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       NEXUS.LABS — Cyberpunk / Dark HUD Style
+       配色：深空黑 / 冷白 / 霓虹青 / 霓虹品红 / 数据绿
+       ============================================================ */
+    :root {
+      --bg: #05070C;
+      --text: #E8E8F0;
+      --accent: #00F0FF;   /* 霓虹青 */
+      --accent-2: #FF2D95; /* 霓虹品红 */
+      --accent-3: #B5FF00; /* 数据绿 */
+      --muted: #5A5A6E;
+      --line: rgba(0, 240, 255, 0.12);
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: auto;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* 全屏网格背景 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+      z-index: 0;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 85%);
+    }
+
+    /* 霓虹渐变辉光 */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(0, 240, 255, 0.08), transparent 45%),
+        radial-gradient(circle at 85% 70%, rgba(255, 45, 149, 0.07), transparent 45%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .display {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.08;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+
+    .accent { color: var(--accent); }
+    .accent-2 { color: var(--accent-2); }
+    .accent-3 { color: var(--accent-3); }
+    .muted { color: var(--muted); }
+
+    /* ================== Nav / HUD Bar ================== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 1.2fr;
+      align-items: center;
+      padding: 0 48px;
+      z-index: 1000;
+      border-bottom: 1px solid var(--line);
+      background: rgba(5, 7, 12, 0.75);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-brand::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 10px;
+      box-shadow: 0 0 12px var(--accent);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.3); }
+    }
+
+    .nav-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      padding-left: 16px;
+      border-left: 1px solid var(--line);
+    }
+
+    .nav-center {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .nav-center a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text);
+      text-decoration: none;
+      position: relative;
+      transition: color 0.3s, text-shadow 0.3s;
+    }
+
+    .nav-center a:hover {
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent-3);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-3);
+      margin-right: 6px;
+    }
+
+    /* ================== Hero ================== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      padding: 120px 48px 80px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 60px;
+      align-items: center;
+      z-index: 1;
+    }
+
+    .hero-hud {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 40px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      background: rgba(0, 240, 255, 0.02);
+      max-width: 420px;
+      position: relative;
+    }
+
+    /* HUD 角标装饰 */
+    .hero-hud::before,
+    .hero-hud::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 1px solid var(--accent);
+    }
+    .hero-hud::before {
+      top: -1px; left: -1px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .hero-hud::after {
+      bottom: -1px; right: -1px;
+      border-left: none;
+      border-top: none;
+    }
+
+    .hud-line {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .hud-line .key { color: var(--muted); }
+    .hud-line .val { color: var(--accent); font-weight: 500; }
+    .hud-line .val.magenta { color: var(--accent-2); }
+    .hud-line .val.green { color: var(--accent-3); }
+
+    .hud-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(48px, 9vw, 140px);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin-bottom: 40px;
+    }
+
+    .hero-title .line-1 {
+      display: block;
+      color: var(--accent);
+      text-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+    }
+
+    .hero-title .line-2 {
+      display: block;
+      color: var(--accent-2);
+      text-shadow: 0 0 30px rgba(255, 45, 149, 0.35);
+      font-style: italic;
+    }
+
+    .hero-subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 18px 32px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn:hover {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--accent);
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.3);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: 0 0 30px var(--accent);
+    }
+
+    .btn-arrow {
+      font-size: 14px;
+    }
+
+    /* Radar / Particle Canvas */
+    .hero-radar {
+      position: relative;
+      height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #radarCanvas {
+      width: 100%;
+      height: 100%;
+      max-width: 500px;
+    }
+
+    /* Ticker */
+    .ticker {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(0, 240, 255, 0.02);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 80px;
+      white-space: nowrap;
+      animation: tickerScroll 40s linear infinite;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      padding-left: 80px;
+    }
+
+    .ticker-track .tick {
+      color: var(--accent);
+    }
+    .ticker-track .tick::before {
+      content: '▣ ';
+      color: var(--accent-2);
+      margin-right: 10px;
+    }
+
+    @keyframes tickerScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ================== Section Common ================== */
+    section.main {
+      position: relative;
+      padding: 18vh 48px;
+      z-index: 1;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 80px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .section-header::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .section-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--line), transparent);
+      max-width: 300px;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(36px, 5vw, 72px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+
+    /* ================== Capabilities Grid ================== */
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 60px;
+    }
+
+    .cap-card {
+      position: relative;
+      padding: 40px 36px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(0, 240, 255, 0.02), rgba(0, 0, 0, 0.0));
+      transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .cap-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0, 240, 255, 0.15),
+                  inset 0 0 80px rgba(0, 240, 255, 0.04);
+    }
+
+    /* 角标 */
+    .cap-card::before,
+    .cap-card::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--accent);
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+    .cap-card::before {
+      top: -1px; left: -1px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .cap-card::after {
+      bottom: -1px; right: -1px;
+      border-left: none;
+      border-top: none;
+    }
+    .cap-card:hover::before,
+    .cap-card:hover::after {
+      opacity: 1;
+    }
+
+    .cap-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+    }
+
+    .cap-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(24px, 2.5vw, 36px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .cap-card p {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 440px;
+    }
+
+    .cap-meta {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ================== Live Data Panel ================== */
+    .data-panel {
+      padding: 18vh 48px;
+      background: linear-gradient(180deg, rgba(0, 240, 255, 0.02), transparent);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      z-index: 1;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 60px;
+    }
+
+    .data-card {
+      padding: 32px 28px;
+      border: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .data-card .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 20px;
+    }
+
+    .data-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 4vw, 56px);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .data-card.magenta .data-value {
+      color: var(--accent-2);
+      text-shadow: 0 0 20px rgba(255, 45, 149, 0.4);
+    }
+
+    .data-card.green .data-value {
+      color: var(--accent-3);
+      text-shadow: 0 0 20px rgba(181, 255, 0, 0.4);
+    }
+
+    .data-trend {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent-3);
+    }
+
+    .data-card .trend-down {
+      color: var(--accent-2);
+    }
+
+    /* ================== Publications ================== */
+    .pub-list {
+      margin-top: 40px;
+    }
+
+    .pub-item {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 32px;
+      padding: 32px 0;
+      border-top: 1px solid var(--line);
+      align-items: start;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .pub-item:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .pub-item:hover {
+      padding-left: 24px;
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.05), transparent);
+      border-left: 2px solid var(--accent);
+    }
+
+    .pub-item:hover .pub-title {
+      color: var(--accent);
+    }
+
+    .pub-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .pub-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(18px, 2vw, 24px);
+      font-weight: 500;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      transition: color 0.3s;
+    }
+
+    .pub-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .pub-arrow {
+      font-size: 24px;
+      color: var(--muted);
+    }
+
+    /* ================== Hero CTA ================== */
+    .hero-cta-section {
+      padding: 20vh 48px;
+      text-align: center;
+      background:
+        radial-gradient(ellipse at center, rgba(0, 240, 255, 0.06), transparent 60%),
+        linear-gradient(180deg, transparent, rgba(255, 45, 149, 0.04), transparent);
+      border-top: 1px solid var(--line);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-cta-section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(42px, 6vw, 96px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 40px;
+    }
+
+    .hero-cta-section h2 .accent {
+      color: var(--accent);
+      text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+    }
+
+    .big-cta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 22px 48px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.3s;
+      box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.4);
+    }
+
+    .big-cta:hover {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    /* ================== Footer ================== */
+    .footer {
+      padding: 40px 48px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      flex-wrap: wrap;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer .brand {
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .footer .brand::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 8px;
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    /* ================== 响应式 768px 降级 ================== */
+    @media (max-width: 768px) {
+      .nav {
+        padding: 0 24px;
+        grid-template-columns: 1fr auto;
+      }
+      .nav-center { display: none; }
+      .nav-meta { display: none; }
+      .nav-right { font-size: 10px; }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 100px 24px 80px;
+        gap: 40px;
+      }
+      .hero-radar { height: 320px; }
+
+      section.main, .data-panel, .hero-cta-section {
+        padding: 10vh 24px;
+      }
+
+      .cap-grid, .data-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pub-item {
+        grid-template-columns: 50px 1fr;
+        gap: 16px;
+      }
+      .pub-arrow { display: none; }
+
+      .footer {
+        padding: 30px 24px;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Nav / HUD Bar -->
+  <nav class="nav">
+    <div class="nav-left">
+      <span class="nav-brand">NEXUS.LABS</span>
+      <span class="nav-meta">// N-7741</span>
+    </div>
+    <div class="nav-center">
+      <a href="#">Research</a>
+      <a href="#">Publications</a>
+      <a href="#">Platform</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="nav-right">
+      <span class="status-dot"></span>
+      <span>SYS.STATUS: ONLINE</span>
+      <span>//</span>
+      <span>UPTIME 99.998%</span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-left">
+      <!-- HUD Diagnostic Panel -->
+      <div class="hero-hud">
+        <div class="hud-title">[ SYSTEM.DIAGNOSTIC // REAL-TIME ]</div>
+        <div class="hud-line"><span class="key">├─ CORE.NEURAL:</span> <span class="val green" id="hudCore">ACTIVE</span></div>
+        <div class="hud-line"><span class="key">├─ GPU.CLUSTER:</span> <span class="val" id="hudGpu">847 TFLOPS</span></div>
+        <div class="hud-line"><span class="key">├─ TRAINING.STATUS:</span> <span class="val" id="hudTrain">73.4% / EPOCH 412</span></div>
+        <div class="hud-line"><span class="key">├─ TEMP:</span> <span class="val green" id="hudTemp">62°C / OPTIMAL</span></div>
+        <div class="hud-line"><span class="key">└─ UPTIME:</span> <span class="val magenta" id="hudUp">837:42:19</span></div>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="line-1">COMPUTE</span>
+        <span class="line-2">THE UNIVERSE.</span>
+      </h1>
+
+      <p class="hero-subtitle">NEXUS Research Platform v7.2 — Private Beta / Invite-Only</p>
+
+      <div class="hero-cta">
+        <button class="btn btn-primary">
+          <span class="btn-arrow">◉</span>
+          <span>Access Platform</span>
+        </button>
+        <button class="btn">
+          <span class="btn-arrow">↗</span>
+          <span>Read the Whitepaper</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-radar">
+      <canvas id="radarCanvas" width="500" height="500"></canvas>
+    </div>
+
+    <!-- Bottom Ticker -->
+    <div class="ticker">
+      <div class="ticker-track">
+        <span class="tick">LIVE MARKET INTELLIGENCE — BTC: 67,482.19 ▲ 1.84%</span>
+        <span class="tick">NEURAL SIGNAL: 0.8423 / POSITIVE CORRELATION</span>
+        <span class="tick">QUANTUM COHERENCE: 98.42% STABLE</span>
+        <span class="tick">LATENCY: 3.4ms / EDGE-NODES: 2,841</span>
+        <span class="tick">ACTIVE USERS: 2,437,891 CONCURRENT</span>
+        <span class="tick">PAPERS PUBLISHED: 14,847 / 2024</span>
+        <span class="tick">LIVE MARKET INTELLIGENCE — BTC: 67,482.19 ▲ 1.84%</span>
+        <span class="tick">NEURAL SIGNAL: 0.8423 / POSITIVE CORRELATION</span>
+        <span class="tick">QUANTUM COHERENCE: 98.42% STABLE</span>
+        <span class="tick">LATENCY: 3.4ms / EDGE-NODES: 2,841</span>
+        <span class="tick">ACTIVE USERS: 2,437,891 CONCURRENT</span>
+        <span class="tick">PAPERS PUBLISHED: 14,847 / 2024</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Capabilities Grid -->
+  <section class="main" id="cap">
+    <div class="section-header">[ Platform Modules ]</div>
+    <h2 class="section-title">Four engines. <span class="accent">One neural substrate.</span></h2>
+
+    <div class="cap-grid">
+      <div class="cap-card">
+        <div class="cap-num">MODULE 01 / CORE</div>
+        <h3>Neural Core</h3>
+        <p>A distributed training engine scaling from 8 to 4,096 accelerators. Automatic graph partitioning, mixed precision aware, and fault-tolerant at planetary scale.</p>
+        <div class="cap-meta"><span>STATUS: ACTIVE</span><span>LATENCY: 2.1ms</span></div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-num">MODULE 02 / VISION</div>
+        <h3>Vision Matrix</h3>
+        <p>Multi-modal vision pipeline: real-time segmentation, depth estimation, and 3D reconstruction from single-view captures, with under 14ms inference time.</p>
+        <div class="cap-meta"><span>STATUS: ACTIVE</span><span>LATENCY: 13.8ms</span></div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-num">MODULE 03 / LANGUAGE</div>
+        <h3>Language Engine</h3>
+        <p>Context-aware reasoning across 87 languages, with 256K token windows, RAG integration points, and native tool-use with deterministic response control.</p>
+        <div class="cap-meta"><span>STATUS: ACTIVE</span><span>LATENCY: 9.2ms</span></div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-num">MODULE 04 / QUANTUM</div>
+        <h3>Quantum Sim</h3>
+        <p>Hybrid classical-quantum simulation of molecular and condensed-matter systems. 1,024 virtual qubits with error-corrected logical operations.</p>
+        <div class="cap-meta"><span>STATUS: BETA</span><span>LATENCY: 42ms</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Data Panel -->
+  <section class="data-panel" id="data">
+    <div class="section-header">[ Real-time Diagnostics ]</div>
+    <h2 class="section-title">Everything we observe, <span class="accent">we publish.</span></h2>
+
+    <div class="data-grid">
+      <div class="data-card">
+        <div class="label">Research Output</div>
+        <div class="data-value" id="d1">14,847</div>
+        <div class="data-trend">+ 8.42% QoQ ▲ papers / year</div>
+      </div>
+      <div class="data-card magenta">
+        <div class="label">Active Users</div>
+        <div class="data-value" id="d2">2,437,891</div>
+        <div class="data-trend">+ 24.18% MoM ▲ concurrent</div>
+      </div>
+      <div class="data-card green">
+        <div class="label">Latency</div>
+        <div class="data-value" id="d3">3.41ms</div>
+        <div class="data-trend trend-down">− 0.12ms p99 ▼</div>
+      </div>
+      <div class="data-card">
+        <div class="label">Model Accuracy</div>
+        <div class="data-value" id="d4">94.82%</div>
+        <div class="data-trend">+ 0.18pt last epoch ▲</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Publications -->
+  <section class="main" id="pub">
+    <div class="section-header">[ Recent Publications ]</div>
+    <h2 class="section-title">Peer-reviewed. <span class="accent-2">Open-sourced.</span></h2>
+
+    <div class="pub-list">
+      <div class="pub-item">
+        <div class="pub-num">/ 2024.11</div>
+        <div>
+          <div class="pub-title">Scaling laws for sparse mixture-of-experts models with conditional compute budgets</div>
+          <div class="pub-meta">T. Okafor, M. Vasquez, N. Chen — NEXUS.LABS Research — arXiv:2411.3827</div>
+        </div>
+        <div class="pub-arrow">→</div>
+      </div>
+      <div class="pub-item">
+        <div class="pub-num">/ 2024.10</div>
+        <div>
+          <div class="pub-title">Hybrid classical-quantum optimization for protein folding at the 100K residue scale</div>
+          <div class="pub-meta">Dr. A. Rahman, R. Tanaka — NeurIPS 2024 — NEXUS / MIT</div>
+        </div>
+        <div class="pub-arrow">→</div>
+      </div>
+      <div class="pub-item">
+        <div class="pub-num">/ 2024.09</div>
+        <div>
+          <div class="pub-title">Emergent tool-use in long-context language models: a mechanistic study</div>
+          <div class="pub-meta">J. Park, S. Oyelaran, K. Dubois — ICLR 2025 submission — NEXUS.LABS</div>
+        </div>
+        <div class="pub-arrow">→</div>
+      </div>
+      <div class="pub-item">
+        <div class="pub-num">/ 2024.07</div>
+        <div>
+          <div class="pub-title">Real-time 3D scene reconstruction from monocular video streams with neural radiance caching</div>
+          <div class="pub-meta">L. Moretti, H. Kim — SIGGRAPH Asia 2024</div>
+        </div>
+        <div class="pub-arrow">→</div>
+      </div>
+      <div class="pub-item">
+        <div class="pub-num">/ 2024.05</div>
+        <div>
+          <div class="pub-title">Fault-tolerant distributed training on planetary-scale GPU clusters: the NEXUS architecture</div>
+          <div class="pub-meta">M. Volkov, A. Das, R. Okafor — SOSP 2024</div>
+        </div>
+        <div class="pub-arrow">→</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hero CTA -->
+  <section class="hero-cta-section">
+    <h2>[ Ready to <span class="accent">compute</span> the unknown? ]</h2>
+    <button class="big-cta">
+      <span>REQUEST.BETA.ACCESS</span>
+      <span>→</span>
+    </button>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span class="brand">NEXUS.LABS</span>
+    <span>© 2024 NEXUS.LABS / ALL ENCRYPTED</span>
+    <span>GENEVA · SINGAPORE · TOKYO</span>
+  </footer>
+
+  <!-- ================== 脚本（ES Modules） ================== -->
+  <script type="module">
+    import { animate, spring } from 'https://esm.sh/motion';
+    import Lenis from 'https://esm.sh/@studio-freight/lenis';
+
+    // ---------- Lenis 平滑滚动 ----------
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // ---------- Hero 标题：字符入场 ----------
+    const heroTitleEl = document.querySelector('.hero-title');
+    const titleChars = heroTitleEl.textContent.split('');
+    heroTitleEl.innerHTML = '';
+    titleChars.forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.style.display = ch === ' ' ? 'inline-block' : 'inline-block';
+      span.style.minWidth = ch === ' ' ? '0.2em' : 'auto';
+      span.style.opacity = '0';
+      span.style.transform = 'scale(1.3) translateY(10px)';
+      span.style.transition = 'none';
+      if (heroTitleEl.querySelector('.line-1')) {
+        // fallback: 简化处理 — 保持原来的文本
+      }
+      span.textContent = ch;
+      heroTitleEl.appendChild(span);
+    });
+
+    // 重新构建 — 使用更简洁的方式：对整个 line 做动画
+    // 上面的拆分有 bug（line-1/2 结构已丢失），所以退而对 line 做动画
+    heroTitleEl.innerHTML = `
+      <span class="line-1" style="opacity:0;transform:translateY(40px);display:inline-block;">COMPUTE</span><br>
+      <span class="line-2" style="opacity:0;transform:translateY(40px);display:inline-block;">THE UNIVERSE.</span>
+    `;
+    const lines = heroTitleEl.querySelectorAll('[class^="line-"]');
+    lines.forEach((line, i) => {
+      animate(line,
+        { opacity: [0, 1], transform: ['translateY(40px)', 'translateY(0)'] },
+        { duration: 1.2, delay: 0.4 + i * 0.25, easing: [0.22, 1, 0.36, 1] }
+      );
+    });
+
+    // ---------- Canvas Radar 粒子环 ----------
+    const canvas = document.getElementById('radarCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+
+    // 粒子数组
+    const particles = [];
+    for (let i = 0; i < 60; i++) {
+      particles.push({
+        angle: Math.random() * Math.PI * 2,
+        radius: 40 + Math.random() * 200,
+        speed: 0.002 + Math.random() * 0.008,
+        size: 1 + Math.random() * 2.5,
+        color: Math.random() > 0.5 ? '0,240,255' : '255,45,149',
+        pulse: Math.random() * Math.PI * 2
+      });
+    }
+
+    // 旋转环
+    let rotationAngle = 0;
+
+    function drawRadar() {
+      ctx.clearRect(0, 0, W, H);
+
+      // 背景同心圆
+      for (let r = 40; r < 240; r += 50) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0,240,255,0.08)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 十字线
+      ctx.beginPath();
+      ctx.moveTo(cx - 240, cy); ctx.lineTo(cx + 240, cy);
+      ctx.moveTo(cx, cy - 240); ctx.lineTo(cx, cy + 240);
+      ctx.strokeStyle = 'rgba(0,240,255,0.06)';
+      ctx.stroke();
+
+      // 旋转扫描扇形
+      const grad = ctx.createConicGradient(rotationAngle, cx, cy);
+      grad.addColorStop(0, 'rgba(0,240,255,0.45)');
+      grad.addColorStop(0.04, 'rgba(0,240,255,0)');
+      grad.addColorStop(1, 'rgba(0,240,255,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 230, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 外环
+      ctx.beginPath();
+      ctx.arc(cx, cy, 230, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,240,255,0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 脉冲内圈
+      const pulseRadius = 100 + Math.sin(Date.now() / 600) * 15;
+      ctx.beginPath();
+      ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,45,149,0.3)';
+      ctx.setLineDash([4, 6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 绘制粒子
+      particles.forEach((p, i) => {
+        p.angle += p.speed;
+        p.pulse += 0.05;
+        const px = cx + Math.cos(p.angle) * p.radius;
+        const py = cy + Math.sin(p.angle) * p.radius;
+        const alpha = 0.5 + Math.sin(p.pulse) * 0.4;
+
+        // 发光晕
+        const glow = ctx.createRadialGradient(px, py, 0, px, py, p.size * 6);
+        glow.addColorStop(0, `rgba(${p.color},${alpha})`);
+        glow.addColorStop(1, `rgba(${p.color},0)`);
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(px, py, p.size * 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 粒子点
+        ctx.fillStyle = `rgba(${p.color},${alpha})`;
+        ctx.beginPath();
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 中心点
+      const corePulse = 0.5 + Math.sin(Date.now() / 400) * 0.3;
+      const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+      coreGrad.addColorStop(0, `rgba(181,255,0,${corePulse})`);
+      coreGrad.addColorStop(0.4, 'rgba(181,255,0,0.2)');
+      coreGrad.addColorStop(1, 'rgba(181,255,0,0)');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#B5FF00';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // HUD 角标
+      ctx.strokeStyle = 'rgba(0,240,255,0.4)';
+      ctx.lineWidth = 1;
+      const cornerSize = 20;
+      const pad = 30;
+      // 左上
+      ctx.beginPath(); ctx.moveTo(pad, pad + cornerSize); ctx.lineTo(pad, pad); ctx.lineTo(pad + cornerSize, pad); ctx.stroke();
+      // 右上
+      ctx.beginPath(); ctx.moveTo(W - pad - cornerSize, pad); ctx.lineTo(W - pad, pad); ctx.lineTo(W - pad, pad + cornerSize); ctx.stroke();
+      // 左下
+      ctx.beginPath(); ctx.moveTo(pad, H - pad - cornerSize); ctx.lineTo(pad, H - pad); ctx.lineTo(pad + cornerSize, H - pad); ctx.stroke();
+      // 右下
+      ctx.beginPath(); ctx.moveTo(W - pad - cornerSize, H - pad); ctx.lineTo(W - pad, H - pad); ctx.lineTo(W - pad, H - pad - cornerSize); ctx.stroke();
+
+      // HUD 文本标注
+      ctx.fillStyle = 'rgba(0,240,255,0.7)';
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.fillText('SCAN: ACTIVE', pad + cornerSize + 10, pad + 10);
+      ctx.fillText('SIGNAL: 84.2%', pad, H - pad - cornerSize - 12);
+      ctx.fillText('GRID: 07-A', W - pad - 90, pad + 10);
+      ctx.fillText('LAT: 3.4ms', W - pad - 80, H - pad - 5);
+
+      rotationAngle += 0.008;
+      requestAnimationFrame(drawRadar);
+    }
+    drawRadar();
+
+    // ---------- HUD 数字实时更新 ----------
+    function formatNum(n, digits = 0) {
+      return n.toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+    }
+
+    // 实时数据
+    const hudData = {
+      gpu: 847.14,
+      trainPct: 73.4,
+      epoch: 412,
+      temp: 62.1,
+      uptime: { h: 837, m: 42, s: 19 }
+    };
+
+    const liveData = {
+      d1: 14847,
+      d2: 2437891,
+      d3: 3.41,
+      d4: 94.82
+    };
+
+    setInterval(() => {
+      // GPU 波动
+      hudData.gpu += (Math.random() - 0.5) * 2;
+      document.getElementById('hudGpu').textContent = hudData.gpu.toFixed(2) + ' TFLOPS';
+
+      // Training 进度
+      hudData.trainPct += (Math.random() - 0.3) * 0.15;
+      hudData.trainPct = Math.max(60, Math.min(99.9, hudData.trainPct));
+      if (Math.random() > 0.85) hudData.epoch += 1;
+      document.getElementById('hudTrain').textContent =
+        hudData.trainPct.toFixed(1) + '% / EPOCH ' + hudData.epoch;
+
+      // 温度
+      hudData.temp += (Math.random() - 0.5) * 0.4;
+      document.getElementById('hudTemp').textContent =
+        hudData.temp.toFixed(1) + '°C / OPTIMAL';
+
+      // Uptime
+      hudData.uptime.s += 1;
+      if (hudData.uptime.s >= 60) { hudData.uptime.s = 0; hudData.uptime.m++; }
+      if (hudData.uptime.m >= 60) { hudData.uptime.m = 0; hudData.uptime.h++; }
+      document.getElementById('hudUp').textContent =
+        String(hudData.uptime.h).padStart(3, '0') + ':' +
+        String(hudData.uptime.m).padStart(2, '0') + ':' +
+        String(hudData.uptime.s).padStart(2, '0');
+
+      // 实时数据面板
+      liveData.d1 += Math.floor(Math.random() * 5);
+      liveData.d2 += Math.floor((Math.random() - 0.2) * 200);
+      liveData.d3 += (Math.random() - 0.5) * 0.04;
+      liveData.d4 += (Math.random() - 0.4) * 0.02;
+      liveData.d4 = Math.min(99.99, liveData.d4);
+
+      document.getElementById('d1').textContent = formatNum(liveData.d1);
+      document.getElementById('d2').textContent = formatNum(liveData.d2);
+      document.getElementById('d3').textContent = liveData.d3.toFixed(2) + 'ms';
+      document.getElementById('d4').textContent = liveData.d4.toFixed(2) + '%';
+    }, 1200);
+
+    // ---------- Capability 卡片入场 ----------
+    const capObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          const cards = entry.target.querySelectorAll('.cap-card, .data-card, .pub-item');
+          cards.forEach((card, idx) => {
+            animate(card,
+              { opacity: [0, 1], transform: ['translateY(30px) scale(0.97)', 'translateY(0) scale(1)'] },
+              { duration: 0.9, delay: idx * 0.1, easing: [0.22, 1, 0.36, 1] }
+            );
+          });
+          capObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('#cap, #data, #pub').forEach(el => capObserver.observe(el));
+
+    // ---------- Hero CTA 入场 ----------
+    const ctaObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animate(entry.target.querySelector('h2'),
+            { opacity: [0, 1], transform: ['translateY(40px)', 'translateY(0)'] },
+            { duration: 1, easing: [0.22, 1, 0.36, 1] }
+          );
+          animate(entry.target.querySelector('.big-cta'),
+            { opacity: [0, 1], transform: ['translateY(20px)', 'translateY(0)'] },
+            { duration: 1, delay: 0.3, easing: [0.22, 1, 0.36, 1] }
+          );
+          ctaObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('.hero-cta-section').forEach(el => ctaObserver.observe(el));
+
+    console.log('%c NEXUS.LABS ', 'background:#00F0FF;color:#05070C;padding:2px 6px;font-family:"JetBrains Mono";font-weight:bold;');
+  </script>
+</body>
+</html>

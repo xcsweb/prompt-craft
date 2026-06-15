@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OBSIDIAN WATCH CO. — THE SEVEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ===== 基础重置 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    position: relative;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+  /* ===== 颜色系统 ===== */
+  :root {
+    --bg: #0A0A0C;
+    --text: #E8E6E1;
+    --accent: #C9A962;
+    --accent-2: #8B7355;
+    --muted: #7A7A7A;
+    --border: rgba(201, 169, 98, 0.18);
+  }
+
+  /* ===== 字体工具类 ===== */
+  .display { font-family: 'Inter', sans-serif; font-weight: 200; letter-spacing: -0.02em; line-height: 1.05; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-weight: 400; font-variant-numeric: tabular-nums; }
+  .gold {
+    background: linear-gradient(135deg, #C9A962 0%, #E8C978 40%, #A88848 70%, #8B7355 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ===== 粒子 Canvas ===== */
+  #particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ===== SVG Noise 覆盖层 ===== */
+  .noise-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    z-index: 2;
+    mix-blend-mode: overlay;
+  }
+
+  /* ===== 导航 ===== */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 90px;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+    padding: 0 clamp(24px, 4vw, 64px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: linear-gradient(to bottom, rgba(10,10,12,0.85), rgba(10,10,12,0));
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 18px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .nav-center {
+    display: flex;
+    justify-content: center;
+    gap: clamp(24px, 3vw, 56px);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+  .nav-center a { position: relative; transition: color 0.4s; padding: 6px 0; }
+  .nav-center a::after { content:''; position:absolute; bottom:0; left:50%; transform: translateX(-50%); width:0; height:1px; background: var(--accent); transition: width 0.4s ease; }
+  .nav-center a:hover { color: var(--accent); }
+  .nav-center a:hover::after { width: 100%; }
+  .nav-right { display: flex; justify-content: flex-end; align-items: center; gap: 24px; font-size: 13px; }
+  .nav-right .icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 50%; transition: border-color 0.3s, color 0.3s; cursor: pointer; }
+  .nav-right .icon:hover { border-color: var(--accent); color: var(--accent); }
+
+  @media (max-width: 768px) {
+    .nav { grid-template-columns: 1fr auto; height: 70px; }
+    .nav-center { display: none; }
+    .nav-right .icon { width: 32px; height: 32px; }
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    min-height: 100vh;
+    padding: 140px clamp(24px, 5vw, 80px) 80px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    z-index: 3;
+  }
+
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-align: center;
+    opacity: 0;
+  }
+
+  .hero-title {
+    font-size: clamp(48px, 11vw, 180px);
+    line-height: 0.95;
+    font-weight: 200;
+    letter-spacing: -0.03em;
+    text-align: center;
+    margin: 24px 0 8px;
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  .hero-title em {
+    font-style: italic;
+    font-weight: 200;
+    background: linear-gradient(135deg, #C9A962 0%, #E8C978 40%, #A88848 70%, #8B7355 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    opacity: 0;
+  }
+
+  /* ===== 手表 3D 容器 ===== */
+  .watch-stage {
+    perspective: 1200px;
+    margin: auto 0;
+    padding: 40px 0;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+  }
+  .watch-3d {
+    width: clamp(260px, 38vw, 440px);
+    height: clamp(260px, 38vw, 440px);
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+    will-change: transform;
+  }
+  /* 表壳外圈 */
+  .watch-case {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,220,150,0.35) 0%, transparent 40%),
+      radial-gradient(circle at 75% 80%, rgba(80,60,40,0.5) 0%, transparent 50%),
+      conic-gradient(from 0deg, #1a1a1d 0%, #3a3228 25%, #1a1a1d 50%, #4a3f30 75%, #1a1a1d 100%);
+    box-shadow:
+      0 0 0 12px #0a0a0c,
+      0 0 0 14px rgba(201,169,98,0.4),
+      0 30px 80px -20px rgba(201,169,98,0.3),
+      inset 0 0 60px rgba(201,169,98,0.15),
+      inset 0 4px 12px rgba(255,220,150,0.25),
+      inset 0 -4px 12px rgba(0,0,0,0.5);
+  }
+  .watch-case::before {
+    content:'';
+    position: absolute;
+    inset: 8%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,220,150,0.2) 0%, transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(40,30,20,0.6) 0%, transparent 60%),
+      #0d0d0f;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+  }
+  /* 表盘标记 */
+  .dial {
+    position: absolute;
+    inset: 18%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, rgba(201,169,98,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 65% 70%, rgba(20,15,10,0.8) 0%, #0a0a0c 70%);
+    box-shadow: inset 0 2px 20px rgba(0,0,0,0.8), inset 0 -2px 12px rgba(201,169,98,0.08);
+  }
+  .marker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2px;
+    height: 50%;
+    transform-origin: top center;
+    transform: translate(-50%, 0);
+    pointer-events: none;
+  }
+  .marker::before {
+    content: '';
+    position: absolute;
+    top: 6%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 12px;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(201,169,98,0.4);
+  }
+  .marker.hour::before { width: 3px; height: 18px; }
+
+  /* 中央宝石 */
+  .center-gem {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #E8C978, #C9A962 40%, #8B7355 100%);
+    box-shadow: 0 0 20px rgba(201,169,98,0.6), inset 0 0 6px rgba(255,255,255,0.6);
+    z-index: 10;
+  }
+
+  /* 表针 */
+  .hand {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: bottom center;
+    background: linear-gradient(to top, #C9A962, #E8C978);
+    box-shadow: 0 0 8px rgba(201,169,98,0.3);
+    z-index: 5;
+  }
+  .hand-hour {
+    width: 4px;
+    height: 22%;
+    transform: translate(-50%, -100%) rotate(0deg);
+    border-radius: 2px;
+  }
+  .hand-min {
+    width: 3px;
+    height: 32%;
+    transform: translate(-50%, -100%) rotate(0deg);
+    border-radius: 2px;
+  }
+  .hand-sec {
+    width: 1px;
+    height: 38%;
+    transform: translate(-50%, -100%) rotate(0deg);
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* 品牌文字 */
+  .brand-text {
+    position: absolute;
+    top: 32%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(8px, 1.1vw, 12px);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-align: center;
+    z-index: 3;
+  }
+  .brand-subtext {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(7px, 0.9vw, 10px);
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-align: center;
+    z-index: 3;
+  }
+
+  /* HUD 底部 */
+  .hud {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .hud-controls { display: flex; gap: 24px; align-items: center; }
+  .hud-btn {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    font-size: 14px;
+    transition: all 0.3s;
+  }
+  .hud-btn:hover { border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+  .hud-btn.play { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--bg); border-color: transparent; }
+
+  .hud-specs {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .hud-specs span strong { color: var(--accent); font-weight: 500; margin-right: 4px; }
+
+  .cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--accent);
+    transition: gap 0.4s;
+    opacity: 0;
+  }
+  .cta-link:hover { gap: 20px; }
+
+  @media (max-width: 768px) {
+    .hud { flex-direction: column; align-items: flex-start; }
+    .hud-specs { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  }
+
+  /* ===== 产品规格 ===== */
+  .specs {
+    padding: clamp(80px, 20vh, 220px) clamp(24px, 8vw, 128px);
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 3;
+  }
+  .specs-header {
+    margin-bottom: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .specs-header .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .specs-header h2 {
+    font-size: clamp(40px, 6vw, 96px);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-top: 12px;
+  }
+  .specs-header .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+
+  .specs-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 80px;
+    max-width: 1200px;
+  }
+  .spec-row {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    opacity: 0;
+  }
+  .spec-row:first-child { border-top: 1px solid var(--border); }
+  .spec-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .spec-value {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(14px, 1.2vw, 18px);
+    font-weight: 300;
+    color: var(--text);
+    text-align: right;
+    letter-spacing: 0.05em;
+  }
+  .spec-value em { color: var(--accent); font-style: normal; font-weight: 400; }
+
+  @media (max-width: 768px) {
+    .specs-table { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Design Story ===== */
+  .story {
+    padding: clamp(80px, 20vh, 220px) clamp(24px, 8vw, 128px);
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .story-visual {
+    aspect-ratio: 1;
+    position: relative;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(201,169,98,0.15) 0%, transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(139,115,85,0.2) 0%, transparent 50%),
+      linear-gradient(135deg, #0a0a0c 0%, #1a1512 100%);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .story-visual::before {
+    content: '◐';
+    font-size: clamp(120px, 20vw, 280px);
+    background: linear-gradient(135deg, #C9A962 0%, #E8C978 40%, #8B7355 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0.9;
+    animation: rotateSlow 30s linear infinite;
+  }
+  @keyframes rotateSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .story-text .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .story-text h2 {
+    font-size: clamp(32px, 4vw, 72px);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 48px;
+  }
+  .story-text h2 em {
+    font-style: italic;
+    background: linear-gradient(135deg, #C9A962 0%, #E8C978 40%, #8B7355 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .story-text p {
+    font-size: clamp(14px, 1.1vw, 17px);
+    line-height: 1.8;
+    color: #b8b6b0;
+    margin-bottom: 20px;
+    font-weight: 300;
+  }
+
+  @media (max-width: 768px) {
+    .story { grid-template-columns: 1fr; gap: 48px; }
+  }
+
+  /* ===== Collection Grid ===== */
+  .collection {
+    padding: clamp(80px, 20vh, 220px) clamp(24px, 5vw, 80px);
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 3;
+  }
+  .collection-header { margin-bottom: 80px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 16px; }
+  .collection-header h2 {
+    font-size: clamp(40px, 6vw, 96px);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .collection-header .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+
+  .collection-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 2px solid var(--border);
+  }
+  .collection-card {
+    background: var(--bg);
+    padding: 48px 36px;
+    min-height: 440px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background 0.4s, transform 0.4s;
+    position: relative;
+  }
+  .collection-card:hover {
+    background: linear-gradient(135deg, #121113 0%, #1a1613 100%);
+    transform: scale(1.03);
+    z-index: 2;
+    box-shadow: 0 40px 80px -20px rgba(201,169,98,0.2);
+  }
+  .collection-card .code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+  .collection-card .visual {
+    aspect-ratio: 1;
+    margin: 32px 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 200;
+  }
+  .collection-card:nth-child(1) .visual {
+    background: radial-gradient(circle at 35% 30%, #2a2a2d 0%, #0a0a0c 70%);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 0 30px rgba(201,169,98,0.1);
+    color: var(--accent);
+  }
+  .collection-card:nth-child(2) .visual {
+    background: radial-gradient(circle at 35% 30%, #8B7355 0%, #5a4a30 50%, #2a221a 100%);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6), 0 0 30px rgba(201,169,98,0.15);
+    color: #1a1512;
+  }
+  .collection-card:nth-child(3) .visual {
+    background: radial-gradient(circle at 35% 30%, #E8E6E1 0%, #a8a6a0 50%, #5a5850 100%);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.1);
+    color: #1a1512;
+  }
+  .collection-card h3 {
+    font-size: clamp(20px, 2vw, 28px);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .collection-card .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .collection-card .price { color: var(--accent); font-weight: 500; }
+
+  @media (max-width: 768px) {
+    .collection-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Reviews ===== */
+  .reviews {
+    padding: clamp(80px, 15vh, 160px) clamp(24px, 8vw, 128px);
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+  .review { text-align: left; opacity: 0; }
+  .review blockquote {
+    font-size: clamp(18px, 1.6vw, 24px);
+    line-height: 1.4;
+    font-weight: 200;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .review cite {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    font-style: normal;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 768px) { .reviews { grid-template-columns: 1fr; gap: 32px; } }
+
+  /* ===== CTA ===== */
+  .final-cta {
+    padding: clamp(100px, 25vh, 250px) clamp(24px, 8vw, 128px);
+    text-align: center;
+    position: relative;
+    z-index: 3;
+    border-top: 1px solid var(--border);
+  }
+  .final-cta .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .final-cta h2 {
+    font-size: clamp(40px, 7vw, 128px);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 32px;
+  }
+  .final-cta h2 em {
+    font-style: italic;
+    background: linear-gradient(135deg, #C9A962 0%, #E8C978 40%, #8B7355 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .final-cta .price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 48px;
+    text-transform: uppercase;
+  }
+  .final-cta .btn {
+    display: inline-block;
+    padding: 22px 56px;
+    border: 1px solid var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    transition: all 0.4s;
+    cursor: pointer;
+  }
+  .final-cta .btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+    box-shadow: 0 20px 60px -20px rgba(201,169,98,0.4);
+  }
+
+  /* ===== Footer ===== */
+  .footer {
+    padding: 80px clamp(24px, 6vw, 96px) 40px;
+    background: #070708;
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 3;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 64px;
+  }
+  .footer-brand .logo {
+    font-size: 18px;
+    letter-spacing: 0.4em;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+  .footer-brand p { font-size: 13px; line-height: 1.7; color: var(--muted); max-width: 280px; }
+  .footer-col h4 { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; font-weight: 400; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .footer-col a { font-size: 13px; color: #a8a6a0; transition: color 0.3s; }
+  .footer-col a:hover { color: var(--accent); }
+  .footer-bottom {
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+
+  /* ===== 滚动入场 ===== */
+  .reveal { opacity: 0; transform: translateY(30px); will-change: transform, opacity; }
+</style>
+</head>
+<body>
+
+<!-- 粒子 Canvas -->
+<canvas id="particles"></canvas>
+
+<!-- SVG Noise 纹理 -->
+<svg class="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+  <filter id="noise">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch" />
+  </filter>
+  <rect width="100%" height="100%" filter="url(#noise)" />
+</svg>
+
+<!-- 导航 -->
+<nav class="nav">
+  <div class="nav-logo">OBSIDIAN</div>
+  <div class="nav-center">
+    <a href="#watch">WATCH</a>
+    <a href="#story">JEWELRY</a>
+    <a href="#specs">FRAGRANCE</a>
+    <a href="#about">ABOUT</a>
+  </div>
+  <div class="nav-right">
+    <div class="icon">⌕</div>
+    <div class="icon">≡</div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-tag">[ SERIES 07 — LIMITED EDITION / 500 PIECES ]</div>
+  <h1 class="hero-title display">
+    THE <em>SEVEN</em>
+  </h1>
+  <div class="hero-sub">Obsidian case / 42mm / Swiss automatic</div>
+
+  <div class="watch-stage" id="watch-stage">
+    <div class="watch-3d" id="watch-3d">
+      <div class="watch-case"></div>
+      <div class="dial"></div>
+      <!-- 12 标记 -->
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(0deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(30deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(60deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(90deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(120deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(150deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(180deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(210deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(240deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(270deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(300deg);"></div>
+      <div class="marker hour" style="transform: translate(-50%, 0) rotate(330deg);"></div>
+      <!-- 分钟标记 -->
+      <div class="marker" style="transform: translate(-50%, 0) rotate(6deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(12deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(18deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(24deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(36deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(42deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(48deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(54deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(66deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(72deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(78deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(84deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(96deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(102deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(108deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(114deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(126deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(132deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(138deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(144deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(156deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(162deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(168deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(174deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(186deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(192deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(198deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(204deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(216deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(222deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(228deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(234deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(246deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(252deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(258deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(264deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(276deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(282deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(288deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(294deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(306deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(312deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(318deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(324deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(336deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(342deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(348deg);"></div>
+      <div class="marker" style="transform: translate(-50%, 0) rotate(354deg);"></div>
+
+      <!-- 品牌文字 -->
+      <div class="brand-text">OBSIDIAN</div>
+      <div class="brand-subtext">SWISS · AUTOMATIC · 72H</div>
+
+      <!-- 表针 -->
+      <div class="hand hand-hour" id="hand-hour"></div>
+      <div class="hand hand-min" id="hand-min"></div>
+      <div class="hand hand-sec" id="hand-sec"></div>
+
+      <!-- 中心宝石 -->
+      <div class="center-gem"></div>
+    </div>
+  </div>
+
+  <a href="#watch" class="cta-link">[ EXPLORE THE COLLECTION ] →</a>
+
+  <div class="hud">
+    <div class="hud-controls">
+      <button class="hud-btn" id="btn-rotate-left">‹</button>
+      <button class="hud-btn play" id="btn-play">▶</button>
+      <button class="hud-btn" id="btn-rotate-right">›</button>
+    </div>
+    <div class="hud-specs">
+      <span><strong>CASE</strong> 42MM</span>
+      <span><strong>GLASS</strong> SAPPHIRE</span>
+      <span><strong>WATER</strong> 100M</span>
+      <span><strong>MOVEMENT</strong> SWISS-AUTO</span>
+    </div>
+  </div>
+</section>
+
+<!-- Specs -->
+<section class="specs" id="specs">
+  <div class="specs-header">
+    <div>
+      <div class="kicker">[ 02 / TECHNICAL SPECIFICATIONS ]</div>
+      <h2>Engineered to <span class="gold">outlast</span> us all.</h2>
+    </div>
+    <div class="sub">THE SEVEN / REF. OB-07-001</div>
+  </div>
+
+  <div class="specs-table">
+    <div class="spec-row"><span class="spec-label">CASE</span><span class="spec-value">TITANIUM 904L / <em>BLACK DLC</em></span></div>
+    <div class="spec-row"><span class="spec-label">DIAL</span><span class="spec-value">OBSIDIAN STONE / <em>ONYX MARKERS</em></span></div>
+    <div class="spec-row"><span class="spec-label">STRAP</span><span class="spec-value">RUBBER / <em>DEPLOYANT CLASP</em></span></div>
+    <div class="spec-row"><span class="spec-label">GLASS</span><span class="spec-value">SAPPHIRE / <em>ANTI-REFLECTIVE</em></span></div>
+    <div class="spec-row"><span class="spec-label">WATER</span><span class="spec-value"><em>100 METERS</em> / 10 ATM</span></div>
+    <div class="spec-row"><span class="spec-label">MOVEMENT</span><span class="spec-value">SWISS AUTOMATIC / <em>72H RESERVE</em></span></div>
+    <div class="spec-row"><span class="spec-label">POWER</span><span class="spec-value">28'800 VPH / <em>31 JEWELS</em></span></div>
+    <div class="spec-row"><span class="spec-label">WARRANTY</span><span class="spec-value"><em>5 YEARS</em> INTERNATIONAL</span></div>
+    <div class="spec-row"><span class="spec-label">WEIGHT</span><span class="spec-value">98 GRAMS</span></div>
+    <div class="spec-row"><span class="spec-label">LUG WIDTH</span><span class="spec-value">20 MM</span></div>
+    <div class="spec-row"><span class="spec-label">FINISH</span><span class="spec-value"><em>HAND-POLISHED</em> / BRUSHED</span></div>
+    <div class="spec-row"><span class="spec-label">ORIGIN</span><span class="spec-value"><em>GENEVA</em>, SWITZERLAND</span></div>
+  </div>
+</section>
+
+<!-- Design Story -->
+<section class="story" id="story">
+  <div class="story-visual reveal"></div>
+  <div class="story-text">
+    <div class="kicker">[ 03 / THE STORY ]</div>
+    <h2>Inspired by <em>volcanic glass</em>.<br/>Engineered in <em>Geneva</em>.</h2>
+    <p>Obsidian is formed when molten lava cools so rapidly it has no time to crystallize. The result is a natural glass — black, sharp, and impossibly smooth. A stone forged in fire, finished in silence.</p>
+    <p>The Seven takes this idea as its starting point. A case milled from a single billet of titanium 904L. A dial cut from real obsidian, sourced from the mountains of Hrafntinna, Iceland. A movement hand-assembled by a single watchmaker in the Vallée de Joux.</p>
+    <p>No marketing words on the case back. No synthetic sapphire where a real stone will do. No compromises. Just a watch, built the way watches were built when a watch was the most complicated object a person could own.</p>
+  </div>
+</section>
+
+<!-- Collection -->
+<section class="collection" id="watch">
+  <div class="collection-header">
+    <h2>The Collection.</h2>
+    <span class="sub">THREE REFERENCES / LIMITED SERIES</span>
+  </div>
+  <div class="collection-grid">
+    <div class="collection-card">
+      <div class="code">REF. OB-07-001</div>
+      <div class="visual">VII</div>
+      <div>
+        <h3>Series 01 / Obsidian Black</h3>
+        <div class="meta"><span>TITANIUM · DLC</span><span class="price">$8,400</span></div>
+      </div>
+    </div>
+    <div class="collection-card">
+      <div class="code">REF. OB-07-002</div>
+      <div class="visual">VII</div>
+      <div>
+        <h3>Series 02 / Bronze Age</h3>
+        <div class="meta"><span>BRONZE · PATINA</span><span class="price">$9,200</span></div>
+      </div>
+    </div>
+    <div class="collection-card">
+      <div class="code">REF. OB-07-003</div>
+      <div class="visual">VII</div>
+      <div>
+        <h3>Series 03 / Titanium White</h3>
+        <div class="meta"><span>TITANIUM · CERAMIC</span><span class="price">$9,800</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Reviews -->
+<section class="reviews" id="about">
+  <div class="review">
+    <blockquote>"The most elegant watch released this year."</blockquote>
+    <cite>— HODINKEE / 2024</cite>
+  </div>
+  <div class="review">
+    <blockquote>"Silent luxury at its absolute finest."</blockquote>
+    <cite>— MONOCLE / ISSUE 178</cite>
+  </div>
+  <div class="review">
+    <blockquote>"Obsidian redefines what this category can be."</blockquote>
+    <cite>— WATCH PRO / OCTOBER 2024</cite>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final-cta">
+  <div class="kicker">[ 06 / RESERVE YOURS ]</div>
+  <h2>Pre-order the <em>Obsidian Seven</em>.</h2>
+  <div class="price">FROM $8,400 · SHIPS DECEMBER 2024 · 500 PIECES ONLY</div>
+  <button class="btn">[ RESERVE WITH $840 DEPOSIT ]</button>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">OBSIDIAN</div>
+      <p>A private watch atelier. Geneva, Switzerland. By appointment only since 2019.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Watches</h4>
+      <ul><li><a href="#">The Seven</a></li><li><a href="#">Series 01</a></li><li><a href="#">Series 02</a></li><li><a href="#">Series 03</a></li></ul>
+    </div>
+    <div class="footer-col">
+      <h4>Atelier</h4>
+      <ul><li><a href="#">Our Craft</a></li><li><a href="#">Materials</a></li><li><a href="#">Service</a></li><li><a href="#">Visit</a></li></ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul><li><a href="#">Contact</a></li><li><a href="#">Care Guide</a></li><li><a href="#">Warranty</a></li><li><a href="#">Press</a></li></ul>
+    </div>
+    <div class="footer-col">
+      <h4>Private</h4>
+      <ul><li><a href="#">Bespoke</a></li><li><a href="#">Archive</a></li><li><a href="#">Journal</a></li><li><a href="#">Newsletter</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 OBSIDIAN WATCH CO.</span>
+    <span>GENEVA · SWITZERLAND</span>
+    <span>ALL RIGHTS RESERVED</span>
+  </div>
+</footer>
+
+<!-- Motion + Lenis -->
+<script type="module">
+  import { animate, stagger, spring, inView } from 'https://esm.sh/motion';
+  import Lenis from 'https://esm.sh/@studio-freight/lenis';
+
+  // ===== Lenis 平滑滚动 =====
+  const lenis = new Lenis({
+    duration: 1.3,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+  });
+  function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+
+  // ===== Hero 入场动画 =====
+  animate('.hero-tag', { opacity: 1 }, { duration: 1.2, delay: 0.3, easing: 'easeOut' });
+  animate('.hero-title', { opacity: 1, scale: 1 }, { duration: 1.5, delay: 0.4, easing: [0.22, 0.03, 0.26, 1] });
+  animate('.hero-sub', { opacity: 1 }, { duration: 1.2, delay: 0.8, easing: 'easeOut' });
+  animate('#watch-stage', { opacity: 1, y: [40, 0] }, { duration: 1.4, delay: 0.6, easing: [0.22, 0.03, 0.26, 1] });
+  animate('.cta-link', { opacity: 1, y: [20, 0] }, { duration: 1, delay: 1.0, easing: 'easeOut' });
+  animate('.hud > *', { opacity: [0, 1], x: [-20, 0] }, { duration: 1, delay: stagger(0.1, { start: 1.2 }), easing: 'easeOut' });
+
+  // ===== 手表 3D 鼠标跟随 + 自动旋转 =====
+  const watch = document.getElementById('watch-3d');
+  let targetRotX = -5;
+  let targetRotY = 15;
+  let currentRotX = -5;
+  let currentRotY = 15;
+  let autoRotate = true;
+  let autoAngle = 15;
+
+  // 鼠标移动
+  document.addEventListener('mousemove', (e) => {
+    if (window.innerWidth < 768) return;
+    const x = (e.clientX / window.innerWidth - 0.5) * 2;
+    const y = (e.clientY / window.innerHeight - 0.5) * 2;
+    targetRotY = x * 18;
+    targetRotX = -y * 14;
+  });
+
+  // 平滑插值渲染
+  function renderWatch() {
+    if (autoRotate) autoAngle += 0.08;
+    const baseY = autoRotate ? autoAngle : 0;
+    currentRotX += (targetRotX - currentRotX) * 0.08;
+    currentRotY += (targetRotY + baseY - currentRotY) * 0.04;
+    watch.style.transform = `rotateX(${currentRotX}deg) rotateY(${currentRotY}deg)`;
+    requestAnimationFrame(renderWatch);
+  }
+  renderWatch();
+
+  // 播放/暂停按钮
+  const btnPlay = document.getElementById('btn-play');
+  btnPlay.addEventListener('click', () => {
+    autoRotate = !autoRotate;
+    btnPlay.textContent = autoRotate ? '▶' : '❚❚';
+  });
+  document.getElementById('btn-rotate-left').addEventListener('click', () => { autoAngle -= 45; });
+  document.getElementById('btn-rotate-right').addEventListener('click', () => { autoAngle += 45; });
+
+  // ===== 表针实时走时 =====
+  function updateHands() {
+    const now = new Date();
+    const s = now.getSeconds() + now.getMilliseconds() / 1000;
+    const m = now.getMinutes() + s / 60;
+    const h = (now.getHours() % 12) + m / 60;
+
+    const secEl = document.getElementById('hand-sec');
+    const minEl = document.getElementById('hand-min');
+    const hourEl = document.getElementById('hand-hour');
+    if (secEl) secEl.style.transform = `translate(-50%, -100%) rotate(${s * 6}deg)`;
+    if (minEl) minEl.style.transform = `translate(-50%, -100%) rotate(${m * 6}deg)`;
+    if (hourEl) hourEl.style.transform = `translate(-50%, -100%) rotate(${h * 30}deg)`;
+    requestAnimationFrame(updateHands);
+  }
+  updateHands();
+
+  // ===== Specs 表行入场 =====
+  document.querySelectorAll('.spec-row').forEach((el, i) => {
+    inView(el, () => {
+      animate(el, { opacity: 1, y: [20, 0] }, { duration: 0.8, easing: [0.22, 0.03, 0.26, 1], delay: i * 0.04 });
+      return () => {};
+    }, { amount: 0.5 });
+  });
+
+  // ===== 其他 section 入场 =====
+  document.querySelectorAll('.reveal, .specs-header, .story-text h2, .story-text p, .collection-header, .collection-card, .review').forEach((el) => {
+    inView(el, () => {
+      animate(el, { opacity: 1, y: [30, 0] }, { duration: 0.9, easing: [0.22, 0.03, 0.26, 1] });
+      return () => {};
+    }, { amount: 0.2 });
+  });
+
+  // ===== Reviews 交错入场 =====
+  document.querySelectorAll('.review').forEach((el, i) => {
+    inView(el, () => {
+      animate(el, { opacity: 1, y: [30, 0] }, { duration: 1, easing: [0.22, 0.03, 0.26, 1], delay: i * 0.15 });
+      return () => {};
+    }, { amount: 0.5 });
+  });
+
+  // ===== CTA 入场 =====
+  inView('.final-cta', () => {
+    animate('.final-cta h2', { opacity: [0, 1], y: [30, 0] }, { duration: 1.2, easing: [0.22, 0.03, 0.26, 1] });
+    animate('.final-cta .price', { opacity: [0, 1] }, { duration: 1, delay: 0.3, easing: 'easeOut' });
+    animate('.final-cta .btn', { opacity: [0, 1], y: [20, 0] }, { duration: 1, delay: 0.5, easing: [0.22, 0.03, 0.26, 1] });
+    return () => {};
+  }, { amount: 0.3 });
+
+  // ===== 粒子系统（Canvas 2D） =====
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    particles = [];
+    const count = Math.min(80, Math.floor((canvas.width * canvas.height) / 20000));
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + 0.3,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: -Math.random() * 0.3 - 0.05,
+        life: Math.random() * 1,
+        maxLife: 1 + Math.random() * 2,
+        tone: Math.random() > 0.5 ? 'gold' : 'bronze',
+      });
+    }
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life += 0.003;
+      if (p.life > p.maxLife || p.y < -10) {
+        p.x = Math.random() * canvas.width;
+        p.y = canvas.height + 10;
+        p.life = 0;
+      }
+      const alpha = Math.max(0, Math.min(1, 1 - Math.abs(p.life / p.maxLife - 0.5) * 2)) * 0.5;
+      const color = p.tone === 'gold'
+        ? `rgba(233, 201, 120, ${alpha})`
+        : `rgba(139, 115, 85, ${alpha * 0.8})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+</script>
+</body>
+</html>

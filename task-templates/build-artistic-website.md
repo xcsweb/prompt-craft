@@ -60,11 +60,26 @@
 ```
 **Context: (环境与技术栈)**
 - 技术模式：单文件 HTML + ES Modules CDN import，浏览器直接双击 index.html 运行
-- 动画引擎：GSAP 3.x (import via esm.sh) + ScrollTrigger Plugin
-- 平滑滚动：@studio-freight/lenis (import via esm.sh)
-- 3D / WebGL：Three.js r128+ (import via esm.sh) — 仅在需要 shader orb 时使用
+- 动画引擎（三选一，根据设计方向匹配）：
+  • 🏅 **GSAP 3.x + ScrollTrigger**：Awwwards 级滚动叙事、复杂时间线
+    `import { gsap } from 'https://esm.sh/gsap'; import { ScrollTrigger } from 'https://esm.sh/gsap/ScrollTrigger';`
+  • 🟢 **Motion.dev / Motion One**：现代 SaaS 产品站，硬件加速，最小体积
+    `import { animate, timeline, stagger, spring, inView } from 'https://esm.sh/motion';`
+  • 🟣 **anime.js v4**：SVG 重度页面、数据可视化、轻量微交互
+    `import anime from 'https://esm.sh/animejs';`
+- 平滑滚动：@studio-freight/lenis — 与上述所有引擎兼容
+  `import Lenis from 'https://esm.sh/@studio-freight/lenis';`
+- 3D / WebGL：Three.js r128+ (import via esm.sh) — 仅在需要产品展示 / shader orb 时使用
 - 字体：Google Fonts CDN — Newsreader (display serif) + Inter (body sans)
 - 开发模式：无需构建工具，零 npm install
+
+**动画引擎选择规则**：
+  - Editorial / 杂志风 → GSAP（精细时间线）或 Motion.dev
+  - Modern SaaS / 产品站 → Motion.dev（硬件加速，响应式）
+  - Cyberpunk / 沉浸式黑暗风 → GSAP + Canvas 2D
+  - Swiss / 粗野主义 → Motion.dev 或 GSAP（marquee 动画）
+  - 3D Product Showcase → GSAP（切换动画）+ Three.js（模型）
+  - SVG-heavy / 数据可视化 → anime.js
 
 **Objective: (设计目标)**
 为品牌【品牌名】生成一个 editorially-designed 官网，方向为【设计方向】。
