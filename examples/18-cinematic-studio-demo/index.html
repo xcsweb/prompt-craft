@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STUDIO NOVA — Cinematic Narrative</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0A0A0F;
+      --text: #E8E6E1;
+      --muted: #8A8A8A;
+      --accent: #C9A962;
+      --accent-2: #2D7CFF;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    #webgl-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #grain {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    #vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: radial-gradient(circle at center, transparent 0%, transparent 55%, rgba(0,0,0,0.55) 100%);
+    }
+
+    #cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 100;
+      transition: width 0.2s, height 0.2s, background 0.2s;
+      mix-blend-mode: difference;
+    }
+    #cursor.hover {
+      width: 48px;
+      height: 48px;
+      background: rgba(201, 169, 98, 0.12);
+    }
+
+    #progress {
+      position: fixed;
+      top: 50%;
+      right: 32px;
+      transform: translateY(-50%);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #progress .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(232, 230, 225, 0.2);
+      transition: background 0.4s, transform 0.4s;
+    }
+    #progress .dot.active {
+      background: var(--accent);
+      transform: scale(1.6);
+    }
+
+    #scene-label {
+      position: fixed;
+      top: 32px;
+      left: 32px;
+      z-index: 50;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .scene-content {
+      width: min(1200px, 90vw);
+      margin: 0 auto;
+      padding: 0 5vw;
+      opacity: 0;
+      transform: translateY(40px);
+      will-change: transform, opacity;
+    }
+
+    .display {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin: 0;
+    }
+
+    .display-xl {
+      font-size: clamp(3.5rem, 12vw, 10rem);
+      color: var(--text);
+    }
+
+    .display-lg {
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      color: var(--text);
+    }
+
+    .display-md {
+      font-size: clamp(1.5rem, 4vw, 3rem);
+      color: var(--accent);
+    }
+
+    .body {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+      line-height: 1.65;
+      color: var(--muted);
+      max-width: 520px;
+      margin-top: 1.5rem;
+    }
+
+    .eyebrow {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 2.5rem;
+      padding: 14px 32px;
+      border: 1px solid rgba(232, 230, 225, 0.25);
+      background: transparent;
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      pointer-events: auto;
+      cursor: none;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .cta:hover {
+      border-color: var(--accent);
+      background: rgba(201, 169, 98, 0.08);
+    }
+
+    .scene-wipe {
+      position: fixed;
+      inset: 0;
+      background: var(--accent);
+      z-index: 40;
+      pointer-events: none;
+      transform: translateX(100%);
+    }
+
+    .split-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8vw;
+      align-items: center;
+    }
+
+    .stat {
+      margin-top: 3rem;
+      display: flex;
+      gap: 4rem;
+    }
+    .stat-item h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 300;
+      color: var(--accent);
+      margin: 0;
+    }
+    .stat-item span {
+      display: block;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
+    .process-list {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .process-item {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+    .process-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem;
+      color: var(--accent-2);
+      letter-spacing: 0.1em;
+      min-width: 40px;
+    }
+    .process-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin: 0 0 0.25rem;
+    }
+    .process-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      #cursor { display: none; }
+      #progress { right: 16px; gap: 12px; }
+      #scene-label { top: 20px; left: 20px; }
+      .split-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .stat { gap: 2rem; flex-wrap: wrap; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scene-content { opacity: 1 !important; transform: none !important; }
+      #cursor { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="webgl-canvas" aria-hidden="true"></canvas>
+  <div id="grain" aria-hidden="true"></div>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="cursor" aria-hidden="true"></div>
+  <div id="scene-label" aria-hidden="true">SCENE 01 / OPENING</div>
+  <div id="progress" aria-hidden="true">
+    <div class="dot active" data-scene="0"></div>
+    <div class="dot" data-scene="1"></div>
+    <div class="dot" data-scene="2"></div>
+    <div class="dot" data-scene="3"></div>
+    <div class="dot" data-scene="4"></div>
+  </div>
+  <div class="scene-wipe" aria-hidden="true"></div>
+
+  <main id="smooth-content">
+    <section class="scene" data-scene="0" data-label="SCENE 01 / OPENING">
+      <div class="scene-content">
+        <span class="eyebrow">Cinematic Narrative Demo</span>
+        <h1 class="display display-xl">STUDIO<br/>NOVA</h1>
+        <p class="body">We craft digital experiences as continuous visual narratives. Scroll to enter the scene.</p>
+        <a href="#" class="cta" data-hover>Enter the story</a>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="1" data-label="SCENE 02 / MANIFESTO">
+      <div class="scene-content">
+        <div class="split-layout">
+          <div>
+            <span class="eyebrow">Manifesto</span>
+            <h2 class="display display-lg">Motion is<br/>meaning.</h2>
+          </div>
+          <div>
+            <p class="body">Every pixel should move with purpose. We treat the browser viewport as a camera lens and the user's scroll as the director's timeline. The result is not a website — it is a sequence of scenes.</p>
+            <div class="stat">
+              <div class="stat-item">
+                <h4>12</h4>
+                <span>Awards</span>
+              </div>
+              <div class="stat-item">
+                <h4>48</h4>
+                <span>Projects</span>
+              </div>
+              <div class="stat-item">
+                <h4>07</h4>
+                <span>Years</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="2" data-label="SCENE 03 / SELECTED WORK">
+      <div class="scene-content">
+        <span class="eyebrow">Selected Work</span>
+        <h2 class="display display-lg">Ideas, floating<br/>in space.</h2>
+        <p class="body">Each project is a world. The camera travels between them — closer, farther, orbiting — so the audience feels the scale of what was built.</p>
+        <a href="#" class="cta" data-hover>View all projects</a>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="3" data-label="SCENE 04 / PROCESS">
+      <div class="scene-content">
+        <div class="split-layout">
+          <div>
+            <span class="eyebrow">Process</span>
+            <h2 class="display display-lg">Three acts.<br/>One take.</h2>
+          </div>
+          <div class="process-list">
+            <div class="process-item">
+              <span class="process-num">01</span>
+              <div>
+                <h4 class="process-title">Synopsis</h4>
+                <p class="process-desc">We write the story before the code. Every scene must earn its place.</p>
+              </div>
+            </div>
+            <div class="process-item">
+              <span class="process-num">02</span>
+              <div>
+                <h4 class="process-title">Storyboard</h4>
+                <p class="process-desc">Scroll progress is mapped to camera position, lighting, and emotional beats.</p>
+              </div>
+            </div>
+            <div class="process-item">
+              <span class="process-num">03</span>
+              <div>
+                <h4 class="process-title">Performance</h4>
+                <p class="process-desc">We optimize every draw call so the illusion never breaks.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="4" data-label="SCENE 05 / CLOSING">
+      <div class="scene-content" style="text-align: center;">
+        <span class="eyebrow">The End</span>
+        <h2 class="display display-xl">Let's make<br/>your scene.</h2>
+        <p class="body" style="margin-left: auto; margin-right: auto;">If your next project deserves a cinematic entrance, we should talk.</p>
+        <a href="mailto:hello@studionova.co" class="cta" data-hover>Start a project</a>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import * as THREE from 'https://esm.sh/three@0.160.0'
+    import gsap from 'https://esm.sh/gsap@3.12.5'
+    import { ScrollTrigger } from 'https://esm.sh/gsap@3.12.5/ScrollTrigger'
+
+    gsap.registerPlugin(ScrollTrigger)
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const isMobile = window.matchMedia('(pointer: coarse)').matches
+    const canvas = document.getElementById('webgl-canvas')
+    const sceneLabel = document.getElementById('scene-label')
+    const dots = document.querySelectorAll('#progress .dot')
+    const wipe = document.querySelector('.scene-wipe')
+
+    // --- Three.js setup ---
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' })
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setClearColor(0x0A0A0F, 1)
+
+    const scene = new THREE.Scene()
+    scene.fog = new THREE.FogExp2(0x0A0A0F, 0.035)
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100)
+    camera.position.set(0, 0, 10)
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.25)
+    scene.add(ambientLight)
+
+    const keyLight = new THREE.PointLight(0xC9A962, 200, 50)
+    keyLight.position.set(5, 5, 5)
+    scene.add(keyLight)
+
+    const rimLight = new THREE.PointLight(0x2D7CFF, 150, 50)
+    rimLight.position.set(-5, 3, -5)
+    scene.add(rimLight)
+
+    // Central "sun"
+    const sunGeo = new THREE.SphereGeometry(1.2, 64, 64)
+    const sunMat = new THREE.MeshStandardMaterial({
+      color: 0xC9A962,
+      emissive: 0xC9A962,
+      emissiveIntensity: 0.35,
+      roughness: 0.4,
+      metalness: 0.7
+    })
+    const sun = new THREE.Mesh(sunGeo, sunMat)
+    scene.add(sun)
+
+    // Floating objects
+    const objects = []
+    const geometries = [
+      new THREE.IcosahedronGeometry(0.7, 0),
+      new THREE.TorusGeometry(0.55, 0.18, 16, 64),
+      new THREE.OctahedronGeometry(0.7, 0),
+      new THREE.TetrahedronGeometry(0.8, 0)
+    ]
+    const materials = [
+      new THREE.MeshStandardMaterial({ color: 0x2D7CFF, roughness: 0.2, metalness: 0.8, wireframe: true }),
+      new THREE.MeshStandardMaterial({ color: 0xC9A962, roughness: 0.3, metalness: 0.6, wireframe: true }),
+      new THREE.MeshStandardMaterial({ color: 0xE8E6E1, roughness: 0.1, metalness: 0.9, wireframe: true }),
+      new THREE.MeshStandardMaterial({ color: 0x2D7CFF, roughness: 0.2, metalness: 0.8, wireframe: true })
+    ]
+
+    const positions = [
+      { x: -4, y: 2, z: -2 },
+      { x: 4, y: -1.5, z: -4 },
+      { x: -3, y: -2, z: 1 },
+      { x: 3.5, y: 2.5, z: -1 }
+    ]
+
+    geometries.forEach((geo, i) => {
+      const mesh = new THREE.Mesh(geo, materials[i])
+      mesh.position.set(positions[i].x, positions[i].y, positions[i].z)
+      mesh.userData = {
+        rotSpeed: { x: (Math.random() - 0.5) * 0.005, y: (Math.random() - 0.5) * 0.005 },
+        floatSpeed: 0.003 + Math.random() * 0.003,
+        floatOffset: Math.random() * Math.PI * 2,
+        baseY: positions[i].y
+      }
+      scene.add(mesh)
+      objects.push(mesh)
+    })
+
+    // Starfield
+    const starGeo = new THREE.BufferGeometry()
+    const starCount = 400
+    const starPos = new Float32Array(starCount * 3)
+    for (let i = 0; i < starCount * 3; i++) {
+      starPos[i] = (Math.random() - 0.5) * 40
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3))
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.04, transparent: true, opacity: 0.6 })
+    const stars = new THREE.Points(starGeo, starMat)
+    scene.add(stars)
+
+    // Camera path points
+    const cameraPath = [
+      new THREE.Vector3(0, 0, 10),
+      new THREE.Vector3(0, 0, 5.5),
+      new THREE.Vector3(5.5, 1.8, 4.2),
+      new THREE.Vector3(-3.5, -1.2, 3.0),
+      new THREE.Vector3(2.5, 1.0, 5.0),
+      new THREE.Vector3(0, 0, 4.0)
+    ]
+    const curve = new THREE.CatmullRomCurve3(cameraPath)
+
+    // --- Render loop ---
+    let time = 0
+    function render() {
+      requestAnimationFrame(render)
+      time += 0.01
+
+      sun.rotation.y += 0.001
+      sun.rotation.x += 0.0005
+
+      objects.forEach(obj => {
+        obj.rotation.x += obj.userData.rotSpeed.x
+        obj.rotation.y += obj.userData.rotSpeed.y
+        obj.position.y = obj.userData.baseY + Math.sin(time + obj.userData.floatOffset) * 0.15
+      })
+
+      stars.rotation.y += 0.0002
+
+      renderer.render(scene, camera)
+    }
+    render()
+
+    // --- Scroll-driven camera + scene content ---
+    if (!prefersReducedMotion) {
+      // Camera follows curve on scroll
+      ScrollTrigger.create({
+        trigger: '#smooth-content',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.8,
+        onUpdate: (self) => {
+          const p = curve.getPoint(self.progress)
+          const lookAtProgress = Math.min(self.progress + 0.02, 1)
+          const lookAtP = curve.getPoint(lookAtProgress)
+          camera.position.copy(p)
+          camera.lookAt(lookAtP)
+        }
+      })
+
+      // Scene content reveal + label update
+      document.querySelectorAll('.scene').forEach((section, index) => {
+        const content = section.querySelector('.scene-content')
+        const label = section.dataset.label
+
+        // Content fade/slide
+        gsap.fromTo(content,
+          { opacity: 0, y: 60 },
+          {
+            opacity: 1,
+            y: 0,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 60%',
+              end: 'top 30%',
+              scrub: 0.5
+            }
+          }
+        )
+
+        gsap.to(content, {
+          opacity: 0,
+          y: -40,
+          ease: 'power2.in',
+          scrollTrigger: {
+            trigger: section,
+            start: 'bottom 70%',
+            end: 'bottom 30%',
+            scrub: 0.5
+          }
+        })
+
+        // Scene label + progress dots
+        ScrollTrigger.create({
+          trigger: section,
+          start: 'top center',
+          end: 'bottom center',
+          onEnter: () => updateLabel(index, label),
+          onEnterBack: () => updateLabel(index, label)
+        })
+
+        // Wipe transition between scenes
+        if (index < 4) {
+          gsap.fromTo(wipe,
+            { x: '100%' },
+            {
+              x: '-100%',
+              ease: 'power4.inOut',
+              scrollTrigger: {
+                trigger: section,
+                start: 'bottom 20%',
+                end: 'bottom top',
+                scrub: 0.6
+              }
+            }
+          )
+        }
+      })
+    } else {
+      // Reduced motion: show all content, no camera path
+      document.querySelectorAll('.scene-content').forEach(el => {
+        el.style.opacity = '1'
+        el.style.transform = 'none'
+      })
+    }
+
+    function updateLabel(index, label) {
+      sceneLabel.textContent = label
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index)
+      })
+    }
+
+    // --- Cursor ---
+    if (!isMobile && !prefersReducedMotion) {
+      const cursor = document.getElementById('cursor')
+      let mouseX = 0, mouseY = 0
+      let cursorX = 0, cursorY = 0
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX
+        mouseY = e.clientY
+      }, { passive: true })
+
+      function animateCursor() {
+        cursorX += (mouseX - cursorX) * 0.12
+        cursorY += (mouseY - cursorY) * 0.12
+        cursor.style.left = cursorX + 'px'
+        cursor.style.top = cursorY + 'px'
+        requestAnimationFrame(animateCursor)
+      }
+      animateCursor()
+
+      document.querySelectorAll('[data-hover]').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('hover'))
+        el.addEventListener('mouseleave', () => cursor.classList.remove('hover'))
+      })
+    }
+
+    // --- Resize ---
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight
+      camera.updateProjectionMatrix()
+      renderer.setSize(window.innerWidth, window.innerHeight)
+      ScrollTrigger.refresh()
+    }, { passive: true })
+  </script>
+</body>
+</html>
