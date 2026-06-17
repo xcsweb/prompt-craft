@@ -225,6 +225,16 @@
       transform: translateX(100%);
     }
 
+    .portal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 35;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle at center, rgba(201, 169, 98, 0.15) 0%, transparent 70%);
+      transform: scale(0.5);
+    }
+
     .split-layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -314,6 +324,7 @@
   </div>
   <button id="audio-toggle" data-hover aria-label="Toggle ambient audio">Sound Off</button>
   <div class="scene-wipe" aria-hidden="true"></div>
+  <div class="portal-overlay" aria-hidden="true"></div>
 
   <div id="smooth-wrapper">
     <div id="smooth-content">
@@ -350,7 +361,7 @@
           <span class="eyebrow">Selected Work</span>
           <h2 class="display display-lg">Ideas, floating<br/>in space.</h2>
           <p class="body">Each project is a world. The camera travels between them — closer, farther, orbiting — so the audience feels the scale of what was built.</p>
-          <a href="#" class="cta" data-hover>View all projects</a>
+          <a href="projects.html" class="cta" data-hover>View all projects</a>
         </div>
       </section>
 
@@ -393,7 +404,7 @@
           <span class="eyebrow">The End</span>
           <h2 class="display display-xl">Let's make<br/>your scene.</h2>
           <p class="body" style="margin-left: auto; margin-right: auto;">If your next project deserves a cinematic entrance, we should talk.</p>
-          <a href="mailto:hello@studionova.co" class="cta" data-hover>Start a project</a>
+          <a href="contact.html" class="cta" data-hover>Start a project</a>
         </div>
       </section>
     </div>
@@ -414,6 +425,7 @@
     const sceneLabel = document.getElementById('scene-label')
     const dots = document.querySelectorAll('#progress .dot')
     const wipe = document.querySelector('.scene-wipe')
+    const portalOverlay = document.querySelector('.portal-overlay')
     const audioBtn = document.getElementById('audio-toggle')
 
     // --- Three.js setup ---
@@ -421,6 +433,8 @@
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setClearColor(0x0A0A0F, 1)
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.2
 
     const scene = new THREE.Scene()
     scene.fog = new THREE.FogExp2(0x0A0A0F, 0.035)
@@ -440,12 +454,12 @@
     rimLight.position.set(-5, 3, -5)
     scene.add(rimLight)
 
-    // Central "sun"
+    // Central "sun" with bloom-ready emissive
     const sunGeo = new THREE.SphereGeometry(1.2, 64, 64)
     const sunMat = new THREE.MeshStandardMaterial({
       color: 0xC9A962,
       emissive: 0xC9A962,
-      emissiveIntensity: 0.35,
+      emissiveIntensity: 0.8,
       roughness: 0.4,
       metalness: 0.7
     })
@@ -520,12 +534,15 @@
       sun.rotation.y += 0.001
       sun.rotation.x += 0.0005
 
+      // Sun pulse for bloom effect
+      sunMat.emissiveIntensity = 0.6 + Math.sin(time * 1.5) * 0.2
+
       objects.forEach(obj => {
         obj.rotation.x += obj.userData.rotSpeed.x
         obj.rotation.y += obj.userData.rotSpeed.y
         obj.position.y = obj.userData.baseY + Math.sin(time + obj.userData.floatOffset) * 0.15
 
-        // Morph effect: subtle scale breathing based on scroll progress
+        // Morph: breathing scale
         const morphScale = 1 + Math.sin(time * 2 + obj.userData.floatOffset) * 0.05 * obj.userData.morphProgress
         obj.scale.setScalar(morphScale)
       })
@@ -548,7 +565,7 @@
       })
     }
 
-    // --- Observer: unified input (mouse/touch/trackpad/scroll) ---
+    // --- Observer: unified input ---
     let scrollVelocity = 0
     if (!prefersReducedMotion) {
       Observer.create({
@@ -556,7 +573,6 @@
         type: 'wheel,touch,scroll',
         onChange: (self) => {
           scrollVelocity = Math.abs(self.deltaY) || Math.abs(self.velocityY) || 0
-          // Velocity affects fog density for speed sensation
           if (scene.fog) {
             const targetDensity = 0.035 + scrollVelocity * 0.00005
             scene.fog.density = THREE.MathUtils.lerp(scene.fog.density, Math.min(targetDensity, 0.08), 0.1)
@@ -647,6 +663,26 @@
             }
           )
         }
+
+        // Portal overlay effect at scene boundaries
+        if (index < 4) {
+          gsap.fromTo(portalOverlay,
+            { opacity: 0, scale: 0.5 },
+            {
+              opacity: 1,
+              scale: 1.5,
+              ease: 'power2.inOut',
+              scrollTrigger: {
+                trigger: section,
+                start: 'bottom 30%',
+                end: 'bottom top',
+                scrub: 0.4,
+                onLeave: () => gsap.set(portalOverlay, { opacity: 0, scale: 0.5 }),
+                onEnterBack: () => gsap.set(portalOverlay, { opacity: 0, scale: 0.5 })
+              }
+            }
+          )
+        }
       })
     } else {
       document.querySelectorAll('.scene-content').forEach(el => {
@@ -662,44 +698,36 @@
       })
     }
 
-    // --- Web Audio: ambient drone + scene transition tones ---
+    // --- Web Audio ---
     let audioCtx = null
     let audioEnabled = false
-    let oscillators = []
-    let gainNodes = []
 
     function initAudio() {
       if (audioCtx) return
       audioCtx = new (window.AudioContext || window.webkitAudioContext)()
 
-      // Ambient drone: low sine wave
       const droneOsc = audioCtx.createOscillator()
       const droneGain = audioCtx.createGain()
       droneOsc.type = 'sine'
-      droneOsc.frequency.value = 55 // A1
+      droneOsc.frequency.value = 55
       droneGain.gain.value = 0.03
       droneOsc.connect(droneGain)
       droneGain.connect(audioCtx.destination)
       droneOsc.start()
-      oscillators.push(droneOsc)
-      gainNodes.push(droneGain)
 
-      // Harmonic layer
       const harmOsc = audioCtx.createOscillator()
       const harmGain = audioCtx.createGain()
       harmOsc.type = 'sine'
-      harmOsc.frequency.value = 110 // A2
+      harmOsc.frequency.value = 110
       harmGain.gain.value = 0.015
       harmOsc.connect(harmGain)
       harmGain.connect(audioCtx.destination)
       harmOsc.start()
-      oscillators.push(harmOsc)
-      gainNodes.push(harmGain)
     }
 
     function playSceneTone(sceneIndex) {
       if (!audioCtx || !audioEnabled) return
-      const tones = [220, 261.63, 329.63, 392, 440] // A3, C4, E4, G4, A4
+      const tones = [220, 261.63, 329.63, 392, 440]
       const osc = audioCtx.createOscillator()
       const gain = audioCtx.createGain()
       osc.type = 'sine'
@@ -728,7 +756,6 @@
       }
     })
 
-    // Play tone on scene change
     document.querySelectorAll('.scene').forEach((section, index) => {
       ScrollTrigger.create({
         trigger: section,
