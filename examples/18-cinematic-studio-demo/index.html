@@ -105,6 +105,32 @@
       color: var(--muted);
     }
 
+    #audio-toggle {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 50;
+      background: transparent;
+      border: 1px solid rgba(232, 230, 225, 0.25);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      cursor: none;
+      pointer-events: auto;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    #audio-toggle:hover {
+      border-color: var(--accent);
+      background: rgba(201, 169, 98, 0.08);
+    }
+    #audio-toggle.active {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     .scene {
       position: relative;
       width: 100vw;
@@ -262,6 +288,7 @@
       #cursor { display: none; }
       #progress { right: 16px; gap: 12px; }
       #scene-label { top: 20px; left: 20px; }
+      #audio-toggle { bottom: 20px; right: 20px; padding: 8px 14px; font-size: 0.6rem; }
       .split-layout { grid-template-columns: 1fr; gap: 2rem; }
       .stat { gap: 2rem; flex-wrap: wrap; }
     }
@@ -285,105 +312,101 @@
     <div class="dot" data-scene="3"></div>
     <div class="dot" data-scene="4"></div>
   </div>
+  <button id="audio-toggle" data-hover aria-label="Toggle ambient audio">Sound Off</button>
   <div class="scene-wipe" aria-hidden="true"></div>
 
-  <main id="smooth-content">
-    <section class="scene" data-scene="0" data-label="SCENE 01 / OPENING">
-      <div class="scene-content">
-        <span class="eyebrow">Cinematic Narrative Demo</span>
-        <h1 class="display display-xl">STUDIO<br/>NOVA</h1>
-        <p class="body">We craft digital experiences as continuous visual narratives. Scroll to enter the scene.</p>
-        <a href="#" class="cta" data-hover>Enter the story</a>
-      </div>
-    </section>
+  <div id="smooth-wrapper">
+    <div id="smooth-content">
+      <section class="scene" data-scene="0" data-label="SCENE 01 / OPENING">
+        <div class="scene-content">
+          <span class="eyebrow">Cinematic Narrative Demo</span>
+          <h1 class="display display-xl">STUDIO<br/>NOVA</h1>
+          <p class="body">We craft digital experiences as continuous visual narratives. Scroll to enter the scene.</p>
+          <a href="#" class="cta" data-hover>Enter the story</a>
+        </div>
+      </section>
 
-    <section class="scene" data-scene="1" data-label="SCENE 02 / MANIFESTO">
-      <div class="scene-content">
-        <div class="split-layout">
-          <div>
-            <span class="eyebrow">Manifesto</span>
-            <h2 class="display display-lg">Motion is<br/>meaning.</h2>
-          </div>
-          <div>
-            <p class="body">Every pixel should move with purpose. We treat the browser viewport as a camera lens and the user's scroll as the director's timeline. The result is not a website — it is a sequence of scenes.</p>
-            <div class="stat">
-              <div class="stat-item">
-                <h4>12</h4>
-                <span>Awards</span>
-              </div>
-              <div class="stat-item">
-                <h4>48</h4>
-                <span>Projects</span>
-              </div>
-              <div class="stat-item">
-                <h4>07</h4>
-                <span>Years</span>
+      <section class="scene" data-scene="1" data-label="SCENE 02 / MANIFESTO">
+        <div class="scene-content">
+          <div class="split-layout">
+            <div>
+              <span class="eyebrow">Manifesto</span>
+              <h2 class="display display-lg">Motion is<br/>meaning.</h2>
+            </div>
+            <div>
+              <p class="body">Every pixel should move with purpose. We treat the browser viewport as a camera lens and the user's scroll as the director's timeline. The result is not a website — it is a sequence of scenes.</p>
+              <div class="stat">
+                <div class="stat-item"><h4>12</h4><span>Awards</span></div>
+                <div class="stat-item"><h4>48</h4><span>Projects</span></div>
+                <div class="stat-item"><h4>07</h4><span>Years</span></div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="scene" data-scene="2" data-label="SCENE 03 / SELECTED WORK">
-      <div class="scene-content">
-        <span class="eyebrow">Selected Work</span>
-        <h2 class="display display-lg">Ideas, floating<br/>in space.</h2>
-        <p class="body">Each project is a world. The camera travels between them — closer, farther, orbiting — so the audience feels the scale of what was built.</p>
-        <a href="#" class="cta" data-hover>View all projects</a>
-      </div>
-    </section>
+      <section class="scene" data-scene="2" data-label="SCENE 03 / SELECTED WORK">
+        <div class="scene-content">
+          <span class="eyebrow">Selected Work</span>
+          <h2 class="display display-lg">Ideas, floating<br/>in space.</h2>
+          <p class="body">Each project is a world. The camera travels between them — closer, farther, orbiting — so the audience feels the scale of what was built.</p>
+          <a href="#" class="cta" data-hover>View all projects</a>
+        </div>
+      </section>
 
-    <section class="scene" data-scene="3" data-label="SCENE 04 / PROCESS">
-      <div class="scene-content">
-        <div class="split-layout">
-          <div>
-            <span class="eyebrow">Process</span>
-            <h2 class="display display-lg">Three acts.<br/>One take.</h2>
-          </div>
-          <div class="process-list">
-            <div class="process-item">
-              <span class="process-num">01</span>
-              <div>
-                <h4 class="process-title">Synopsis</h4>
-                <p class="process-desc">We write the story before the code. Every scene must earn its place.</p>
-              </div>
+      <section class="scene" data-scene="3" data-label="SCENE 04 / PROCESS">
+        <div class="scene-content">
+          <div class="split-layout">
+            <div>
+              <span class="eyebrow">Process</span>
+              <h2 class="display display-lg">Three acts.<br/>One take.</h2>
             </div>
-            <div class="process-item">
-              <span class="process-num">02</span>
-              <div>
-                <h4 class="process-title">Storyboard</h4>
-                <p class="process-desc">Scroll progress is mapped to camera position, lighting, and emotional beats.</p>
+            <div class="process-list">
+              <div class="process-item">
+                <span class="process-num">01</span>
+                <div>
+                  <h4 class="process-title">Synopsis</h4>
+                  <p class="process-desc">We write the story before the code. Every scene must earn its place.</p>
+                </div>
               </div>
-            </div>
-            <div class="process-item">
-              <span class="process-num">03</span>
-              <div>
-                <h4 class="process-title">Performance</h4>
-                <p class="process-desc">We optimize every draw call so the illusion never breaks.</p>
+              <div class="process-item">
+                <span class="process-num">02</span>
+                <div>
+                  <h4 class="process-title">Storyboard</h4>
+                  <p class="process-desc">Scroll progress is mapped to camera position, lighting, and emotional beats.</p>
+                </div>
+              </div>
+              <div class="process-item">
+                <span class="process-num">03</span>
+                <div>
+                  <h4 class="process-title">Performance</h4>
+                  <p class="process-desc">We optimize every draw call so the illusion never breaks.</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="scene" data-scene="4" data-label="SCENE 05 / CLOSING">
-      <div class="scene-content" style="text-align: center;">
-        <span class="eyebrow">The End</span>
-        <h2 class="display display-xl">Let's make<br/>your scene.</h2>
-        <p class="body" style="margin-left: auto; margin-right: auto;">If your next project deserves a cinematic entrance, we should talk.</p>
-        <a href="mailto:hello@studionova.co" class="cta" data-hover>Start a project</a>
-      </div>
-    </section>
-  </main>
+      <section class="scene" data-scene="4" data-label="SCENE 05 / CLOSING">
+        <div class="scene-content" style="text-align: center;">
+          <span class="eyebrow">The End</span>
+          <h2 class="display display-xl">Let's make<br/>your scene.</h2>
+          <p class="body" style="margin-left: auto; margin-right: auto;">If your next project deserves a cinematic entrance, we should talk.</p>
+          <a href="mailto:hello@studionova.co" class="cta" data-hover>Start a project</a>
+        </div>
+      </section>
+    </div>
+  </div>
 
   <script type="module">
     import * as THREE from 'https://esm.sh/three@0.160.0'
     import gsap from 'https://esm.sh/gsap@3.12.5'
     import { ScrollTrigger } from 'https://esm.sh/gsap@3.12.5/ScrollTrigger'
+    import { ScrollSmoother } from 'https://esm.sh/gsap@3.12.5/ScrollSmoother'
+    import { Observer } from 'https://esm.sh/gsap@3.12.5/Observer'
 
-    gsap.registerPlugin(ScrollTrigger)
+    gsap.registerPlugin(ScrollTrigger, ScrollSmoother, Observer)
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const isMobile = window.matchMedia('(pointer: coarse)').matches
@@ -391,6 +414,7 @@
     const sceneLabel = document.getElementById('scene-label')
     const dots = document.querySelectorAll('#progress .dot')
     const wipe = document.querySelector('.scene-wipe')
+    const audioBtn = document.getElementById('audio-toggle')
 
     // --- Three.js setup ---
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' })
@@ -457,7 +481,8 @@
         rotSpeed: { x: (Math.random() - 0.5) * 0.005, y: (Math.random() - 0.5) * 0.005 },
         floatSpeed: 0.003 + Math.random() * 0.003,
         floatOffset: Math.random() * Math.PI * 2,
-        baseY: positions[i].y
+        baseY: positions[i].y,
+        morphProgress: 0
       }
       scene.add(mesh)
       objects.push(mesh)
@@ -499,6 +524,10 @@
         obj.rotation.x += obj.userData.rotSpeed.x
         obj.rotation.y += obj.userData.rotSpeed.y
         obj.position.y = obj.userData.baseY + Math.sin(time + obj.userData.floatOffset) * 0.15
+
+        // Morph effect: subtle scale breathing based on scroll progress
+        const morphScale = 1 + Math.sin(time * 2 + obj.userData.floatOffset) * 0.05 * obj.userData.morphProgress
+        obj.scale.setScalar(morphScale)
       })
 
       stars.rotation.y += 0.0002
@@ -506,6 +535,35 @@
       renderer.render(scene, camera)
     }
     render()
+
+    // --- ScrollSmoother ---
+    let smoother = null
+    if (!prefersReducedMotion && !isMobile) {
+      smoother = ScrollSmoother.create({
+        wrapper: '#smooth-wrapper',
+        content: '#smooth-content',
+        smooth: 1.5,
+        smoothTouch: 0.1,
+        effects: false
+      })
+    }
+
+    // --- Observer: unified input (mouse/touch/trackpad/scroll) ---
+    let scrollVelocity = 0
+    if (!prefersReducedMotion) {
+      Observer.create({
+        target: window,
+        type: 'wheel,touch,scroll',
+        onChange: (self) => {
+          scrollVelocity = Math.abs(self.deltaY) || Math.abs(self.velocityY) || 0
+          // Velocity affects fog density for speed sensation
+          if (scene.fog) {
+            const targetDensity = 0.035 + scrollVelocity * 0.00005
+            scene.fog.density = THREE.MathUtils.lerp(scene.fog.density, Math.min(targetDensity, 0.08), 0.1)
+          }
+        }
+      })
+    }
 
     // --- Scroll-driven camera + scene content ---
     if (!prefersReducedMotion) {
@@ -521,6 +579,13 @@
           const lookAtP = curve.getPoint(lookAtProgress)
           camera.position.copy(p)
           camera.lookAt(lookAtP)
+
+          // Morph objects based on scroll progress
+          objects.forEach((obj, i) => {
+            const staggerOffset = i * 0.1
+            const localProgress = Math.max(0, Math.min(1, (self.progress - staggerOffset) / (1 - staggerOffset)))
+            obj.userData.morphProgress = localProgress
+          })
         }
       })
 
@@ -584,7 +649,6 @@
         }
       })
     } else {
-      // Reduced motion: show all content, no camera path
       document.querySelectorAll('.scene-content').forEach(el => {
         el.style.opacity = '1'
         el.style.transform = 'none'
@@ -597,6 +661,82 @@
         dot.classList.toggle('active', i === index)
       })
     }
+
+    // --- Web Audio: ambient drone + scene transition tones ---
+    let audioCtx = null
+    let audioEnabled = false
+    let oscillators = []
+    let gainNodes = []
+
+    function initAudio() {
+      if (audioCtx) return
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+
+      // Ambient drone: low sine wave
+      const droneOsc = audioCtx.createOscillator()
+      const droneGain = audioCtx.createGain()
+      droneOsc.type = 'sine'
+      droneOsc.frequency.value = 55 // A1
+      droneGain.gain.value = 0.03
+      droneOsc.connect(droneGain)
+      droneGain.connect(audioCtx.destination)
+      droneOsc.start()
+      oscillators.push(droneOsc)
+      gainNodes.push(droneGain)
+
+      // Harmonic layer
+      const harmOsc = audioCtx.createOscillator()
+      const harmGain = audioCtx.createGain()
+      harmOsc.type = 'sine'
+      harmOsc.frequency.value = 110 // A2
+      harmGain.gain.value = 0.015
+      harmOsc.connect(harmGain)
+      harmGain.connect(audioCtx.destination)
+      harmOsc.start()
+      oscillators.push(harmOsc)
+      gainNodes.push(harmGain)
+    }
+
+    function playSceneTone(sceneIndex) {
+      if (!audioCtx || !audioEnabled) return
+      const tones = [220, 261.63, 329.63, 392, 440] // A3, C4, E4, G4, A4
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = tones[sceneIndex] || 220
+      gain.gain.setValueAtTime(0, audioCtx.currentTime)
+      gain.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.1)
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5)
+      osc.connect(gain)
+      gain.connect(audioCtx.destination)
+      osc.start()
+      osc.stop(audioCtx.currentTime + 1.5)
+    }
+
+    audioBtn.addEventListener('click', () => {
+      if (!audioEnabled) {
+        initAudio()
+        audioEnabled = true
+        audioBtn.textContent = 'Sound On'
+        audioBtn.classList.add('active')
+        if (audioCtx.state === 'suspended') audioCtx.resume()
+      } else {
+        audioEnabled = false
+        audioBtn.textContent = 'Sound Off'
+        audioBtn.classList.remove('active')
+        if (audioCtx) audioCtx.suspend()
+      }
+    })
+
+    // Play tone on scene change
+    document.querySelectorAll('.scene').forEach((section, index) => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top center',
+        onEnter: () => playSceneTone(index),
+        onEnterBack: () => playSceneTone(index)
+      })
+    })
 
     // --- Cursor ---
     if (!isMobile && !prefersReducedMotion) {
