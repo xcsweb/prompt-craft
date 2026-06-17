@@ -3,7 +3,7 @@
 > 适用场景：用户说"做一个很酷的官网" / "像 Apple 那种感觉" / "Awwwards 级别" /
 >           "沉浸式品牌站" / "官网但要有设计感"。
 >
-> **使用前必须先读**：`references/artistic-website-dna.md`（选方向 + 选 3-5 个交互签名）。
+> **使用前必须先读**：`references/artistic-website-dna.md`（选方向 + 选 3-5 个交互签名）+ `references/cinematic-camera-transitions.md`（运镜/转场专项）。
 
 ---
 
@@ -12,13 +12,21 @@
 ```
 我将为你生成一个艺术化官网。为确保符合你的预期，请先确认：
 
-【1】设计方向（3 选 1）
+【1】设计方向（7 选 1）
    A. Editorial 杂志博物馆风（奶油纸色 + Serif 大标题 + 巨量留白）
       适用：设计工作室 / 文化机构 / 高端品牌 / 创意咨询
    B. Cyberpunk 黑暗沉浸式（深黑底色 + 霓虹发光 + 全屏 WebGL）
       适用：游戏工作室 / 音乐厂牌 / 互动媒体 / 科技产品发布
    C. Playful 游戏探索风（3D 世界 + 用户驾驶/探索）
       适用：个人作品集 / 儿童教育 / 创意工具
+   D. 3D Product Showcase（产品 360° 展示 + HUD 规格）
+      适用：汽车 / 消费电子 / 家具 / 珠宝
+   E. Neo-Swiss 新瑞士粗野主义（12 列网格 + 编号系统 + news ticker）
+      适用：设计工作室 / 建筑事务所 / 法律金融 / 学术机构
+   F. Dark Luxury 深色奢华风（暗色空间 + 金色渐变 + 产品 HUD）
+      适用：高端手表 / 珠宝 / 香水 / 奢侈品 / 私人银行
+   G. Cinematic Narrative 电影运镜叙事风（一镜到底 / 场景切换 / 滚动同步 camera）
+      适用：高端品牌发布 / 电影/游戏/音乐宣传 / 科技产品故事页 / 文化展览
 
 【2】品牌信息
    - 品牌名称：___
@@ -30,22 +38,35 @@
    🚀 快速原型：单文件 index.html + CDN，双击直接打开
    🏭 生产级：Vite + Vue 3 + TypeScript 模块化架构
 
-【4】你想要的 3-5 个交互签名（从 artistic-website-dna.md 选）
+【4】你想要的 3-5 个交互签名（从 artistic-website-dna.md / cinematic-camera-transitions.md 选）
+   文本类
    ___ Mask Reveal 遮罩文字入场
+   ___ SplitText Stagger 字符逐字入场
+   ___ Scroll-driven Line Grow 滚动下划线生长
+   光标/按钮类
    ___ Custom Cursor + Magnetic Button 自定义光标 + 磁吸按钮
    ___ Hover Invert Cards hover 反色卡片
-   ___ Shader Orb shader 发光球体
+   ___ Tilt 3D Card 3D 倾斜卡片
+   滚动叙事/视觉类
    ___ Scroll-driven Shader 滚动驱动 shader
    ___ Canvas 2D Particle Field 粒子场
-   ___ SplitText Stagger 字符逐字入场
-   ___ Paper Noise Overlay 纸张噪点纹理
-   ___ Tilt 3D Card 3D 倾斜卡片
    ___ Sticky Reveal Narrative 粘性章节叙事
-   ___ Scroll-driven Line Grow 滚动下划线生长
-   ___ Long-form Editor Scroll 长文编辑滚动
    ___ Horizontal Scroll 横向滚动章节
-   ___ Page Wipe Transition 页面擦除切换
+   ___ Long-form Editor Scroll 长文编辑滚动
    ___ Fixed Background Progress 固定背景随滚动变形
+   ___ Paper Noise Overlay 纸张噪点纹理
+   ___ Shader Orb shader 发光球体
+   3D 产品类
+   ___ Orbit 360° Viewer 轨道 360° 查看器
+   ___ Material Color Switcher 材质颜色切换
+   ___ Hotspot Annotation 热点标注
+   运镜与转场类
+   ___ Scroll-Synced Camera 滚动同步相机
+   ___ Scene Wipe 场景擦除转场
+   ___ View Transition Page Morph 页面转场形变
+   ___ One-Shot Long Take 一镜到底
+   ___ Physics-Driven Transition 物理驱动转场
+   ___ Page Wipe Transition 页面擦除切换
 
 （默认：如果用户没有指定，使用方向 A + 前 5 个交互签名 + 🚀 快速原型）
 ```
@@ -79,6 +100,7 @@
   - Cyberpunk / 沉浸式黑暗风 → GSAP + Canvas 2D
   - Swiss / 粗野主义 → Motion.dev 或 GSAP（marquee 动画）
   - 3D Product Showcase → GSAP（切换动画）+ Three.js（模型）
+  - Cinematic Narrative / 电影运镜 → GSAP + ScrollSmoother + Observer + Three.js（camera path）
   - SVG-heavy / 数据可视化 → anime.js
 
 **Objective: (设计目标)**

@@ -179,6 +179,38 @@
 
 ---
 
+### 方向 G：Cinematic Narrative / 电影运镜叙事风
+
+> **代表项目**：Joseph Santamaria Portfolio · Inkwell · Shopify Supply Performance Pack · Unseen Studio
+
+**核心感觉**：像在看一部短片——每个滚动动作都是一次镜头运动，每个 section 切换都是一次剪辑
+
+**设计语言**
+| 维度 | 具体做法 |
+|------|---------|
+| **颜色** | 3-4 色：深黑/纸白背景 + 高对比文本 + 1 个强调色；必要时用渐变营造"光" |
+| **字体** | 超大 Display（极细 Sans 或高对比 Serif）+ 窄字距/宽字距交替；small caps 作为 scene label |
+| **排版节奏** | 每个 scene 占满 100vh；文字以"字幕"或"HUD"形式浮在画面边缘 |
+| **材质** | Film grain、轻微 bloom、暗角 vignette、径向模糊；3D 场景占满背景 |
+| **布局** | 画布优先 + 叙事骨架（三幕/五幕）；section 即 scene，scene 即 shot |
+| **导航** | 可选顶部 pathfinder（只显示进度，不跳转）；或完全无导航的一镜到底 |
+
+**内容结构模板**
+```
+1. Opening Shot：全屏 3D/视频/大图 + 一句话 hook
+2. Establishing Shot：建立场景/世界观（大远景、慢推轨）
+3. Sequence of Scenes：3-5 个 scene，每个 scene 讲一个"情节点"
+4. Transition Beats：scene 间用 wipe / morph / camera movement 衔接
+5. Climax / Reveal：最大产品/理念 reveal，通常配合 camera dolly-in
+6. Closing Shot：简洁 CTA + 联系方式，像片尾字幕
+```
+
+**适用行业**：高端品牌发布、电影/游戏/音乐宣传、设计工作室作品集、科技产品故事页、文化展览
+
+**必读参考**：`references/cinematic-camera-transitions.md`
+
+---
+
 ## 交互签名库（Interaction Signatures）
 
 从获奖项目中提炼的**可复用交互单元**。每个单元包含：做什么、技术栈、典型参数。
@@ -379,6 +411,55 @@
 参考：小米 SU7 官网地面 / 几乎所有汽车 3D 展示
 ```
 
+### 运镜与转场类 CINEMATIC CAMERA & TRANSITIONS
+
+> 完整理论与案例见 `references/cinematic-camera-transitions.md`
+
+#### IS-21：Scroll-Synced Camera（滚动同步相机）
+```
+效果：用户滚动时，3D camera 沿预设路径移动，像导演控制镜头
+适用：产品发布页、品牌故事页、沉浸式作品集
+技术：Three.js + GSAP ScrollTrigger pin + scrub，camera.position 插值
+参数：pin: true, scrub: 0.7, 每个 scene 100vh
+参考：Joseph Santamaria Portfolio / Shopify Supply Performance Pack
+```
+
+#### IS-22：Scene Wipe（场景擦除转场）
+```
+效果：一个色块/形状扫过画面，把旧 scene 擦掉，露出新 scene
+适用：Cinematic Narrative 方向的多 scene 切换
+技术：GSAP + clip-path / SVG mask；或 div transform x: 100% → 0 → -100%
+参数：duration 0.4-0.6s, power4.inOut, 配合 pin 使用
+参考：Unseen Studio 页面切换 / Meridian
+```
+
+#### IS-23：View Transition Page Morph（页面转场形变）
+```
+效果：页面/状态切换时，共享元素从旧位置平滑变形到新位置
+适用：SPA 状态切换、MPA 页面导航、缩略图 → 详情页
+技术：View Transition API — `view-transition-name` + `document.startViewTransition()`
+参数：默认 fade 200-300ms；自定义 `::view-transition-old(root)` / `::view-transition-new(root)`
+参考：Chrome DevRel demos / 2025-2026 生产级应用
+```
+
+#### IS-24：One-Shot Long Take（一镜到底）
+```
+效果：整个网站像一条连续镜头，无硬切，滚动即时间轴
+适用：高端品牌叙事、个人作品集、概念发布
+技术：ScrollSmoother + Three.js + GSAP Observer + ScrollTrigger pin，每个 section 是一个 scene
+参数：总高度 400-800vh，pin section 4-6 个，camera path 用 CurvePath
+参考：Joseph Santamaria Portfolio / Inkwell
+```
+
+#### IS-25：Physics-Driven Transition（物理驱动转场）
+```
+效果：物体碎裂、聚合、流体消散，再重组为新内容
+适用：实验性网站、游戏/科技品牌、强视觉冲击
+技术：Three.js + Cannon.js / RapierJS + GSAP；或粒子系统 + force field
+参数：物理模拟 30-60 个碎片，过渡时间 0.8-1.2s
+参考：Noomo Labs 水母玻璃球碎裂
+```
+
 ---
 
 ## 参考的技术配方表（完整可复用）
@@ -401,6 +482,11 @@
 | 3D Product Tilt | `animate('.product', {rotateY: -5, rotateX: 5}), easing: spring()})` |
 | Scroll-driven Reveal (Motion) | `inView('.section', (info) => { animate(info.target, {opacity: [0, 1], y: [30, 0]}, {duration: 0.6})})` |
 | HUD / Terminal Text | JS: `setInterval(() => { elem.textContent = formatNum(Math.random()*1000, 0)}, 1200)` |
+| Scroll-Synced Camera | `gsap.to(camera.position, { z: 2, scrollTrigger: { trigger: '.scene', scrub: 0.7 } })` |
+| Camera Path (Curve) | `const p = curve.getPoint(progress); camera.position.copy(p); camera.lookAt(lookAtTarget)` |
+| View Transition MPA | `@view-transition { navigation: auto; }` + `prefers-reduced-motion` guard |
+| Scene Wipe (clip-path) | `gsap.fromTo('.scene', {clipPath:'inset(0 0 0 0)'}, {clipPath:'inset(0 100% 0 0)', scrollTrigger:{pin:true, scrub:0.6}})` |
+| One-Shot Long Take | `ScrollSmoother.create() + ScrollTrigger pin × 4-6 scenes + CurvePath camera` |
 
 ---
 
@@ -445,4 +531,20 @@
 陷阱 8：overflow: hidden + 低 line-height 组合灾难
     问题：动画需要 overflow: hidden，但 line-height 太低，文字被容器裁掉
     解决：要么提高 line-height 到 ≥ 1.1，要么用 padding 代替 overflow 做动画边界
+
+陷阱 9：为了运镜而运镜
+    问题：每个 scene 都有复杂 camera 运动，用户眩晕、失去焦点
+    解决：一页最多 2-3 个长镜头；其余内容静态或仅用简单 fade；每个镜头都要有叙事理由
+
+陷阱 10：滚动劫持过强
+    问题：一镜到底网站不让人快速滚动或跳转，用户产生挫败感
+    解决：保留章节导航/进度条作为"逃生口"；移动端允许原生滚动
+
+陷阱 11：View Transition 性能陷阱
+    问题：跨文档转场在移动端增加约 70ms LCP，且未做降级
+    解决：配合 Speculation Rules 预渲染；`prefers-reduced-motion: reduce` 时关闭转场
+
+陷阱 12：3D camera path 没有 fallback
+    问题：低端设备或 WebGL 失败时，核心叙事无法呈现
+    解决：准备静态 keyframe 序列图 / 视频 / 简单 CSS parallax 作为降级
 ```

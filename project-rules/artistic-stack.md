@@ -1,7 +1,7 @@
 # T1 项目级规则：艺术化官网技术栈
 
-> 适用于：品牌官网、设计工作室官网、沉浸式落地页、滚动叙事体验。
-> 基于 Awwwards 2023-2025 获奖项目的逆向研究（Active Theory / Immersive Garden / Locomotive / Bruno Simon / Meridian / Blue Desert）。
+> 适用于：品牌官网、设计工作室官网、沉浸式落地页、滚动叙事体验、电影化运镜/转场网站。
+> 基于 Awwwards 2023-2026 获奖项目的逆向研究（Active Theory / Immersive Garden / Locomotive / Bruno Simon / Meridian / Blue Desert / Unseen Studio / Joseph Santamaria / Inkwell / Shopify Supply Performance Pack）。
 
 ---
 
@@ -15,7 +15,7 @@ FRONTEND
 │
 ├─ 动画引擎（3 个档位，按需求选择）
 │   ├─ 🏅 GSAP 3.x + ScrollTrigger   — 复杂时间线 / 滚动叙事 / Awwwards 级（首选）
-│   │                                  插件：ScrollTrigger / Flip / Draggable / MorphSVG
+│   │                                  插件：ScrollTrigger / ScrollSmoother / Observer / Flip / Draggable / MorphSVG
 │   │
 │   ├─ 🟢 motion@12.x (Motion.dev)   — 轻量 / 硬件加速 / 现代首选
 │   │   核心 API：animate() / timeline() / stagger() / spring()
@@ -28,10 +28,15 @@ FRONTEND
 ├─ 平滑滚动
 │   └─ @studio-freight/lenis         — 惯性滚动 + GSAP/Motion 集成
 │
-├─ 视觉（WebGL / Canvas）
+├─ 运镜 / 3D Camera 工具
 │   ├─ three.js                      — 3D 几何、场景、复杂着色器
+│   ├─ three-story-controls          — NYTimes 开源 camera rig 工具包（ScrollControls / StoryPoints / PathPoints）
 │   ├─ ogl@0.x                       — 更轻的 WebGL 替代品
 │   └─ Canvas 2D API                 — 简单粒子、线条、SVG 手绘
+│
+├─ 页面/状态转场
+│   ├─ View Transition API           — 原生 SPA/MPA 转场，生产级首选（需处理 prefers-reduced-motion）
+│   └─ GSAP Flip / MorphSVG          — 自定义复杂形变 / 共享元素动画
 │
 └─ 字体
     ├─ Google Fonts                   — Inter (正文) / Newsreader (展示) / Fraunces (Display)
@@ -66,6 +71,8 @@ NO BUILD TOOLS 模式（快速原型）
 高端品牌站 / 滚动叙事 / 大奖作品  →  GSAP + Lenis
 现代 SaaS / 产品站 / 简洁动效      →  Motion.dev + Lenis
 创意微型站 / SVG 动画 / 数据展示    →  anime.js
+电影化运镜 / 一镜到底 / 3D 叙事     →  GSAP + ScrollSmoother + Observer + Three.js + three-story-controls
+跨文档页面转场 / SPA 状态切换        →  View Transition API（渐进增强）+ GSAP Flip（复杂形变）
 ```
 
 ---
@@ -248,12 +255,104 @@ document.fonts.ready.then(() => {
 
 ---
 
+## GSAP + ScrollSmoother + Observer + Three.js（电影化运镜/一镜到底）
+
+```js
+// js/main.js — 电影化叙事入口
+import * as THREE from 'three'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ScrollSmoother } from 'gsap/ScrollSmoother'
+import { Observer } from 'gsap/Observer'
+
+gsap.registerPlugin(ScrollTrigger, ScrollSmoother, Observer)
+
+// 惯性平滑滚动（长镜头必备）
+const smoother = ScrollSmoother.create({
+  wrapper: '#smooth-wrapper',
+  content: '#smooth-content',
+  smooth: 1.5,
+  smoothTouch: 0.1,
+  effects: false
+})
+
+// Three.js 基础场景
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100)
+camera.position.set(0, 0, 8)
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
+renderer.setSize(innerWidth, innerHeight)
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+document.body.appendChild(renderer.domElement)
+
+// 统一输入：mouse / touch / trackpad / wheel
+Observer.create({
+  target: window,
+  type: 'wheel,touch,scroll',
+  onChange: (self) => {
+    // 将输入与 ScrollTrigger 同步，实现"单镜头感"
+  }
+})
+
+// 滚动驱动 camera dolly-in
+gsap.to(camera.position, {
+  z: 2,
+  scrollTrigger: {
+    trigger: '#smooth-content',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 0.7
+  }
+})
+
+function animate() {
+  requestAnimationFrame(animate)
+  renderer.render(scene, camera)
+}
+animate()
+```
+
+---
+
+## View Transition API（页面/状态转场）
+
+### MPA 跨文档转场（同源页面）
+
+```css
+@view-transition {
+  navigation: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}
+```
+
+### SPA 同文档状态转场
+
+```js
+document.startViewTransition(() => {
+  updateDOM() // 你的状态变更
+})
+```
+
+### 生产级约束
+
+- 必须加 `prefers-reduced-motion: reduce` 降级。
+- 跨文档转场在移动端可能增加约 70ms LCP；配合 Speculation Rules 预渲染可抵消。
+- 仅用于同源导航；不同源浏览器会回退为普通跳转。
+- 复杂形变（多元素编排）成本高于收益，优先使用默认 fade 或简单 slide。
+
+---
+
 ## 性能与可访问性硬性规则
 
 ```
 [1] Reduced Motion 尊重
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) → 跳过所有 shaders、ScrollTrigger scrub、stagger
+    if (prefersReducedMotion) → 跳过所有 shaders、ScrollTrigger scrub、stagger、View Transitions
     → 改为瞬时 opacity: 0 → 1
 
 [2] WebGL 预算
