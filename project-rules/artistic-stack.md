@@ -1,7 +1,7 @@
 # T1 项目级规则：艺术化官网技术栈
 
-> 适用于：品牌官网、设计工作室官网、沉浸式落地页、滚动叙事体验、电影化运镜/转场网站。
-> 基于 Awwwards 2023-2026 获奖项目的逆向研究（Active Theory / Immersive Garden / Locomotive / Bruno Simon / Meridian / Blue Desert / Unseen Studio / Joseph Santamaria / Inkwell / Shopify Supply Performance Pack）。
+> 适用于：品牌官网、设计工作室官网、沉浸式落地页、滚动叙事体验、电影化运镜/转场网站、滚动控制视频 / Kinetic Scroll 体验。
+> 基于 Awwwards 2023-2026 获奖项目的逆向研究（Active Theory / Immersive Garden / Locomotive / Bruno Simon / Meridian / Blue Desert / Unseen Studio / Joseph Santamaria / Inkwell / Shopify Supply Performance Pack / Nike Air Max / Apple AirPods Pro / vivo iQOO）。
 
 ---
 
@@ -38,6 +38,12 @@ FRONTEND
 │   ├─ View Transition API           — 原生 SPA/MPA 转场，生产级首选（需处理 prefers-reduced-motion）
 │   └─ GSAP Flip / MorphSVG          — 自定义复杂形变 / 共享元素动画
 │
+├─ 滚动控制视频 / Kinetic Scroll
+│   ├─ HTML5 `<video>` + GSAP ScrollTrigger scrub  — 简单视频 scrub（注意关键帧间隔）
+│   ├─ Canvas 2D + 图像序列帧                       — 最稳定的双向 scrub，适合运动员/产品动作
+│   ├─ ffmpeg / frame-extraction                   — 从视频导出帧序列（`ffmpeg -i input.mp4 frame_%04d.webp`）
+│   └─ Three.js + glTF 角色动画                     — 最高级：骨骼动画 + 实时光影 + 无限时长
+│
 └─ 字体
     ├─ Google Fonts                   — Inter (正文) / Newsreader (展示) / Fraunces (Display)
     └─ 永远在 `<head>` 用 `preconnect` + `font-display: swap`
@@ -72,6 +78,7 @@ NO BUILD TOOLS 模式（快速原型）
 现代 SaaS / 产品站 / 简洁动效      →  Motion.dev + Lenis
 创意微型站 / SVG 动画 / 数据展示    →  anime.js
 电影化运镜 / 一镜到底 / 3D 叙事     →  GSAP + ScrollSmoother + Observer + Three.js + three-story-controls
+滚动控制视频 / 运动员动作 scrub      →  GSAP ScrollTrigger + Canvas 图像序列 / HTML5 video scrub / Three.js glTF
 跨文档页面转场 / SPA 状态切换        →  View Transition API（渐进增强）+ GSAP Flip（复杂形变）
 ```
 

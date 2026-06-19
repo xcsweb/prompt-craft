@@ -1,17 +1,18 @@
 ---
 name: prompt-craft
-version: 4.1.0
-description: "Prompt Craft v4 — 三层 Prompt 架构 + 3 引擎动画库 + 7 大设计方向 + 电影化运镜/转场。从用户一句需求 → 到设计方向 → 到技术栈 → 到可运行代码，一步到位。"
+version: 4.2.0
+description: "Prompt Craft v4 — 三层 Prompt 架构 + 3 引擎动画库 + 8 大设计方向 + 电影化运镜/转场 + 滚动控制视频。从用户一句需求 → 到设计方向 → 到技术栈 → 到可运行代码，一步到位。"
 metadata:
   architecture: "T1 项目规则 + T2 专家角色 + T3 任务模板"
   default_flow: "Editorial 杂志风 + Motion.dev 动画引擎 + 🚀 快速原型档（用户未指定时的默认值）"
-  design_reference: "references/artistic-website-dna.md（7 大设计方向 + 25 个交互签名 + 12 个常见陷阱） + references/cinematic-camera-transitions.md（电影化运镜/转场）"
+  design_reference: "references/artistic-website-dna.md（8 大设计方向 + 30 个交互签名 + 16 个常见陷阱） + references/cinematic-camera-transitions.md（电影化运镜/转场） + references/scroll-video-scrub.md（滚动控制视频 / Kinetic Scroll）"
   animation_engines: "GSAP 3.x + ScrollTrigger / Motion.dev (Motion One) / anime.js v4 — 按方向智能匹配"
   key_resources:
     - "project-rules/artistic-stack.md — 艺术化官网技术栈（强制规则）"
     - "project-rules/3d-product-showcase.md — 3D 产品展示技术栈（Three.js + GLTF + PBR）"
-    - "references/artistic-website-dna.md — 7 大设计方向 + 25 个交互签名库"
+    - "references/artistic-website-dna.md — 8 大设计方向 + 30 个交互签名库"
     - "references/cinematic-camera-transitions.md — 电影化运镜/转场设计指南"
+    - "references/scroll-video-scrub.md — 滚动控制视频 / Kinetic Scroll 设计指南"
     - "project-rules/nextjs-shadcn.md — Next.js + shadcn/ui"
     - "project-rules/vite-vue3-typescript.md — Vue 3 + Vite + TS"
     - "project-rules/node-express-prisma.md — Node.js 后端"
@@ -45,6 +46,7 @@ metadata:
 | 一个公司/品牌官网，要有设计感 | `做一个 [你的行业] 公司官网` | Editorial 杂志风 + 🚀 快速原型档 |
 | 一个炫酷的沉浸式官网，像 Awwwards 那样 | `做一个 [你的行业] 官网，要很酷，像 Awwwards 那样` | Cyberpunk 沉浸风 + 🚀 快速原型档 |
 | 一个像电影一样有运镜/转场的品牌叙事页 | `做一个 [主题] 的品牌故事页，要像电影一样有镜头运动` | Cinematic Narrative 电影运镜风 + GSAP + Three.js |
+| 一个滚动时运动员向前跑、反向滚动时后退的网站 | `做一个 [运动/产品] 页面，滚动控制人物/物体前后运动` | Kinetic Scroll 滚动控制视频 + GSAP + Canvas / WebGL |
 | 一个 3D 产品展示页，像小米 SU7 那样 | `做一个 [产品] 的 3D 展示页面，可以旋转查看` | 3D Product Showcase + Three.js |
 | 一个数据可视化大屏，展示 KPI / 实时数据 | `做一个 [主题] 的数据可视化大屏` | 深色科技风 + 🚀 快速原型档 |
 | 一个后台管理系统，有表格 / 表单 / 权限 | `做一个 [主题] 的后台管理系统` | 浅色 + Ant Design / Element Plus |
@@ -55,7 +57,7 @@ metadata:
 
 - 设计方向：**A · Editorial 杂志博物馆风**（奶油纸色 + Serif 大标题 + 巨量留白）
 - 技术档位：**🚀 快速原型档**（单文件 HTML + ES Modules CDN，双击打开即运行）
-- 交互签名：从 25 个签名库里默认挑 5 个最常用的 — **遮罩文字入场 / 自定义光标+磁吸按钮 / hover 反色卡片 / Shader Orb / 滚动下划线生长**
+- 交互签名：从 30 个签名库里默认挑 5 个最常用的 — **遮罩文字入场 / 自定义光标+磁吸按钮 / hover 反色卡片 / Shader Orb / 滚动下划线生长**
 
 想改动？可以说：`改成 Cyberpunk 风格`、`升级为 Vue 3 生产级档`、`用横向滚动代替垂直滚动`、`强调色换成 #2D7CFF`。
 
@@ -95,7 +97,7 @@ metadata:
 
 > 详细清单请见 `references/artistic-website-dna.md`（约 280 行）。下面是给用户看的"选单" + 给 AI 看的"速查表"。
 
-### 7 个设计方向（选 1 个作为页面主 DNA）
+### 8 个设计方向（选 1 个作为页面主 DNA）
 
 | 方向 | 色彩（一组默认值） | 字体（标题 + 正文） | 布局关键词 | 典型交互 | 适合行业 |
 |-----|-------------------|-------------------|----------|---------|---------|
@@ -106,10 +108,11 @@ metadata:
 | **E · Neo-Swiss 新瑞士粗野主义** | 瑞士米灰 `#E8E6DF` 背景 + 纯墨 `#0A0A0A` + 瑞士红 `#E11D48` + 瑞士蓝 `#1E40AF` | **Display** Space Grotesk（几何无衬线 500-900）<br>**Body** Inter + JetBrains Mono（数字/代码）| 12 列可见网格线、大字号 border 作为结构、news ticker 横向滚动、编号系统 | 反色 manifesto、项目编号列表 (001/002 →)、实时时钟 ticker、hover 时整行位移 | 设计工作室 / 建筑事务所 / 法律金融 / 出版社 / 学术机构 / 严肃科技品牌 |
 | **F · Dark Luxury 深色奢华风** | 深墨 `#0A0A0C` + 象牙白 `#E8E6E1` + 暖金 `#C9A962` + 青铜 `#8B7355` | **Display** Inter 200-300 极细（超大型）+ 金色渐变强调<br>**Body** Inter 300<br>**Specs** JetBrains Mono | 产品占 60-80% 屏幕空间，文字信息以 HUD 形式浮动；黄金分割；大量"暗色空间" | 产品 3D 倾斜展示、金色渐变文字、规格表、青铜色次强调、canvas 2D 金色粒子 | 高端手表 / 珠宝 / 香水 / 奢侈品零售 / 私人银行 / 限量版科技产品 / 高端汽车 |
 | **G · Cinematic Narrative 电影运镜叙事风** | 深黑 `#0A0A0F` 或纸白 `#F5F3EF` + 高对比文本 + 1 个强调色（洋红/青/金） | **Display** 极细 Sans 或高对比 Serif，超大字号<br>**Body** Inter 300/400；small caps 作为 scene label | 画布优先 + 三幕/五幕叙事骨架；section = scene = shot；字幕式 HUD 浮层 | Scroll-Synced Camera、Scene Wipe、One-Shot Long Take、View Transition、Physics Transition | 高端品牌发布、电影/游戏/音乐宣传、设计工作室作品集、科技产品故事页、文化展览 |
+| **H · Kinetic Scroll 滚动控制视频风** | 深黑/高对比背景 + 产品/人物本色 + 1 个高饱和强调色（电蓝/霓虹橙） | **Display** 窄体几何 sans 或运动风格 sans，全大写宽字距<br>**Body** Inter 300/400 | 全屏视频/Canvas 背景占主导；文字信息以 HUD/字幕形式浮层；单页长滚动 | HTML5 Video Scrub、Canvas Frame Sequence、Directional Shadow、Speed Lines、Scroll-Driven Lighting | 运动品牌 / 产品发布 / 运动员/代言人落地页 / 汽车/科技短片 / 游戏宣传 |
 
-### 25 个交互签名（"菜单" — 每次选 3-5 个）
+### 30 个交互签名（"菜单" — 每次选 3-5 个）
 
-> 编号 IS-01 到 IS-25，完整技术细节（参数、ease、参考代码骨架）在 `references/artistic-website-dna.md` 与 `references/cinematic-camera-transitions.md`。
+> 编号 IS-01 到 IS-30，完整技术细节（参数、ease、参考代码骨架）在 `references/artistic-website-dna.md`、`references/cinematic-camera-transitions.md` 与 `references/scroll-video-scrub.md`。
 > 一页内不要超过 **5 个**签名；否则页面变成"游乐场"，用户无法聚焦。
 
 | 编号 | 签名名称（英文） | 一句话效果 | 适用场景 | 推荐方向 |
@@ -136,6 +139,7 @@ metadata:
 - **Cyberpunk 默认**：IS-04 · IS-09 · IS-10 · IS-06 · IS-15
 - **Playful 默认**：IS-07 · IS-12 · IS-08 · IS-04 · IS-10
 - **Cinematic Narrative 默认**：IS-21 · IS-22 · IS-24 · IS-23 · IS-25
+- **Kinetic Scroll 默认**：IS-27 · IS-28 · IS-29 · IS-26 · IS-30
 
 ---
 

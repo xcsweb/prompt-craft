@@ -96,9 +96,11 @@
         Flip, Draggable. Best for award sites.
       • **GSAP + ScrollSmoother + Observer + Three.js**: Cinematic camera motion,
         one-shot long takes, scroll-synced 3D scenes. Best for immersive storytelling.
+      • **GSAP ScrollTrigger + Canvas / Video**: Scroll video scrub, image-sequence scrub,
+        kinetic scroll where scroll controls character/object motion forward/backward.
       • **Motion.dev (Motion One)**: Modern SaaS / product sites, hardware-accelerated,
         smallest bundle, clean API `animate() / timeline() / stagger() / spring() / inView()`
-      • **anime.js**: SVG-heavy pages, data viz, creative micro-interactions, lightweight
+      • **anime.js**: SVG-heavy pages, data viz, lightweight creative interactions
       • **View Transition API**: Native page/state transitions, production-grade MPA/SPA.
     - Ease vocabulary:
       • GSAP: power2.out (content), power4.inOut (hero change), circ.out (physical), elastic.out (playful rare)
@@ -128,6 +130,7 @@
       • anime.js: SVG-heavy pages, data viz, lightweight creative interactions
       • View Transition API: Native MPA/SPA page and state transitions
     - Three.js / OGL / three-story-controls for any 3D camera work; vanilla Canvas 2D for simple particle/line effects
+    - Scroll video scrub / kinetic scroll: Canvas image-sequence, HTML5 video scrub, or Three.js glTF animation driven by ScrollTrigger
     - Custom shaders: keep vertex/fragment under ~40 lines each
     - Use semantic HTML. Canvas and absolutely-positioned elements are decorative layers.
     - Accessibility: every decorative canvas is aria-hidden. Reduced-motion respected.

@@ -211,6 +211,38 @@
 
 ---
 
+### 方向 H：Kinetic Scroll / 滚动控制视频风
+
+> **代表项目**：Nike Air Max · Apple AirPods Pro · vivo iQOO · DJI Avata 2 · Polestar
+
+**核心感觉**：滚动 = 时间轴。用户向下滚动时人物/产品向前运动，向上滚动时像快退一样向后回退，光影随速度和方向实时变化。
+
+**设计语言**
+| 维度 | 具体做法 |
+|------|---------|
+| **颜色** | 深黑/高对比背景 + 产品/人物本色 + 1 个高饱和强调色（电蓝 #2D7CFF / 霓虹橙 #FF6B35） |
+| **字体** | 窄体几何 sans 或运动风格 sans，全大写宽字距；数字和速度指标用 JetBrains Mono |
+| **排版节奏** | 全屏视频/Canvas 背景占主导；文字信息以 HUD/字幕形式浮在边缘；单页长滚动 |
+| **材质** | 强烈方向性阴影、速度线、镜头光晕、径向模糊、暗角变化 |
+| **布局** | 背景层（视频/Canvas）+ 前景 HUD 文字层 + 速度/进度指示器 |
+| **导航** | 极简，通常只有品牌 logo + 进度条/速度表；沉浸优先 |
+
+**内容结构模板**
+```
+1. Loading State：预加载帧序列/视频，显示进度条或"0%"
+2. Opening Frame：第一帧定格 + 一句话 hook
+3. Kinetic Sequence：长滚动区域，滚动控制人物/物体前后运动
+4. Spec Beats：穿插关键帧定格，显示数据/规格（速度、力量、性能）
+5. Climax Frame：最戏剧性的一帧 + 产品名/slogan
+6. Closing CTA：简洁购买/了解按钮
+```
+
+**适用行业**：运动品牌、产品发布、运动员/代言人落地页、汽车/科技短片、游戏宣传
+
+**必读参考**：`references/scroll-video-scrub.md`
+
+---
+
 ## 交互签名库（Interaction Signatures）
 
 从获奖项目中提炼的**可复用交互单元**。每个单元包含：做什么、技术栈、典型参数。
@@ -460,6 +492,55 @@
 参考：Noomo Labs 水母玻璃球碎裂
 ```
 
+### 滚动控制视频类 KINETIC SCROLL & VIDEO SCRUB
+
+> 完整理论与案例见 `references/scroll-video-scrub.md`
+
+#### IS-26：HTML5 Video Scrub（视频滚动 scrub）
+```
+效果：滚动时视频 currentTime 跟随进度，向下正放、向上倒放
+适用：产品发布、运动员动作、短片叙事
+技术：`<video preload="auto">` + GSAP ScrollTrigger 更新 `video.currentTime`
+参数：scrub: 0.5；视频每帧关键帧；桌面端优先
+参考：Apple AirPods Pro / Nike Air Max
+```
+
+#### IS-27：Canvas Frame Sequence Scrub（图像序列帧 scrub）
+```
+效果：预加载帧序列，Canvas 逐帧绘制，滚动方向精确控制
+适用：运动员前后运动、产品 360°、高质量动作冻结
+技术：Canvas 2D + Image 数组 + ScrollTrigger + 预加载进度条
+参数：24-30fps，WebP 格式，预加载完成后再启用 scrub
+参考：vivo iQOO / DJI Avata 2
+```
+
+#### IS-28：Directional Shadow（方向性阴影）
+```
+效果：人物/物体运动时，阴影根据运动方向偏移、拉伸/缩短
+适用：Kinetic Scroll 页面、产品展示、运动员落地页
+技术：CSS drop-shadow / box-shadow 插值；或 Three.js shadow map
+参数：shadow offset 随滚动方向 ±40px，opacity 0.3-0.8
+参考：运动品牌落地页
+```
+
+#### IS-29：Speed Lines & Motion Trail（速度线与拖尾）
+```
+效果：快速滚动时背景出现水平速度线，或粒子向运动反方向飞逝
+适用：速度感、运动品牌、科技产品发布
+技术：Canvas 2D 粒子系统，根据 scroll velocity 调整 vx
+参数：粒子数量 50-150，只在 |velocity| > 阈值时显示
+参考：赛车/运动/游戏类网站
+```
+
+#### IS-30：Scroll-Driven Lighting（滚动驱动光影）
+```
+效果：环境光强度、光晕位置、暗角深度随滚动速度和方向变化
+适用：戏剧性产品展示、电影化 hero、沉浸式背景
+技术：CSS 变量 + GSAP ScrollTrigger；或 WebGL shader 实时调整 light intensity
+参数：光照变化范围 ±50%，暗角 opacity 0.2-0.7
+参考：Polestar / 汽车产品页
+```
+
 ---
 
 ## 参考的技术配方表（完整可复用）
@@ -487,6 +568,11 @@
 | View Transition MPA | `@view-transition { navigation: auto; }` + `prefers-reduced-motion` guard |
 | Scene Wipe (clip-path) | `gsap.fromTo('.scene', {clipPath:'inset(0 0 0 0)'}, {clipPath:'inset(0 100% 0 0)', scrollTrigger:{pin:true, scrub:0.6}})` |
 | One-Shot Long Take | `ScrollSmoother.create() + ScrollTrigger pin × 4-6 scenes + CurvePath camera` |
+| HTML5 Video Scrub | `gsap.to(video, { currentTime: video.duration, scrollTrigger: { scrub: 0.5 } })` |
+| Canvas Frame Sequence | `const idx = Math.floor(progress * frames.length); ctx.drawImage(frames[idx], 0, 0)` |
+| Directional Shadow | `filter: drop-shadow(calc(var(--shadow-x) * 1px) 20px 30px rgba(0,0,0,0.6))` |
+| Speed Lines | `ctx.fillRect(x, y, length * abs(velocity), 2)` 在 Canvas 上随速度绘制 |
+| Scroll-Driven Lighting | `gsap.to(light, { intensity: target, scrollTrigger: { scrub: 0.3 } })` |
 
 ---
 
@@ -547,4 +633,20 @@
 陷阱 12：3D camera path 没有 fallback
     问题：低端设备或 WebGL 失败时，核心叙事无法呈现
     解决：准备静态 keyframe 序列图 / 视频 / 简单 CSS parallax 作为降级
+
+陷阱 13：视频 scrub 未预加载
+    问题：用户滚动时视频尚未缓冲，画面卡顿或黑屏
+    解决：preload="auto" + 监听 canplaythrough 再启用 ScrollTrigger；或改用 Canvas 图像序列
+
+陷阱 14：图像序列体积过大
+    问题：240 帧 4K WebP 导致首屏加载数秒甚至失败
+    解决：压缩到 1080p、降低帧率到 15-24fps、懒加载分段、移动端切换为视频
+
+陷阱 15：方向感知错误
+    问题：向上滚动时人物/物体仍向前运动，没有快退感
+    解决：使用 ScrollTrigger scrub 双向驱动；避免只绑定 progress 单向递增
+
+陷阱 16：移动端视频 scrub 不可用
+    问题：iOS Safari 上 video.currentTime scrub 性能极差或失效
+    解决：移动端降级为自动播放静音视频或静态帧；桌面端才启用 scrub
 ```

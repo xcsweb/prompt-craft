@@ -27,6 +27,8 @@
       适用：高端手表 / 珠宝 / 香水 / 奢侈品 / 私人银行
    G. Cinematic Narrative 电影运镜叙事风（一镜到底 / 场景切换 / 滚动同步 camera）
       适用：高端品牌发布 / 电影/游戏/音乐宣传 / 科技产品故事页 / 文化展览
+   H. Kinetic Scroll 滚动控制视频风（滚动=时间轴：人物/物体前后运动 + 光影同步）
+      适用：运动品牌 / 产品发布 / 运动员/代言人落地页 / 汽车/科技短片
 
 【2】品牌信息
    - 品牌名称：___
@@ -38,7 +40,7 @@
    🚀 快速原型：单文件 index.html + CDN，双击直接打开
    🏭 生产级：Vite + Vue 3 + TypeScript 模块化架构
 
-【4】你想要的 3-5 个交互签名（从 artistic-website-dna.md / cinematic-camera-transitions.md 选）
+【4】你想要的 3-5 个交互签名（从 artistic-website-dna.md / cinematic-camera-transitions.md / scroll-video-scrub.md 选）
    文本类
    ___ Mask Reveal 遮罩文字入场
    ___ SplitText Stagger 字符逐字入场
@@ -101,6 +103,7 @@
   - Swiss / 粗野主义 → Motion.dev 或 GSAP（marquee 动画）
   - 3D Product Showcase → GSAP（切换动画）+ Three.js（模型）
   - Cinematic Narrative / 电影运镜 → GSAP + ScrollSmoother + Observer + Three.js（camera path）
+  - Kinetic Scroll / 滚动控制视频 → GSAP ScrollTrigger + Canvas 图像序列 / HTML5 video scrub / Three.js glTF
   - SVG-heavy / 数据可视化 → anime.js
 
 **Objective: (设计目标)**

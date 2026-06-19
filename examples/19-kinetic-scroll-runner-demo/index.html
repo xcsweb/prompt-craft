@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinetic Scroll — Runner Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050507;
+      --text: #F0F0F0;
+      --accent: #00F0FF;
+      --accent-2: #FF2E97;
+      --shadow-x: 0;
+      --vignette-opacity: 0.3;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    #preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      transition: opacity 0.6s ease;
+    }
+    #preloader.hidden { opacity: 0; pointer-events: none; }
+    #preloader .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    #preloader .progress {
+      width: 200px;
+      height: 1px;
+      background: rgba(240,240,240,0.1);
+      position: relative;
+    }
+    #preloader .progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.1s linear;
+    }
+    #preloader .progress-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--text);
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    #runner-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #grain {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      z-index: 2;
+    }
+
+    #vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      background: radial-gradient(circle at center, transparent 0%, transparent 45%, rgba(0,0,0,var(--vignette-opacity)) 100%);
+    }
+
+    #hud {
+      position: fixed;
+      top: 32px;
+      left: 32px;
+      z-index: 50;
+      font-family: 'Space Grotesk', sans-serif;
+      pointer-events: none;
+    }
+    #hud .label {
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(240,240,240,0.5);
+    }
+    #hud .value {
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    #speedometer {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 50;
+      text-align: right;
+      pointer-events: none;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    #speedometer .label {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(240,240,240,0.5);
+    }
+    #speedometer .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+    #speedometer .unit {
+      font-size: 0.75rem;
+      color: var(--accent-2);
+    }
+
+    #direction-hint {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(240,240,240,0.4);
+      pointer-events: none;
+    }
+
+    .scroll-track {
+      height: 500vh;
+      position: relative;
+      z-index: 10;
+    }
+
+    .content-marker {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .content-marker.visible { opacity: 1; }
+    .content-marker .eyebrow {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .content-marker h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 300;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 1.05;
+      margin: 0;
+    }
+    .content-marker p {
+      max-width: 420px;
+      margin: 16px auto 0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: rgba(240,240,240,0.6);
+    }
+
+    #m1 { top: 15vh; }
+    #m2 { top: 35vh; }
+    #m3 { top: 55vh; }
+    #m4 { top: 75vh; }
+
+    @media (max-width: 768px) {
+      #hud { top: 20px; left: 20px; }
+      #speedometer { bottom: 20px; right: 20px; }
+      #speedometer .value { font-size: 1.8rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #preloader { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="preloader">
+    <div class="logo">Kinetic Scroll</div>
+    <div class="progress"><div class="progress-bar"></div></div>
+    <div class="progress-text">LOADING ASSETS 0%</div>
+  </div>
+
+  <div id="stage">
+    <canvas id="runner-canvas"></canvas>
+    <div id="grain"></div>
+    <div id="vignette"></div>
+  </div>
+
+  <div id="hud">
+    <div class="label">Distance</div>
+    <div class="value" id="distance-value">0000m</div>
+  </div>
+
+  <div id="speedometer">
+    <div class="label">Velocity</div>
+    <div class="value"><span id="velocity-value">00</span><span class="unit"> km/h</span></div>
+  </div>
+
+  <div id="direction-hint">Scroll to move forward / backward</div>
+
+  <div class="scroll-track">
+    <div class="content-marker" id="m1">
+      <div class="eyebrow">Phase 01</div>
+      <h2>Accelerate</h2>
+      <p>Scroll down to push forward. The runner responds to every pixel of your scroll.</p>
+    </div>
+    <div class="content-marker" id="m2">
+      <div class="eyebrow">Phase 02</div>
+      <h2>Full Speed</h2>
+      <p>At peak velocity, speed lines streak past and the shadow stretches behind.</p>
+    </div>
+    <div class="content-marker" id="m3">
+      <div class="eyebrow">Phase 03</div>
+      <h2>Reverse</h2>
+      <p>Scroll up and time rewinds. The runner moves backward like a film in reverse.</p>
+    </div>
+    <div class="content-marker" id="m4">
+      <div class="eyebrow">Phase 04</div>
+      <h2>Control Light</h2>
+      <p>Light, shadow, and vignette react to both direction and speed in real time.</p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.matchMedia('(pointer: coarse)').matches;
+
+    const canvas = document.getElementById('runner-canvas');
+    const ctx = canvas.getContext('2d');
+    const preloader = document.getElementById('preloader');
+    const progressBar = preloader.querySelector('.progress-bar');
+    const progressText = preloader.querySelector('.progress-text');
+    const distanceEl = document.getElementById('distance-value');
+    const velocityEl = document.getElementById('velocity-value');
+    const vignette = document.getElementById('vignette');
+
+    let width, height, dpr;
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+
+    // Fake asset loading
+    let loadProgress = 0;
+    const loadInterval = setInterval(() => {
+      loadProgress += Math.random() * 15;
+      if (loadProgress >= 100) {
+        loadProgress = 100;
+        clearInterval(loadInterval);
+        progressBar.style.width = '100%';
+        progressText.textContent = 'LOADING ASSETS 100%';
+        setTimeout(() => {
+          preloader.classList.add('hidden');
+          preloader.setAttribute('aria-hidden', 'true');
+          initExperience();
+        }, 400);
+      } else {
+        progressBar.style.width = loadProgress + '%';
+        progressText.textContent = 'LOADING ASSETS ' + Math.floor(loadProgress) + '%';
+      }
+    }, 120);
+
+    // Runner state
+    let globalScrollProgress = 0;
+    let velocity = 0;
+    let lastProgress = 0;
+    let runnerX = 0;
+    let groundOffset = 0;
+    let lightIntensity = 1;
+    let direction = 1;
+
+    // Particles / speed lines
+    const particles = [];
+    const particleCount = isMobile ? 40 : 80;
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2 + 0.5,
+        speed: Math.random() * 8 + 2,
+        alpha: Math.random() * 0.5 + 0.1
+      });
+    }
+
+    // Grid floor lines
+    const floorLines = [];
+    for (let i = 0; i < 20; i++) {
+      floorLines.push({
+        x: Math.random() * width,
+        width: Math.random() * 60 + 20,
+        y: height * 0.72 + Math.random() * 20
+      });
+    }
+
+    function drawRunner(ctx, x, y, scale, runCycle) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+
+      // Glow
+      ctx.shadowColor = 'rgba(0, 240, 255, 0.6)';
+      ctx.shadowBlur = 20;
+
+      // Body
+      ctx.fillStyle = '#F0F0F0';
+      ctx.beginPath();
+      ctx.ellipse(0, -35, 12, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Head
+      ctx.fillStyle = '#F0F0F0';
+      ctx.beginPath();
+      ctx.arc(0, -65, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Limbs - animated
+      const thighLen = 22;
+      const shinLen = 22;
+      const armLen = 20;
+
+      function drawLimb(angle, len, xOff, yOff, width) {
+        ctx.save();
+        ctx.translate(xOff, yOff);
+        ctx.rotate(angle);
+        ctx.fillStyle = '#F0F0F0';
+        ctx.fillRect(-width/2, 0, width, len);
+        ctx.restore();
+      }
+
+      // Legs
+      drawLimb(Math.sin(runCycle) * 0.8, thighLen, -4, -12, 5);
+      drawLimb(Math.sin(runCycle + Math.PI) * 0.8, thighLen, 4, -12, 5);
+
+      // Shins
+      drawLimb(Math.sin(runCycle) * 0.6 + 0.4, shinLen, -4 + Math.sin(runCycle) * 18, -12 + thighLen, 4);
+      drawLimb(Math.sin(runCycle + Math.PI) * 0.6 + 0.4, shinLen, 4 + Math.sin(runCycle + Math.PI) * 18, -12 + thighLen, 4);
+
+      // Arms
+      drawLimb(Math.sin(runCycle + Math.PI) * 0.7, armLen, -10, -45, 4);
+      drawLimb(Math.sin(runCycle) * 0.7, armLen, 10, -45, 4);
+
+      ctx.restore();
+    }
+
+    function drawScene() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, '#050507');
+      gradient.addColorStop(1, '#0A0E1A');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      // Floor grid
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+      ctx.lineWidth = 1;
+      const horizonY = height * 0.72;
+      for (let y = horizonY; y < height; y += 24) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      for (let x = -50; x < width + 50; x += 60) {
+        const offset = ((groundOffset % 60) + 60) % 60;
+        const perspectiveX = x + offset;
+        ctx.beginPath();
+        ctx.moveTo(perspectiveX + (perspectiveX - width/2) * 0.3, horizonY);
+        ctx.lineTo(perspectiveX + (perspectiveX - width/2) * 1.5, height);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Moving floor lines
+      ctx.fillStyle = 'rgba(240, 240, 240, 0.06)';
+      floorLines.forEach(line => {
+        let x = (line.x + groundOffset * 3) % (width + 200) - 100;
+        ctx.fillRect(x, line.y, line.width, 2);
+      });
+
+      // Speed lines (only when moving fast)
+      const speedLineAlpha = Math.min(Math.abs(velocity) * 8, 0.7);
+      if (speedLineAlpha > 0.05) {
+        ctx.save();
+        ctx.strokeStyle = `rgba(0, 240, 255, ${speedLineAlpha * 0.5})`;
+        ctx.lineWidth = 1;
+        particles.forEach(p => {
+          const moveX = -velocity * p.speed * 3;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + moveX, p.y);
+          ctx.stroke();
+
+          p.x += moveX * 0.1;
+          if (p.x < -50) p.x = width + 50;
+          if (p.x > width + 50) p.x = -50;
+        });
+        ctx.restore();
+      }
+
+      // Runner shadow (directional)
+      const shadowOffset = direction * Math.min(Math.abs(velocity) * 150, 80);
+      const shadowScale = 1 + Math.abs(velocity) * 2;
+      ctx.save();
+      ctx.translate(width/2 + shadowOffset, height * 0.72 + 8);
+      ctx.scale(shadowScale, 1);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 35, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Runner
+      const runCycle = globalScrollProgress * 40 * Math.PI;
+      const bobbing = Math.abs(Math.sin(runCycle)) * 8;
+      drawRunner(ctx, width/2, height * 0.72 - bobbing, 1.5 + Math.abs(velocity) * 0.5, runCycle);
+
+      // Light flare behind runner
+      const flareAlpha = 0.2 + Math.abs(velocity) * 0.3;
+      ctx.save();
+      const flareGradient = ctx.createRadialGradient(width/2, height * 0.45, 0, width/2, height * 0.45, 250);
+      flareGradient.addColorStop(0, `rgba(0, 240, 255, ${flareAlpha})`);
+      flareGradient.addColorStop(1, 'rgba(0, 240, 255, 0)');
+      ctx.fillStyle = flareGradient;
+      ctx.fillRect(0, 0, width, height);
+      ctx.restore();
+    }
+
+    function updateVignette() {
+      const op = Math.min(0.3 + Math.abs(velocity) * 1.2, 0.75);
+      document.documentElement.style.setProperty('--vignette-opacity', op.toFixed(2));
+    }
+
+    function updateHUD() {
+      const dist = Math.floor(globalScrollProgress * 5000);
+      distanceEl.textContent = String(dist).padStart(4, '0') + 'm';
+      const speed = Math.min(Math.floor(Math.abs(velocity) * 60), 99);
+      velocityEl.textContent = String(speed).padStart(2, '0');
+    }
+
+    function animate() {
+      drawScene();
+      updateVignette();
+      updateHUD();
+      requestAnimationFrame(animate);
+    }
+
+    function initExperience() {
+      if (prefersReducedMotion) {
+        document.getElementById('m1').classList.add('visible');
+        document.querySelectorAll('.content-marker').forEach(el => el.classList.add('visible'));
+        drawScene();
+        return;
+      }
+
+      ScrollTrigger.create({
+        trigger: '.scroll-track',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.2,
+        onUpdate: (self) => {
+          globalScrollProgress = self.progress;
+          const delta = self.progress - lastProgress;
+          velocity = delta * 50; // normalized velocity
+          direction = Math.sign(delta) || 1;
+          lastProgress = self.progress;
+
+          groundOffset -= delta * 3000;
+          lightIntensity = 1 + Math.abs(velocity) * 2;
+        }
+      });
+
+      // Content markers
+      ['m1','m2','m3','m4'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        ScrollTrigger.create({
+          trigger: '.scroll-track',
+          start: `${i * 25}% center`,
+          end: `${(i + 1) * 25}% center`,
+          onEnter: () => el.classList.add('visible'),
+          onLeave: () => el.classList.remove('visible'),
+          onEnterBack: () => el.classList.add('visible'),
+          onLeaveBack: () => el.classList.remove('visible')
+        });
+      });
+
+      animate();
+    }
+
+    window.addEventListener('resize', () => {
+      resize();
+      if (prefersReducedMotion) return;
+      ScrollTrigger.refresh();
+    }, { passive: true });
+  </script>
+</body>
+</html>
